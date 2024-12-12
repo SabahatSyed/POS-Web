@@ -1,0 +1,93 @@
+.apexcharts-tooltip-custom{
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap:3px;
+}
+.date{
+    border-bottom: 1px;
+    border: 1px solid grey;
+}
+.graph_data{
+    display: flex;
+    gap:10px;
+    align-items: center;
+}
+
+.sales_rank{
+    background-color: #9fe8d1;
+    padding: 4px;
+    border-radius: 100%;
+}
+
+.list_price{
+    background-color: #8d6e68;
+    padding: 4px;
+    border-radius: 100%;
+}
+
+.new_price{
+    background-color: #b6c5f1;
+    padding: 4px;
+    border-radius: 100%;
+}
+
+.amazon_price{
+    background-color: #fac8a1;
+    padding: 4px;
+    border-radius: 100%;
+}
+
+.buy_box_price{
+    background-color: #f89abd;
+    padding: 4px;
+    border-radius: 100%;
+}
+
+.warehouse_price{
+    background-color: #ff7800;
+    padding: 4px;
+    border-radius: 100%;
+}
+
+.buy_box_used_price{
+    background-color: #d19fe8;
+    padding: 4px;
+    border-radius: 100%;
+}
+
+.used_price{
+    background-color: #000000;
+    padding: 4px;
+    border-radius: 100%;
+}
+
+.monthly_sales{
+    background-color: #10d856;
+    padding: 4px;
+    border-radius: 100%;
+}
+
+.offer_count{
+    background-color: #71ccb2;
+    padding: 4px;
+    border-radius: 100%;
+}
+
+.rating{
+    background-color: #9857ae;
+    padding: 4px;
+    border-radius: 100%;
+}
+
+.review_count{
+    background-color: #654ace;
+    padding: 4px;
+    border-radius: 100%;
+}
+
+.used_offer_count{
+    background-color: #94317d;
+    padding: 4px;
+    border-radius: 100%;
+}
