@@ -164,7 +164,7 @@ function BoardCardForm() {
       const command = new PutObjectCommand(params);
       await s3.send(command);
 
-      const url = `https://${process.env.REACT_APP_AWS_S3_BUCKET}.s3.${process.env.REACT_APP_AWS_REGION}.amazonaws.com/${process.env.REACT_APP_AWS_S3_BUCKET_FOLDER}/${fileName}`;
+      const url = `https://s3.amazonaws.com/${fileName}`;
 
       return { url };
     } catch (error) {
