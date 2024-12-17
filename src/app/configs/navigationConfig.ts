@@ -292,42 +292,6 @@ const navigationConfig: FuseNavigationType = [
     ],
   },
   {
-    id: 'sales-management',
-    title: 'Sales Management',
-    subtitle: 'manage deals',
-    type: 'group',
-    icon: 'heroicons-outline:cash',
-    // url: '/dashboards/finance',
-    auth: ['Admin'],
-    children: [
-      {
-        id: 'customer-table',
-        title: 'Customers',
-        type: 'item',
-        icon: 'heroicons-outline:cash',
-        url: '/customers/table',
-        auth: ['Admin'],
-      },
-      {
-        id: 'deal-pipelines',
-        title: 'Deals',
-        type: 'item',
-        icon: 'heroicons-outline:cash',
-        url: '/sales/pipelines',
-        auth: ['Admin'],
-      },
-      // {
-      // 	id: 'detail-pipelines',
-      // 	title: 'Details',
-      // 	type: 'item',
-      // 	icon: 'heroicons-outline:cash',
-      // 	url: '/sales/details',
-      // 	auth: ['Admin'],
-
-      // },
-    ],
-  },
-  {
     id: 'agent-management',
     title: 'Agent Management',
     subtitle: 'manage agents and payments',
