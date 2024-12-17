@@ -24,7 +24,6 @@ import { Avatar, Input, Paper } from "@mui/material";
 import { motion } from "framer-motion";
 import FuseSvgIcon from "@fuse/core/FuseSvgIcon";
 
-
 type ToolbarLayout1Props = {
   className?: string;
 };
@@ -34,7 +33,7 @@ type ToolbarLayout1Props = {
  */
 function ToolbarLayout1(props: ToolbarLayout1Props) {
   const { className } = props;
-	const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState("");
 
   const config = useSelector(
     selectFuseCurrentLayoutConfig
@@ -58,25 +57,26 @@ function ToolbarLayout1(props: ToolbarLayout1Props) {
       >
         <Toolbar className="min-h-48 p-0 md:min-h-64">
           <div className="flex flex-1 items-center px-16">
-            {config.navbar.display && config.navbar.position === 'left' && (
-							<>
-								<Hidden lgDown>
-									{(config.navbar.style === 'style-3' || config.navbar.style === 'style-3-dense') && (
-										<NavbarToggleButton className="mx-0 h-40 w-40 p-0" />
-									)}
+            {config.navbar.display && config.navbar.position === "left" && (
+              <>
+                <Hidden lgDown>
+                  {(config.navbar.style === "style-3" ||
+                    config.navbar.style === "style-3-dense") && (
+                    <NavbarToggleButton className="mx-0 h-40 w-40 p-0" />
+                  )}
 
-									{config.navbar.style === 'style-1' && !navbar.open && (
-										<NavbarToggleButton className="mx-0 h-40 w-40 p-0" />
-									)}
-								</Hidden>
+                  {config.navbar.style === "style-1" && !navbar.open && (
+                    <NavbarToggleButton className="mx-0 h-40 w-40 p-0" />
+                  )}
+                </Hidden>
 
-								<Hidden lgUp>
-									<NavbarToggleButton className="mx-0 h-40 w-40 p-0 sm:mx-8" />
-								</Hidden>
-							</>
-						)}
+                <Hidden lgUp>
+                  <NavbarToggleButton className="mx-0 h-40 w-40 p-0 sm:mx-8" />
+                </Hidden>
+              </>
+            )}
 
-						{/* <Hidden lgDown>
+            {/* <Hidden lgDown>
 							 <NavigationShortcuts />
             </Hidden> */}
             {/* <div className="flex items-center mt-24 sm:mt-0 sm:mx-8 space-x-12">
@@ -106,47 +106,43 @@ function ToolbarLayout1(props: ToolbarLayout1Props) {
                 />
               </Paper>
             </div> */}
-             <div className="flex items-center mt-24 sm:mt-0 sm:mx-8 space-x-12">
-
-            <Avatar
-						className="md:mx-4 h-68 w-68"
-						alt="user photo"
-						// src={user.data.photoURL}
-            src="https://www.shutterstock.com/image-vector/circle-line-simple-design-logo-600nw-2174926871.jpg"
-					/>
-          </div>
+            <div className="flex items-center sm:mx-8 space-x-12">
+              <Avatar
+                className="md:mx-4"
+                alt="user photo"
+                // src={user.data.photoURL}
+                src="https://www.shutterstock.com/image-vector/circle-line-simple-design-logo-600nw-2174926871.jpg"
+              />
+            </div>
           </div>
 
           <div className="flex h-full items-center overflow-x-auto px-8">
             {/* <LanguageSwitcher /> */}
             {/* <AdjustFontSize /> */}
-            <div className="flex items-center mt-24 sm:mt-0 sm:mx-8 space-x-12">
+            <div className="flex items-center sm:mx-8 space-x-12">
               <Paper
                 component={motion.div}
                 initial={{ y: -20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1, transition: { delay: 0.2 } }}
-                className="flex items-center w-full sm:max-w-256 space-x-8 px-16 rounded-none border-1 shadow-0"
+                className="flex items-center rounded-none border-1 shadow-0 w-full sm:w-[200px] md:w-[300px] lg:w-[300px] min-w-[100px]"
               >
-                <FuseSvgIcon color="disabled">
+                <FuseSvgIcon className="mx-4" size={20} color="disabled">
                   heroicons-solid:search
                 </FuseSvgIcon>
 
                 <Input
                   placeholder="Search"
-                  className="flex flex-1"
+                  className="flex flex-1 px-2 py-1"
                   disableUnderline
-                  fullWidth
                   value={searchText}
                   onChange={(ev) => setSearchText(ev.target.value)}
                   inputProps={{
                     "aria-label": "Search",
                   }}
-                  // onChange={(ev: ChangeEvent<HTMLInputElement>) =>
-                  // 	//dispatch(setProductsSearchText(ev.target.value))
-                  // }
                 />
               </Paper>
             </div>
+
             <FullScreenToggle />
             {/* <NavigationSearch /> */}
             {/* <QuickPanelToggleButton /> */}

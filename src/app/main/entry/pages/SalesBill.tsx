@@ -228,8 +228,8 @@ function UsersFormPage() {
           </div>
 
           {/* Top Fields */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="flex flex-col col-span-1 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-4 mb-6">
+            <div className="flex flex-col md:col-span-1 gap-10">
               <Controller
                 name="saleBill"
                 control={control}
@@ -239,7 +239,7 @@ function UsersFormPage() {
                     label="Sale Bill#"
                     variant="outlined"
                     size="small"
-                    className="bg-white w-1/2"
+                    className="bg-white md:w-1/2"
                   />
                 )}
               />
@@ -264,7 +264,7 @@ function UsersFormPage() {
                 control={control}
                 render={({ field }) => (
                   <DatePicker
-                    className="w-1/2"
+                    className="md:w-1/2"
                     {...field}
                     renderInput={(params) => (
                       <TextField
@@ -272,16 +272,16 @@ function UsersFormPage() {
                         label="Date"
                         variant="outlined"
                         size="small"
-                        className="bg-white w-1/2"
+                        className="bg-white md:w-1/2"
                       />
                     )}
                   />
                 )}
               />
             </div>
-            <div className="flex flex-col col-span-2 gap-10">
+            <div className="flex flex-col md:col-span-2 gap-10">
               <div className="grid grid-cols-10 gap-10 items-center">
-                <Typography className="col-span-1">Party: </Typography>
+                <Typography className="col-span-2 lg:col-span-1  whitespace-nowrap text-ellipsis">Party: </Typography>
                 <Controller
                   name="party"
                   control={control}
@@ -289,7 +289,7 @@ function UsersFormPage() {
                     <FormControl
                       variant="outlined"
                       size="small"
-                      className="bg-white col-span-9"
+                      className="bg-white col-span-8 lg:col-span-9"
                     >
                       <Select {...field} defaultValue="010020-AL SHIFA MEDICOS">
                         <MenuItem value="010020-AL SHIFA MEDICOS">
@@ -316,17 +316,17 @@ function UsersFormPage() {
                 /> */}
               </div>
               <div className="grid grid-cols-10 gap-10 items-center">
-                <Typography className="col-span-1">Balance: </Typography>
+                <Typography className="col-span-2 lg:col-span-1  whitespace-nowrap text-ellipsis">Balance: </Typography>
 
                 <TextField
                   label="Balance"
                   variant="outlined"
                   size="small"
-                  className="bg-white col-span-9"
+                  className="bg-white col-span-8 lg:col-span-9"
                 />
               </div>
               <div className="grid grid-cols-10 gap-10 items-center">
-                <Typography className="col-span-1">Salesman: </Typography>
+                <Typography className="col-span-2 lg:col-span-1  whitespace-nowrap text-ellipsis">Salesman: </Typography>
                 <Controller
                   name="salesman"
                   control={control}
@@ -349,7 +349,7 @@ function UsersFormPage() {
                     <FormControl
                       variant="outlined"
                       size="small"
-                      className="bg-white w-full col-span-6"
+                      className="bg-white w-full col-span-5 lg:col-span-6"
                     >
                       <Select {...field} defaultValue="">
                         <MenuItem value="">Select Salesman</MenuItem>
@@ -360,13 +360,13 @@ function UsersFormPage() {
                 />
               </div>
               <div className="grid grid-cols-10 gap-10 items-center">
-                <Typography className="col-span-1">Remarks: </Typography>
+                <Typography className="col-span-2 lg:col-span-1  whitespace-nowrap text-ellipsis">Remarks: </Typography>
 
                 <TextField
                   label="Remarks"
                   variant="outlined"
                   size="small"
-                  className="bg-white col-span-9"
+                  className="bg-white col-span-8 lg:col-span-9"
                 />
               </div>
             </div>
@@ -405,112 +405,134 @@ function UsersFormPage() {
             </FormControl>
 
           {/* Product Details */}
-          <div className="">
-            <div className="grid grid-cols-12  gap-4 mb-6">
-              <Typography>Product Code</Typography>
-              <Typography className="col-span-2">Product Name</Typography>
-              <Typography>Batch Code</Typography>
-              <Typography className="col-span-2">Batch Description</Typography>
-              <Typography>Qty</Typography>
-              <Typography>Trade Rate</Typography>
-              <Typography>Disc. (%)</Typography>
-              <Typography>Disc. Value</Typography>
-              <Typography>Net Rate</Typography>
-              <Typography>Amount</Typography>
-            </div>
-            <div className="grid grid-cols-12  gap-4 mb-6 ">
-              <Controller
-                name="productCode"
-                control={control}
-                render={({ field }) => (
-                  <FormControl
-                    variant="outlined"
-                    size="small"
-                    className="bg-white"
-                  >
-                    <Select {...field} defaultValue="01001">
-                      <MenuItem value="01001">ACTIVE VIT</MenuItem>
-                    </Select>
-                  </FormControl>
-                )}
-              />
+          <div className="space-y-4">
+  {/* Main Grid for all fields */}
+  <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+    {/* Product Code */}
+    <Typography className="col-span-12 md:col-span-2 whitespace-nowrap text-ellipsis text-left md:text-center">Product Code</Typography>
+    <div className="col-span-12 md:col-span-2">
+      <Controller
+        name="productCode"
+        control={control}
+        render={({ field }) => (
+          <FormControl variant="outlined" size="small" className="w-full">
+            <Select {...field} defaultValue="01001">
+              <MenuItem value="01001">ACTIVE VIT</MenuItem>
+            </Select>
+          </FormControl>
+        )}
+      />
+    </div>
 
-              <Controller
-                name="productName"
-                control={control}
-                render={({ field }) => (
-                  <FormControl
-                    variant="outlined"
-                    size="small"
-                    className="bg-white col-span-2"
-                  >
-                    <Select {...field} defaultValue="ACTIVE VIT">
-                      <MenuItem value="ACTIVE VIT">ACTIVE VIT</MenuItem>
-                    </Select>
-                  </FormControl>
-                )}
-              />
+    {/* Product Name */}
+    <Typography className="col-span-12 md:col-span-2 whitespace-nowrap text-ellipsis text-left md:text-center">Product Name</Typography>
+    <div className="col-span-12 md:col-span-2">
+      <Controller
+        name="productName"
+        control={control}
+        render={({ field }) => (
+          <FormControl variant="outlined" size="small" className="w-full">
+            <Select {...field} defaultValue="ACTIVE VIT">
+              <MenuItem value="ACTIVE VIT">ACTIVE VIT</MenuItem>
+            </Select>
+          </FormControl>
+        )}
+      />
+    </div>
 
-              <Controller
-                name="batchCode"
-                control={control}
-                render={({ field }) => (
-                  <FormControl
-                    variant="outlined"
-                    size="small"
-                    className="bg-white"
-                  >
-                    <Select {...field} defaultValue="001">
-                      <MenuItem value="001">001</MenuItem>
-                    </Select>
-                  </FormControl>
-                )}
-              />
+    {/* Batch Code */}
+    <Typography className="col-span-12 md:col-span-2 whitespace-nowrap text-ellipsis text-left md:text-center">Batch Code</Typography>
+    <div className="col-span-12 md:col-span-2">
+      <Controller
+        name="batchCode"
+        control={control}
+        render={({ field }) => (
+          <FormControl variant="outlined" size="small" className="w-full">
+            <Select {...field} defaultValue="001">
+              <MenuItem value="001">001</MenuItem>
+            </Select>
+          </FormControl>
+        )}
+      />
+    </div>
 
-              <TextField
-                label="Batch Description"
-                variant="outlined"
-                size="small"
-                className="bg-white col-span-2"
-              />
-              <TextField
-                label="Qty"
-                variant="outlined"
-                size="small"
-                className="bg-white"
-              />
-              <TextField
-                label="Trade Rate"
-                variant="outlined"
-                size="small"
-                className="bg-white"
-              />
-              <TextField
-                label="Disc. (%)"
-                variant="outlined"
-                size="small"
-                className="bg-white"
-              />
-              <TextField
-                label="Disc. Value"
-                variant="outlined"
-                size="small"
-                className="bg-white"
-              />
-              <TextField
-                label="Net Rate"
-                variant="outlined"
-                size="small"
-                className="bg-white"
-              />
-              <TextField
-                label="Amount"
-                variant="outlined"
-                size="small"
-                className="bg-white"
-              />
-            </div>
-          </div>
+    {/* Batch Description */}
+    <Typography className="col-span-12 md:col-span-2 whitespace-nowrap text-ellipsis text-left md:text-center">Batch Description</Typography>
+    <div className="col-span-12 md:col-span-2">
+      <TextField
+        placeholder="Batch Description"
+        variant="outlined"
+        size="small"
+        className="w-full"
+      />
+    </div>
+
+    {/* Quantity */}
+    <Typography className="col-span-12 md:col-span-1 whitespace-nowrap text-ellipsis text-left md:text-center">Qty</Typography>
+    <div className="col-span-12 md:col-span-1">
+      <TextField
+        placeholder="Qty"
+        variant="outlined"
+        size="small"
+        className="w-full"
+      />
+    </div>
+
+    {/* Trade Rate */}
+    <div className="col-span-12 md:col-span-2">
+      <TextField
+        placeholder="Trade Rate"
+        variant="outlined"
+        size="small"
+        className="w-full"
+      />
+    </div>
+
+    {/* Discount (%) */}
+    <div className="col-span-12 md:col-span-2">
+      <TextField
+        placeholder="Disc. (%)"
+        variant="outlined"
+        size="small"
+        className="w-full"
+      />
+    </div>
+
+    {/* Discount Value */}
+    <div className="col-span-12 md:col-span-2">
+      <TextField
+        placeholder="Disc. Value"
+        variant="outlined"
+        size="small"
+        className="w-full"
+      />
+    </div>
+
+    {/* Net Rate */}
+    <div className="col-span-12 md:col-span-2">
+      <TextField
+        placeholder="Net Rate"
+        variant="outlined"
+        size="small"
+        className="w-full"
+      />
+    </div>
+
+    {/* Amount */}
+    <div className="col-span-12 md:col-span-2">
+      <TextField
+        placeholder="Amount"
+        variant="outlined"
+        size="small"
+        className="w-full"
+      />
+    </div>
+  </div>
+
+
+</div>
+
+
 
           {/* Footer Fields */}
 
