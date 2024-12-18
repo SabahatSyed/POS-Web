@@ -1,0 +1,32 @@
+.toggle-container {
+  display: flex;
+  align-items: center;
+  background-color: #D5E6E9;
+  padding: 6px;
+  width: max-content;
+  margin-bottom: 30px;
+  border-radius: 30px;
+}
+
+.toggle-button {
+  padding: 10px 20px;
+  margin: 0 5px;
+  border: none;
+  cursor: pointer;
+
+  transition: background-color 0.3s ease;
+  color: #333;
+  font-size: 16px;
+  border-radius: 5px;
+  border-radius: 30px;
+
+}
+
+.toggle-button.active {
+  background-color: #0e505c;
+  color: white;
+}
+
+.toggle-button:not(.active):hover {
+  /* background-color: #ccc; */
+}

@@ -1,0 +1,28 @@
+.star-rating {
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+}
+
+.star {
+  font-size: 18px; /* Adjust the size of the stars */
+  margin-right: 2px;
+}
+
+.full-star:before {
+  content: '★';
+  color: #0E505C;
+}
+
+.half-star:before {
+  content: '★';
+  color: secondary;
+  background: linear-gradient(to right, #0E505C 50%, lightgray 50%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.empty-star:before {
+  content: '★';
+  color: lightgray;
+}
