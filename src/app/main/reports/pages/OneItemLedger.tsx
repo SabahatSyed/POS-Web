@@ -116,9 +116,9 @@ function UsersFormPage() {
     }
   };
 
-  const handleCancel = () => {
-    navigate(-1);
-  };
+  // const handleCancel = () => {
+  //   navigate(-1);
+  // };
 
   useEffect(() => {
     if (id) {
@@ -152,7 +152,7 @@ function UsersFormPage() {
         <div className="flex flex-col gap-10">
         <Typography className="text-3xl">Product </Typography>
           <div className="grid grid-cols-12 gap-10 items-center">
-            <Typography className="col-span-1">Code </Typography>
+            <Typography className="col-span-2 md:col-span-1">Code </Typography>
             <Controller
               name="formcount"
               control={control}
@@ -160,7 +160,7 @@ function UsersFormPage() {
                 <FormControl
                   variant="outlined"
                   size="small"
-                  className="bg-white w-full col-span-5"
+                  className="bg-white w-full col-span-10 md:col-span-5"
                 >
                   <Select {...field} defaultValue="1.a">
                     <MenuItem value="1.a">1.a</MenuItem>
@@ -192,7 +192,7 @@ function UsersFormPage() {
                 </FormControl>
               )}
             />
-            <Typography className="col-span-1">Description </Typography>
+            <Typography className="col-span-3 truncate whitespace-nowrap text-ellipsis md:col-span-1">Description </Typography>
             <Controller
               name="formname"
               control={control}
@@ -200,7 +200,7 @@ function UsersFormPage() {
                 <FormControl
                   variant="outlined"
                   size="small"
-                  className="bg-white col-span-5"
+                  className="bg-white col-span-9 md:col-span-5"
                 >
                   <Select {...field} defaultValue="Main Group">
                     <MenuItem value="Main Group">Main Group</MenuItem>
@@ -253,7 +253,7 @@ function UsersFormPage() {
           </div>
           <Typography className="text-3xl">Batch </Typography>
           <div className="grid grid-cols-12 gap-10 items-center">
-            <Typography className="col-span-1">Code </Typography>
+            <Typography className="col-span-2 md:col-span-1">Code </Typography>
             <Controller
               name="formcount"
               control={control}
@@ -261,7 +261,7 @@ function UsersFormPage() {
                 <FormControl
                   variant="outlined"
                   size="small"
-                  className="bg-white w-full col-span-5"
+                  className="bg-white w-full col-span-10 md:col-span-5"
                 >
                   <Select {...field} defaultValue="1.a">
                     <MenuItem value="1.a">1.a</MenuItem>
@@ -293,7 +293,7 @@ function UsersFormPage() {
                 </FormControl>
               )}
             />
-            <Typography className="col-span-1">Description </Typography>
+            <Typography className="col-span-3 truncate whitespace-nowrap text-ellipsis md:col-span-1">Description </Typography>
             <Controller
               name="formname"
               control={control}
@@ -301,7 +301,7 @@ function UsersFormPage() {
                 <FormControl
                   variant="outlined"
                   size="small"
-                  className="bg-white col-span-5"
+                  className="bg-white col-span-9 md:col-span-5"
                 >
                   <Select {...field} defaultValue="Main Group">
                     <MenuItem value="Main Group">Main Group</MenuItem>
@@ -419,7 +419,7 @@ function UsersFormPage() {
             {title}
           </Typography>
         </div>
-        <div className="flex items-center mt-24 sm:mt-0 sm:mx-8 space-x-12">
+        {/* <div className="flex items-center mt-24 sm:mt-0 sm:mx-8 space-x-12">
           <Button
             className="whitespace-nowrap"
             color="secondary"
@@ -428,7 +428,7 @@ function UsersFormPage() {
           >
             Close
           </Button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

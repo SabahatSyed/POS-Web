@@ -157,9 +157,9 @@ function EstimateBill() {
     }
   };
 
-  const handleCancel = () => {
-    navigate(-1);
-  };
+  // const handleCancel = () => {
+  //   navigate(-1);
+  // };
 
   useEffect(() => {
     if (id) {
@@ -236,116 +236,92 @@ function EstimateBill() {
             </FormControl> */}
 
           {/* Product Details */}
-          <div className="">
-            <div className="grid grid-cols-12  gap-4 mb-6">
-              <Typography>Product Code</Typography>
-              <Typography className="col-span-2">Product Name</Typography>
-              <Typography>Batch Code</Typography>
-              <Typography className="col-span-2">Batch Description</Typography>
-              <Typography>Qty</Typography>
-              <Typography>Trade Rate</Typography>
-              <Typography>Disc. (%)</Typography>
-              <Typography>Disc. Value</Typography>
-              <Typography>Net Rate</Typography>
-              <Typography>Amount</Typography>
-            </div>
-            <div className="grid grid-cols-12  gap-4 mb-6 ">
-              <Controller
-                name="productCode"
-                control={control}
-                render={({ field }) => (
-                  <FormControl
-                    variant="outlined"
-                    size="small"
-                    className="bg-white"
-                  >
-                    <Select {...field} defaultValue="01001">
-                      <MenuItem value="01001">ACTIVE VIT</MenuItem>
-                    </Select>
-                  </FormControl>
-                )}
-              />
+          <div className="w-full overflow-auto">
+  <div className="min-w-[1200px]">
+    <div className="grid grid-cols-12 gap-4 mb-4  pb-2">
+      <Typography>Product Code</Typography>
+      <Typography className="col-span-2">Product Name</Typography>
+      <Typography>Batch Code</Typography>
+      <Typography className="col-span-2">Batch Description</Typography>
+      <Typography>Qty</Typography>
+      <Typography>Trade Rate</Typography>
+      <Typography>Disc. (%)</Typography>
+      <Typography>Disc. Value</Typography>
+      <Typography>Net Rate</Typography>
+      <Typography>Amount</Typography>
+    </div>
 
-              <Controller
-                name="productName"
-                control={control}
-                render={({ field }) => (
-                  <FormControl
-                    variant="outlined"
-                    size="small"
-                    className="bg-white col-span-2"
-                  >
-                    <Select {...field} defaultValue="ACTIVE VIT">
-                      <MenuItem value="ACTIVE VIT">ACTIVE VIT</MenuItem>
-                    </Select>
-                  </FormControl>
-                )}
-              />
+    <div className="grid grid-cols-12 gap-4 mb-6">
+      {/* Product Code */}
+      <Controller
+        name="productCode"
+        control={control}
+        render={({ field }) => (
+          <FormControl variant="outlined" size="small" className="bg-white">
+            <Select {...field} defaultValue="01001">
+              <MenuItem value="01001">ACTIVE VIT</MenuItem>
+            </Select>
+          </FormControl>
+        )}
+      />
 
-              <Controller
-                name="batchCode"
-                control={control}
-                render={({ field }) => (
-                  <FormControl
-                    variant="outlined"
-                    size="small"
-                    className="bg-white"
-                  >
-                    <Select {...field} defaultValue="001">
-                      <MenuItem value="001">001</MenuItem>
-                    </Select>
-                  </FormControl>
-                )}
-              />
+      {/* Product Name */}
+      <Controller
+        name="productName"
+        control={control}
+        render={({ field }) => (
+          <FormControl
+            variant="outlined"
+            size="small"
+            className="bg-white col-span-2"
+          >
+            <Select {...field} defaultValue="ACTIVE VIT">
+              <MenuItem value="ACTIVE VIT">ACTIVE VIT</MenuItem>
+            </Select>
+          </FormControl>
+        )}
+      />
 
-              <TextField
-                label="Batch Description"
-                variant="outlined"
-                size="small"
-                className="bg-white col-span-2"
-              />
-              <TextField
-                label="Qty"
-                variant="outlined"
-                size="small"
-                className="bg-white"
-              />
-              <TextField
-                label="Trade Rate"
-                variant="outlined"
-                size="small"
-                className="bg-white"
-              />
-              <TextField
-                label="Disc. (%)"
-                variant="outlined"
-                size="small"
-                className="bg-white"
-              />
-              <TextField
-                label="Disc. Value"
-                variant="outlined"
-                size="small"
-                className="bg-white"
-              />
-              <TextField
-                label="Net Rate"
-                variant="outlined"
-                size="small"
-                className="bg-white"
-              />
-              <TextField
-                label="Amount"
-                variant="outlined"
-                size="small"
-                className="bg-white"
-              />
-            </div>
-          </div>
+      {/* Batch Code */}
+      <Controller
+        name="batchCode"
+        control={control}
+        render={({ field }) => (
+          <FormControl variant="outlined" size="small" className="bg-white">
+            <Select {...field} defaultValue="001">
+              <MenuItem value="001">001</MenuItem>
+            </Select>
+          </FormControl>
+        )}
+      />
+
+      {/* Batch Description */}
+      <TextField
+      label="Batch Description"
+        variant="outlined"
+        size="small"
+        className="bg-white col-span-2"
+      />
+      {/* Qty */}
+      <TextField variant="outlined" size="small" label="Qty" className="bg-white" />
+      {/* Trade Rate */}
+      <TextField variant="outlined" size="small" label="Trade Rate" className="bg-white" />
+      {/* Disc (%) */}
+      <TextField variant="outlined" size="small" label="Disc. (%)" className="bg-white" />
+      {/* Disc Value */}
+      <TextField variant="outlined" size="small" label="Disc. Value" className="bg-white" />
+      {/* Net Rate */}
+      <TextField variant="outlined" size="small" label="Net Rate" className="bg-white" />
+      {/* Amount */}
+      <TextField variant="outlined" size="small" label="Amount" className="bg-white" />
+    </div>
+  </div>
+</div>
+
 
           {/* Footer Fields */}
 
-          <div className="flex gap-4 my-12 items-center justify-center">
+          <div className="flex gap-4 flex-wrap my-12 items-center justify-center">
             <Button variant="contained" className="rounded-md" color="primary">
               Edit
             </Button>
@@ -376,53 +352,52 @@ function EstimateBill() {
             </Button>
           </div>
           {/* Buttons */}
-          <div className="flex gap-4 mb-6 justify-center">
-            <TextField
-              label="Total Amount"
-              variant="outlined"
-              size="small"
-              className="bg-white"
-            />
-            <TextField
-              label="Disc (%)"
-              variant="outlined"
-              size="small"
-              className="bg-white"
-            />
-            <TextField
-              label="Disc Amount"
-              variant="outlined"
-              size="small"
-              className="bg-white"
-              value={discount}
-              onChange={(e) => setDiscount(e.target.value)}
-            />
-            <TextField
-              label="Net Amount"
-              variant="outlined"
-              size="small"
-              className="bg-white"
-            />
-            {/* <TextField
-              label="From"
-              variant="outlined"
-              size="small"
-              className="bg-white"
-            />
-            <TextField
-              label="To"
-              variant="outlined"
-              size="small"
-              className="bg-white"
-            /> */}
-            <Button
-              variant="contained"
-              className="rounded-md"
-              onClick={handleOpen}
-            >
-              Report
-            </Button>
-          </div>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6 justify-center">
+                      <TextField
+                        label="Total Amount"
+                        variant="outlined"
+                        size="small"
+                        className="bg-white col-span-1"
+                      />
+                      <TextField
+                        label="Disc (%)"
+                        variant="outlined"
+                        size="small"
+                        className="bg-white col-span-1"
+                      />
+                      <TextField
+                        label="Disc Amount"
+                        variant="outlined"
+                        size="small"
+                        className="bg-white col-span-1"
+                      />
+                      <TextField
+                        label="Net Amount"
+                        variant="outlined"
+                        size="small"
+                        className="bg-white col-span-1"
+                      />
+                      {/* <TextField
+                      label="From"
+                      variant="outlined"
+                      size="small"
+                      className="bg-white"
+                    />
+                    <TextField
+                      label="To"
+                      variant="outlined"
+                      size="small"
+                      className="bg-white"
+                    /> */}
+                      <Button
+                        // size={small}
+                        variant="contained"
+                        className="rounded-md col-span-1"
+                        onClick={handleOpen}
+                      >
+                        Report
+                      </Button>
+                    </div>
         </div>
       </form>
     </>
@@ -436,7 +411,7 @@ function EstimateBill() {
             {title}
           </Typography>
         </div>
-        <div className="flex items-center mt-24 sm:mt-0 sm:mx-8 space-x-12">
+        {/* <div className="flex items-center mt-24 sm:mt-0 sm:mx-8 space-x-12">
           <Button
             className="whitespace-nowrap"
             color="secondary"
@@ -445,7 +420,7 @@ function EstimateBill() {
           >
             Close
           </Button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

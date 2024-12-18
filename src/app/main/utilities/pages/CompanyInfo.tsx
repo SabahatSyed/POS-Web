@@ -111,9 +111,9 @@ const CompanyInfo = () => {
 
   const formContent = (
     <form onSubmit={handleSubmit(onSubmit)} className="w-full">
-      <div className="grid sm:grid-cols-2 gap-16 gap-y-40 gap-x-12 lg:w-full w-full lg:ml-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-16 gap-y-40 gap-x-12 lg:w-full w-full lg:ml-10">
         {/* Logo Upload */}
-        <div className="sm:col-span-2">
+        <div className="col-span-1 md:col-span-2">
           <Typography variant="h6" gutterBottom>
             Upload Logo
           </Typography>
@@ -132,7 +132,7 @@ const CompanyInfo = () => {
         </div>
 
         {/* Name and Email Fields */}
-        <div className="sm:col-span-1">
+        <div className="md:col-span-1 col-span-2">
           <Controller
             name="name"
             control={control}
@@ -150,7 +150,7 @@ const CompanyInfo = () => {
           />
         </div>
 
-        <div className="sm:col-span-1">
+        <div className="md:col-span-1 col-span-2">
           <Controller
             name="email"
             control={control}
@@ -169,7 +169,7 @@ const CompanyInfo = () => {
         </div>
 
         {/* Location and Website Fields */}
-        <div className="sm:col-span-1">
+        <div className="md:col-span-1 col-span-2">
           <Controller
             name="address"
             control={control}
@@ -186,7 +186,7 @@ const CompanyInfo = () => {
             )}
           />
         </div>
-        <div className="sm:col-span-1">
+        <div className="md:col-span-1 col-span-2">
           <Controller
             name="area"
             control={control}
@@ -203,7 +203,7 @@ const CompanyInfo = () => {
             )}
           />
         </div>
-        <div className="sm:col-span-1">
+        <div className="md:col-span-1 col-span-2">
           <Controller
             name="subarea"
             control={control}
@@ -221,7 +221,7 @@ const CompanyInfo = () => {
           />
         </div>
 
-        <div className="sm:col-span-1">
+        <div className="md:col-span-1 col-span-2">
           <Controller
             name="website"
             control={control}
@@ -239,14 +239,14 @@ const CompanyInfo = () => {
           />
         </div>
 
-        <Divider className="my-6 col-span-2" />
+        <Divider className="my-6 col-span-1 md:col-span-2" />
 
         {/* Theme Section */}
         <div className="col-span-2">
           <Typography variant="h6" gutterBottom>
             Theme
           </Typography>
-          <div className="flex gap-4">
+          <div className="flex flex-col md:flex-row gap-4">
             <Controller
               name="theme.secondary"
               control={control}
@@ -256,7 +256,7 @@ const CompanyInfo = () => {
                   fullWidth
                   variant="outlined"
                   displayEmpty
-                  className="w-1/3"
+                  className="w-full md:w-1/3"
                 >
                   <MenuItem value="" disabled>
                     Secondary Color
@@ -283,7 +283,7 @@ const CompanyInfo = () => {
                   fullWidth
                   variant="outlined"
                   displayEmpty
-                  className="w-1/3"
+                  className="w-full md:w-1/3"
                 >
                   <MenuItem value="" disabled>
                     Primary Color
@@ -310,7 +310,7 @@ const CompanyInfo = () => {
                   fullWidth
                   variant="outlined"
                   displayEmpty
-                  className="w-1/3"
+                  className="w-full md:w-1/3"
                 >
                   <MenuItem value="" disabled>
                     Table Header Color
@@ -374,7 +374,7 @@ const CompanyInfo = () => {
             Manage company details and settings
           </Typography>
         </div>
-        <div className="flex items-center mt-24 sm:mt-0 sm:mx-8 space-x-12">
+        {/* <div className="flex items-center mt-24 sm:mt-0 sm:mx-8 space-x-12">
           <Button
             className="whitespace-nowrap"
             color="secondary"
@@ -382,7 +382,7 @@ const CompanyInfo = () => {
           >
             Close
           </Button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

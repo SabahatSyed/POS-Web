@@ -122,9 +122,9 @@ function UsersFormPage() {
     }
   };
 
-  const handleCancel = () => {
-    navigate(-1);
-  };
+  // const handleCancel = () => {
+  //   navigate(-1);
+  // };
 
   useEffect(() => {
     if (id) {
@@ -472,7 +472,7 @@ function UsersFormPage() {
             Keep track of your data
           </Typography>
         </div>
-        <div className="flex items-center mt-24 sm:mt-0 sm:mx-8 space-x-12">
+        {/* <div className="flex items-center mt-24 sm:mt-0 sm:mx-8 space-x-12">
           <Button
             className="whitespace-nowrap"
             color="secondary"
@@ -481,7 +481,7 @@ function UsersFormPage() {
           >
             Close
           </Button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -116,9 +116,9 @@ function UsersFormPage() {
     }
   };
 
-  const handleCancel = () => {
-    navigate(-1);
-  };
+  // const handleCancel = () => {
+  //   navigate(-1);
+  // };
 
   useEffect(() => {
     if (id) {
@@ -151,8 +151,8 @@ function UsersFormPage() {
        
       <div className="flex justify-center items-center">
           <div className="grid grid-cols-3 gap-4">
-            <div className="col-span-1"></div>
-            <FormControl component="fieldset" className="col-span-1">
+            <div className="col-span-3 md:col-span-1"></div>
+            <FormControl component="fieldset" className="col-span-3 md:col-span-1">
               <RadioGroup row name="vouchers">
                 <FormControlLabel
                   value="trailbalance"
@@ -190,7 +190,7 @@ function UsersFormPage() {
                 <FormControl
                   variant="outlined"
                   size="small"
-                  className="bg-white w-full col-span-6"
+                  className="bg-white w-full col-span-12 md:col-span-6"
                 >
                   <Select {...field} defaultValue="1.a">
                     <MenuItem value="1.a">1.a</MenuItem>
@@ -230,7 +230,7 @@ function UsersFormPage() {
                 <FormControl
                   variant="outlined"
                   size="small"
-                  className="bg-white col-span-6"
+                  className="bg-white col-span-12 md:col-span-6"
                 >
                   <Select {...field} defaultValue="Main Group">
                     <MenuItem value="Main Group">Main Group</MenuItem>
@@ -350,7 +350,7 @@ function UsersFormPage() {
             {title}
           </Typography>
         </div>
-        <div className="flex items-center mt-24 sm:mt-0 sm:mx-8 space-x-12">
+        {/* <div className="flex items-center mt-24 sm:mt-0 sm:mx-8 space-x-12">
           <Button
             className="whitespace-nowrap"
             color="secondary"
@@ -359,7 +359,7 @@ function UsersFormPage() {
           >
             Close
           </Button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

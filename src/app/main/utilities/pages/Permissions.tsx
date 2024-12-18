@@ -116,9 +116,9 @@ function UsersFormPage() {
     }
   };
 
-  const handleCancel = () => {
-    navigate(-1);
-  };
+  // const handleCancel = () => {
+  //   navigate(-1);
+  // };
 
   useEffect(() => {
     if (id) {
@@ -152,7 +152,10 @@ function UsersFormPage() {
         <div className="grid grid-cols-1 gap-y-10">
           <div className="flex flex-col gap-10">
             <div className="grid grid-cols-10 gap-10 items-center">
-              <Typography className="">Company </Typography>
+              {/* Company Label */}
+              <Typography className="col-span-2 md:col-span-1 whitespace-nowrap">
+                Company
+              </Typography>
               <Controller
                 name="company"
                 control={control}
@@ -160,7 +163,7 @@ function UsersFormPage() {
                   <FormControl
                     variant="outlined"
                     size="small"
-                    className="bg-white col-span-3"
+                    className="bg-white col-span-8 md:col-span-3"
                   >
                     <Select {...field} defaultValue="Anb International">
                       <MenuItem value="Anb International">
@@ -171,6 +174,8 @@ function UsersFormPage() {
                   </FormControl>
                 )}
               />
+
+              {/* Count Dropdown */}
               <Controller
                 name="count"
                 control={control}
@@ -178,7 +183,7 @@ function UsersFormPage() {
                   <FormControl
                     variant="outlined"
                     size="small"
-                    className="bg-white w-full col-span-6"
+                    className="bg-white col-span-10 md:col-span-6"
                   >
                     <Select {...field} defaultValue="01">
                       <MenuItem value="01">01</MenuItem>
@@ -191,7 +196,7 @@ function UsersFormPage() {
           </div>
           <div className="flex flex-col gap-10">
             <div className="grid grid-cols-10 gap-10 items-center">
-              <Typography className="">Group </Typography>
+              <Typography className="col-span-2 md:col-span-1 whitespace-nowrap">Group </Typography>
               <Controller
                 name="group"
                 control={control}
@@ -199,7 +204,7 @@ function UsersFormPage() {
                   <FormControl
                     variant="outlined"
                     size="small"
-                    className="bg-white col-span-3"
+                    className="bg-white col-span-8 md:col-span-3"
                   >
                     <Select {...field} defaultValue="Administrator">
                       <MenuItem value="Administrator">Administrator</MenuItem>
@@ -215,7 +220,7 @@ function UsersFormPage() {
                   <FormControl
                     variant="outlined"
                     size="small"
-                    className="bg-white w-full col-span-6"
+                    className="bg-white w-full col-span-10 md:col-span-6"
                   >
                     <Select {...field} defaultValue="01">
                       <MenuItem value="01">01</MenuItem>
@@ -228,7 +233,7 @@ function UsersFormPage() {
           </div>
           <div className="flex flex-col gap-10">
             <div className="grid grid-cols-10 gap-10 items-center">
-              <Typography className="">Username </Typography>
+              <Typography className=" col-span-2 md:col-span-1 whitespace-nowrap truncate">Username </Typography>
               <Controller
                 name="username"
                 control={control}
@@ -236,7 +241,7 @@ function UsersFormPage() {
                   <FormControl
                     variant="outlined"
                     size="small"
-                    className="bg-white col-span-9"
+                    className="bg-white col-span-8 md:col-span-9"
                   >
                     <Select {...field} defaultValue="admin">
                       <MenuItem value="admin">admin</MenuItem>
@@ -249,7 +254,7 @@ function UsersFormPage() {
         </div>
         <div className="flex flex-col gap-10">
           <div className="grid grid-cols-10 gap-10 items-center">
-            <Typography className="">Form Name </Typography>
+            <Typography className="col-span-2 md:col-span-1 whitespace-nowrap truncate">Form Name </Typography>
             <Controller
               name="formname"
               control={control}
@@ -257,7 +262,7 @@ function UsersFormPage() {
                 <FormControl
                   variant="outlined"
                   size="small"
-                  className="bg-white col-span-3"
+                  className="bg-white  col-span-8 md:col-span-3"
                 >
                   <Select {...field} defaultValue="Main Group">
                     <MenuItem value="Main Group">Main Group</MenuItem>
@@ -314,7 +319,7 @@ function UsersFormPage() {
                 <FormControl
                   variant="outlined"
                   size="small"
-                  className="bg-white w-full col-span-6"
+                  className="bg-white w-full col-span-10 md:col-span-6"
                 >
                   <Select {...field} defaultValue="1.a">
                     <MenuItem value="1.a">1.a</MenuItem>
@@ -350,105 +355,99 @@ function UsersFormPage() {
         </div>
 
         <div className="">
-            <Controller
-              name="checkboxes"
-              control={control}
-              render={({ field }) => (
-                <FormGroup className="flex flex-row flex-wrap gap-8">
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        {...field}
-                       
-                        value="Retrieve"
-                        checked={field.value?.includes("Retrieve")}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          const newValue = e.target.checked
-                            ? [...(field.value || []), value]
-                            : field.value.filter((item) => item !== value);
-                          field.onChange(newValue);
-                        }}
-                      />
-                    }
-                    label="Retrieve"
-                  />
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        {...field}
-                        value="Addition"
-                        checked={field.value?.includes("Addition")}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          const newValue = e.target.checked
-                            ? [...(field.value || []), value]
-                            : field.value.filter((item) => item !== value);
-                          field.onChange(newValue);
-                        }}
-                      />
-                    }
-                    label="Addition"
-                  />
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        {...field}
-                       
-                        value="Editing"
-                        checked={field.value?.includes("Editing")}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          const newValue = e.target.checked
-                            ? [...(field.value || []), value]
-                            : field.value.filter((item) => item !== value);
-                          field.onChange(newValue);
-                        }}
-                      />
-                    }
-                    label="Editing"
-                  />
-                   <FormControlLabel
-                    control={
-                      <Checkbox
-                        {...field}
-                       
-                        value="Deletion"
-                        checked={field.value?.includes("Deletion")}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          const newValue = e.target.checked
-                            ? [...(field.value || []), value]
-                            : field.value.filter((item) => item !== value);
-                          field.onChange(newValue);
-                        }}
-                      />
-                    }
-                    label="Deletion"
-                  />
-                   <FormControlLabel
-                    control={
-                      <Checkbox
-                        {...field}
-                       
-                        value="Report"
-                        checked={field.value?.includes("Report")}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          const newValue = e.target.checked
-                            ? [...(field.value || []), value]
-                            : field.value.filter((item) => item !== value);
-                          field.onChange(newValue);
-                        }}
-                      />
-                    }
-                    label="Report"
-                  />
-                </FormGroup>
-              )}
-            />
-           
-          
+          <Controller
+            name="checkboxes"
+            control={control}
+            render={({ field }) => (
+              <FormGroup className="flex flex-row flex-wrap gap-8">
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      {...field}
+                      value="Retrieve"
+                      checked={field.value?.includes("Retrieve")}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const newValue = e.target.checked
+                          ? [...(field.value || []), value]
+                          : field.value.filter((item) => item !== value);
+                        field.onChange(newValue);
+                      }}
+                    />
+                  }
+                  label="Retrieve"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      {...field}
+                      value="Addition"
+                      checked={field.value?.includes("Addition")}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const newValue = e.target.checked
+                          ? [...(field.value || []), value]
+                          : field.value.filter((item) => item !== value);
+                        field.onChange(newValue);
+                      }}
+                    />
+                  }
+                  label="Addition"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      {...field}
+                      value="Editing"
+                      checked={field.value?.includes("Editing")}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const newValue = e.target.checked
+                          ? [...(field.value || []), value]
+                          : field.value.filter((item) => item !== value);
+                        field.onChange(newValue);
+                      }}
+                    />
+                  }
+                  label="Editing"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      {...field}
+                      value="Deletion"
+                      checked={field.value?.includes("Deletion")}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const newValue = e.target.checked
+                          ? [...(field.value || []), value]
+                          : field.value.filter((item) => item !== value);
+                        field.onChange(newValue);
+                      }}
+                    />
+                  }
+                  label="Deletion"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      {...field}
+                      value="Report"
+                      checked={field.value?.includes("Report")}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const newValue = e.target.checked
+                          ? [...(field.value || []), value]
+                          : field.value.filter((item) => item !== value);
+                        field.onChange(newValue);
+                      }}
+                    />
+                  }
+                  label="Report"
+                />
+              </FormGroup>
+            )}
+          />
         </div>
 
         {/* Footer Fields */}
@@ -475,7 +474,7 @@ function UsersFormPage() {
             {title}
           </Typography>
         </div>
-        <div className="flex items-center mt-24 sm:mt-0 sm:mx-8 space-x-12">
+        {/* <div className="flex items-center mt-24 sm:mt-0 sm:mx-8 space-x-12">
           <Button
             className="whitespace-nowrap"
             color="secondary"
@@ -484,7 +483,7 @@ function UsersFormPage() {
           >
             Close
           </Button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

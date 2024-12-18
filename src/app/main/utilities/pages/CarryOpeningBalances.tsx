@@ -115,9 +115,9 @@ function UsersFormPage() {
     }
   };
 
-  const handleCancel = () => {
-    navigate(-1);
-  };
+  // const handleCancel = () => {
+  //   navigate(-1);
+  // };
 
   useEffect(() => {
     if (id) {
@@ -154,7 +154,7 @@ function UsersFormPage() {
          
           <div className="flex flex-col gap-10">
             <div className="grid grid-cols-10 gap-10 items-center">
-              <Typography className="">From Year: </Typography>
+              <Typography className="md:col-span-1 col-span-2">From Year: </Typography>
               <Controller
                 name="fromyear"
                 control={control}
@@ -162,7 +162,7 @@ function UsersFormPage() {
                   <FormControl
                     variant="outlined"
                     size="small"
-                    className="bg-white col-span-3"
+                    className="bg-white col-span-8 md:col-span-3"
                   >
                     <Select {...field} defaultValue="01">
                       <MenuItem value="01">01</MenuItem>
@@ -177,7 +177,7 @@ function UsersFormPage() {
                   <FormControl
                     variant="outlined"
                     size="small"
-                    className="bg-white w-full col-span-6"
+                    className="bg-white w-full col-span-10 md:col-span-6"
                   >
                     <Select {...field} defaultValue="Account 2022-24">
                       <MenuItem value="Account 2022-24">Account 2022-24</MenuItem>
@@ -195,7 +195,7 @@ function UsersFormPage() {
          
           <div className="flex flex-col gap-10">
             <div className="grid grid-cols-10 gap-10 items-center">
-              <Typography className="">To Year: </Typography>
+              <Typography className="md:col-span-1 col-span-2">To Year: </Typography>
               <Controller
                 name="toyear"
                 control={control}
@@ -203,7 +203,7 @@ function UsersFormPage() {
                   <FormControl
                     variant="outlined"
                     size="small"
-                    className="bg-white col-span-3"
+                    className="bg-white col-span-8 md:col-span-3"
                   >
                     <Select {...field} defaultValue="01">
                       <MenuItem value="01">01</MenuItem>
@@ -218,7 +218,7 @@ function UsersFormPage() {
                   <FormControl
                     variant="outlined"
                     size="small"
-                    className="bg-white w-full col-span-6"
+                    className="bg-white w-full col-span-10 md:col-span-6"
                   >
                     <Select {...field} defaultValue="Account 2022-24">
                       <MenuItem value="Account 2022-24">Account 2022-24</MenuItem>
@@ -259,7 +259,7 @@ function UsersFormPage() {
             {title}
           </Typography>
         </div>
-        <div className="flex items-center mt-24 sm:mt-0 sm:mx-8 space-x-12">
+        {/* <div className="flex items-center mt-24 sm:mt-0 sm:mx-8 space-x-12">
           <Button
             className="whitespace-nowrap"
             color="secondary"
@@ -268,7 +268,7 @@ function UsersFormPage() {
           >
             Close
           </Button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

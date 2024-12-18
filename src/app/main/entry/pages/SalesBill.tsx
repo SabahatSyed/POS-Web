@@ -157,9 +157,9 @@ function UsersFormPage() {
     }
   };
 
-  const handleCancel = () => {
-    navigate(-1);
-  };
+  // const handleCancel = () => {
+  //   navigate(-1);
+  // };
 
   useEffect(() => {
     if (id) {
@@ -190,10 +190,25 @@ function UsersFormPage() {
     <>
       {/* Full-screen dialog */}
       {/* <div className="flex flex-col justify-center items-start"> */}
-     {open && <A4Print discount={discount} open={open} handleClose={handleClose} handleOpenThermal={handleOpenThermal} handleCloseThermal={handleCloseThermal} /> }
+      {open && (
+        <A4Print
+          discount={discount}
+          open={open}
+          handleClose={handleClose}
+          handleOpenThermal={handleOpenThermal}
+          handleCloseThermal={handleCloseThermal}
+        />
+      )}
       {/* </div> */}
 
-      {openThermal && <ThermalPrintDialog openThermal={openThermal} handleCloseThermal={handleCloseThermal} handleOpenThermal={handleOpenThermal} handleOpen={handleOpen} />}
+      {openThermal && (
+        <ThermalPrintDialog
+          openThermal={openThermal}
+          handleCloseThermal={handleCloseThermal}
+          handleOpenThermal={handleOpenThermal}
+          handleOpen={handleOpen}
+        />
+      )}
 
       <form className="w-full" onSubmit={handleSubmit(onSubmit)}>
         <div className="flex flex-col gap-16 gap-y-40 gap-x-12 lg:w-full w-full  lg:ml-10">
@@ -281,7 +296,9 @@ function UsersFormPage() {
             </div>
             <div className="flex flex-col md:col-span-2 gap-10">
               <div className="grid grid-cols-10 gap-10 items-center">
-                <Typography className="col-span-2 lg:col-span-1  whitespace-nowrap text-ellipsis">Party: </Typography>
+                <Typography className="col-span-2 lg:col-span-1  whitespace-nowrap text-ellipsis">
+                  Party:{" "}
+                </Typography>
                 <Controller
                   name="party"
                   control={control}
@@ -316,7 +333,9 @@ function UsersFormPage() {
                 /> */}
               </div>
               <div className="grid grid-cols-10 gap-10 items-center">
-                <Typography className="col-span-2 lg:col-span-1  whitespace-nowrap text-ellipsis">Balance: </Typography>
+                <Typography className="col-span-2 lg:col-span-1  whitespace-nowrap text-ellipsis">
+                  Balance:{" "}
+                </Typography>
 
                 <TextField
                   label="Balance"
@@ -326,7 +345,9 @@ function UsersFormPage() {
                 />
               </div>
               <div className="grid grid-cols-10 gap-10 items-center">
-                <Typography className="col-span-2 lg:col-span-1  whitespace-nowrap text-ellipsis">Salesman: </Typography>
+                <Typography className="col-span-2 lg:col-span-1  whitespace-nowrap text-ellipsis">
+                  Salesman:{" "}
+                </Typography>
                 <Controller
                   name="salesman"
                   control={control}
@@ -360,7 +381,9 @@ function UsersFormPage() {
                 />
               </div>
               <div className="grid grid-cols-10 gap-10 items-center">
-                <Typography className="col-span-2 lg:col-span-1  whitespace-nowrap text-ellipsis">Remarks: </Typography>
+                <Typography className="col-span-2 lg:col-span-1  whitespace-nowrap text-ellipsis">
+                  Remarks:{" "}
+                </Typography>
 
                 <TextField
                   label="Remarks"
@@ -395,148 +418,194 @@ function UsersFormPage() {
           </div> */}
 
           <FormControl component="fieldset">
-              <RadioGroup row>
-                <div className="flex justify-center items-center gap-6">
+            <RadioGroup row>
+              <div className="flex justify-center items-center gap-6">
                 <Typography className="text-lg  mr-2">Payment Type:</Typography>
-                <FormControlLabel value="Cash" control={<Radio />} label="Cash" />
-                <FormControlLabel value="Credit" control={<Radio />} label="Credit" />
-                </div>
-              </RadioGroup>
-            </FormControl>
+                <FormControlLabel
+                  value="Cash"
+                  control={<Radio />}
+                  label="Cash"
+                />
+                <FormControlLabel
+                  value="Credit"
+                  control={<Radio />}
+                  label="Credit"
+                />
+              </div>
+            </RadioGroup>
+          </FormControl>
 
           {/* Product Details */}
-          <div className="space-y-4">
-  {/* Main Grid for all fields */}
-  <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-    {/* Product Code */}
-    <Typography className="col-span-12 md:col-span-2 whitespace-nowrap text-ellipsis text-left md:text-center">Product Code</Typography>
-    <div className="col-span-12 md:col-span-2">
-      <Controller
-        name="productCode"
-        control={control}
-        render={({ field }) => (
-          <FormControl variant="outlined" size="small" className="w-full">
-            <Select {...field} defaultValue="01001">
-              <MenuItem value="01001">ACTIVE VIT</MenuItem>
-            </Select>
-          </FormControl>
-        )}
-      />
-    </div>
+          <div className="w-full overflow-auto">
 
-    {/* Product Name */}
-    <Typography className="col-span-12 md:col-span-2 whitespace-nowrap text-ellipsis text-left md:text-center">Product Name</Typography>
-    <div className="col-span-12 md:col-span-2">
-      <Controller
-        name="productName"
-        control={control}
-        render={({ field }) => (
-          <FormControl variant="outlined" size="small" className="w-full">
-            <Select {...field} defaultValue="ACTIVE VIT">
-              <MenuItem value="ACTIVE VIT">ACTIVE VIT</MenuItem>
-            </Select>
-          </FormControl>
-        )}
-      />
-    </div>
+            {/* Main Grid for all fields */}
+            <div className="min-w-[1200px] md:p-4">
 
-    {/* Batch Code */}
-    <Typography className="col-span-12 md:col-span-2 whitespace-nowrap text-ellipsis text-left md:text-center">Batch Code</Typography>
-    <div className="col-span-12 md:col-span-2">
-      <Controller
-        name="batchCode"
-        control={control}
-        render={({ field }) => (
-          <FormControl variant="outlined" size="small" className="w-full">
-            <Select {...field} defaultValue="001">
-              <MenuItem value="001">001</MenuItem>
-            </Select>
-          </FormControl>
-        )}
-      />
-    </div>
+            <div className="grid grid-cols-10 gap-4 mb-6">
 
-    {/* Batch Description */}
-    <Typography className="col-span-12 md:col-span-2 whitespace-nowrap text-ellipsis text-left md:text-center">Batch Description</Typography>
-    <div className="col-span-12 md:col-span-2">
-      <TextField
-        placeholder="Batch Description"
-        variant="outlined"
-        size="small"
-        className="w-full"
-      />
-    </div>
+                {/* Product Code */}
+                <div className="flex flex-col ">
+                  <Typography className="text-sm font-medium mb-1 text-left md:text-center">
+                    Product Code
+                  </Typography>
+                  <Controller
+                    name="productCode"
+                    control={control}
+                    render={({ field }) => (
+                      <FormControl
+                        variant="outlined"
+                        size="small"
+                        className="bg-white w-full"
+                      >
+                        <Select {...field} defaultValue="01001">
+                          <MenuItem value="01001">ACTIVE VIT</MenuItem>
+                        </Select>
+                      </FormControl>
+                    )}
+                  />
+                </div>
 
-    {/* Quantity */}
-    <Typography className="col-span-12 md:col-span-1 whitespace-nowrap text-ellipsis text-left md:text-center">Qty</Typography>
-    <div className="col-span-12 md:col-span-1">
-      <TextField
-        placeholder="Qty"
-        variant="outlined"
-        size="small"
-        className="w-full"
-      />
-    </div>
+                {/* Product Name */}
+                <div className="flex flex-col ">
+                  <Typography className="text-sm font-medium mb-1 text-left md:text-center">
+                    Product Name
+                  </Typography>
+                  <Controller
+                    name="productName"
+                    control={control}
+                    render={({ field }) => (
+                      <FormControl
+                        variant="outlined"
+                        size="small"
+                        className="bg-white w-full"
+                      >
+                        <Select {...field} defaultValue="ACTIVE VIT">
+                          <MenuItem value="ACTIVE VIT">ACTIVE VIT</MenuItem>
+                        </Select>
+                      </FormControl>
+                    )}
+                  />
+                </div>
 
-    {/* Trade Rate */}
-    <div className="col-span-12 md:col-span-2">
-      <TextField
-        placeholder="Trade Rate"
-        variant="outlined"
-        size="small"
-        className="w-full"
-      />
-    </div>
+                {/* Batch Code */}
+                <div className="flex flex-col ">
+                  <Typography className="text-sm font-medium mb-1 text-left md:text-center">
+                    Batch Code
+                  </Typography>
+                  <Controller
+                    name="batchCode"
+                    control={control}
+                    render={({ field }) => (
+                      <FormControl
+                        variant="outlined"
+                        size="small"
+                        className="bg-white w-full"
+                      >
+                        <Select {...field} defaultValue="001">
+                          <MenuItem value="001">001</MenuItem>
+                        </Select>
+                      </FormControl>
+                    )}
+                  />
+                </div>
 
-    {/* Discount (%) */}
-    <div className="col-span-12 md:col-span-2">
-      <TextField
-        placeholder="Disc. (%)"
-        variant="outlined"
-        size="small"
-        className="w-full"
-      />
-    </div>
+                {/* Batch Description */}
+                <div className="flex flex-col ">
+                  <Typography className="text-sm font-medium mb-1 text-left md:text-center">
+                    Batch Description
+                  </Typography>
+                  <TextField
+                    placeholder="Batch Description"
+                    variant="outlined"
+                    size="small"
+                    className="bg-white w-full"
+                  />
+                </div>
 
-    {/* Discount Value */}
-    <div className="col-span-12 md:col-span-2">
-      <TextField
-        placeholder="Disc. Value"
-        variant="outlined"
-        size="small"
-        className="w-full"
-      />
-    </div>
+                {/* Quantity */}
+                <div className="flex flex-col ">
+                  <Typography className="text-sm font-medium mb-1 text-left md:text-center">
+                    Qty
+                  </Typography>
+                  <TextField
+                    placeholder="Qty"
+                    variant="outlined"
+                    size="small"
+                    className="bg-white w-full"
+                  />
+                </div>
 
-    {/* Net Rate */}
-    <div className="col-span-12 md:col-span-2">
-      <TextField
-        placeholder="Net Rate"
-        variant="outlined"
-        size="small"
-        className="w-full"
-      />
-    </div>
+                {/* Trade Rate */}
+                <div className="flex flex-col ">
+                  <Typography className="text-sm font-medium mb-1 text-left md:text-center">
+                    Trade Rate
+                  </Typography>
+                  <TextField
+                    placeholder="Trade Rate"
+                    variant="outlined"
+                    size="small"
+                    className="bg-white w-full"
+                  />
+                </div>
 
-    {/* Amount */}
-    <div className="col-span-12 md:col-span-2">
-      <TextField
-        placeholder="Amount"
-        variant="outlined"
-        size="small"
-        className="w-full"
-      />
-    </div>
-  </div>
+                {/* Discount (%) */}
+                <div className="flex flex-col ">
+                  <Typography className="text-sm font-medium mb-1 text-left md:text-center">
+                    Disc. (%)
+                  </Typography>
+                  <TextField
+                    placeholder="Disc. (%)"
+                    variant="outlined"
+                    size="small"
+                    className="bg-white w-full"
+                  />
+                </div>
 
+                {/* Discount Value */}
+                <div className="flex flex-col ">
+                  <Typography className="text-sm font-medium mb-1 text-left md:text-center">
+                    Disc. Value
+                  </Typography>
+                  <TextField
+                    placeholder="Disc. Value"
+                    variant="outlined"
+                    size="small"
+                    className="bg-white w-full"
+                  />
+                </div>
 
-</div>
+                {/* Net Rate */}
+                <div className="flex flex-col ">
+                  <Typography className="text-sm font-medium mb-1 text-left md:text-center">
+                    Net Rate
+                  </Typography>
+                  <TextField
+                    placeholder="Net Rate"
+                    variant="outlined"
+                    size="small"
+                    className="bg-white w-full"
+                  />
+                </div>
 
-
+                {/* Amount */}
+                <div className="flex flex-col ">
+                  <Typography className="text-sm font-medium mb-1 text-left md:text-center">
+                    Amount
+                  </Typography>
+                  <TextField
+                    placeholder="Amount"
+                    variant="outlined"
+                    size="small"
+                    className="bg-white w-full"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* Footer Fields */}
 
-          <div className="flex gap-4 mb-6 items-center justify-center">
+          <div className="flex gap-4 mb-6 flex-wrap items-center justify-center">
             <Button variant="contained" className="rounded-md" color="primary">
               Edit
             </Button>
@@ -567,48 +636,47 @@ function UsersFormPage() {
             </Button>
           </div>
           {/* Buttons */}
-          <div className="flex gap-4 mb-6 justify-center">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6 justify-center">
             <TextField
               label="Total Amount"
               variant="outlined"
               size="small"
-              className="bg-white"
+              className="bg-white col-span-1"
             />
             <TextField
               label="Disc (%)"
               variant="outlined"
               size="small"
-              className="bg-white"
+              className="bg-white col-span-1"
             />
             <TextField
               label="Disc Amount"
               variant="outlined"
               size="small"
-              className="bg-white"
-              value={discount}
-              onChange={(e) => setDiscount(e.target.value)}
+              className="bg-white col-span-1"
             />
             <TextField
               label="Net Amount"
               variant="outlined"
               size="small"
-              className="bg-white"
+              className="bg-white col-span-1"
             />
             {/* <TextField
-              label="From"
-              variant="outlined"
-              size="small"
-              className="bg-white"
-            />
-            <TextField
-              label="To"
-              variant="outlined"
-              size="small"
-              className="bg-white"
-            /> */}
+                     label="From"
+                     variant="outlined"
+                     size="small"
+                     className="bg-white"
+                   />
+                   <TextField
+                     label="To"
+                     variant="outlined"
+                     size="small"
+                     className="bg-white"
+                   /> */}
             <Button
+              // size={small}
               variant="contained"
-              className="rounded-md"
+              className="rounded-md col-span-1"
               onClick={handleOpen}
             >
               Report
@@ -627,7 +695,7 @@ function UsersFormPage() {
             {title}
           </Typography>
         </div>
-        <div className="flex items-center mt-24 sm:mt-0 sm:mx-8 space-x-12">
+        {/* <div className="flex items-center mt-24 sm:mt-0 sm:mx-8 space-x-12">
           <Button
             className="whitespace-nowrap"
             color="secondary"
@@ -636,7 +704,7 @@ function UsersFormPage() {
           >
             Close
           </Button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

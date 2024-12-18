@@ -19,7 +19,7 @@ function UsersTablePage() {
 
 	const data = {pages:1,count:1,records:[{code:0o1001,description:"ACTIVE VIT" , expdate : 30-11-2024}]};
 
-	const title = 'Batch Wise Opening Stock';
+	const title = 'Expiry Dates';
 	const tableConfig: TableConfig = {
 		selection: 'none',
 		rowActions: [
