@@ -47,3 +47,9 @@ export type ContactUs = {
     phone: string,
     message: string
 }
+
+export type InventoryGroup = {
+    _id: string,
+    code: string,
+    description: string
+}

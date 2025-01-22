@@ -36,7 +36,7 @@ import {
   addRecord,
   getRecords,
   updateRecord,
-} from '../../general-management/store/userDataSlice';
+} from '../../general-management/store/inventoryGroupSlice';
 import { User } from '../../general-management/types/dataTypes';
 import { getRecords as getRolesRecords } from '../../general-management/store/roleDataSlice'; 
 
