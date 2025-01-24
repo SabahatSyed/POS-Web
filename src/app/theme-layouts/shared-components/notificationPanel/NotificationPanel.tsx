@@ -70,19 +70,19 @@ function NotificationPanel() {
 	// 	};
 	// }, []);
 
-	useEffect(() => {
-		/*
-		Get Notifications from db
-		 */
-		dispatch(getNotifications());
-	}, [dispatch]);
+	// useEffect(() => {
+	// 	/*
+	// 	Get Notifications from db
+	// 	 */
+	// 	dispatch(getNotifications());
+	// }, [dispatch]);
 
-	useEffect(() => {
-		if (state) {
-			dispatch(closeNotificationPanel());
-		}
-		// eslint-disable-next-line
-	}, [location, dispatch]);
+	// useEffect(() => {
+	// 	if (state) {
+	// 		dispatch(closeNotificationPanel());
+	// 	}
+	// 	// eslint-disable-next-line
+	// }, [location, dispatch]);
 
 	function handleClose() {
 		dispatch(closeNotificationPanel());

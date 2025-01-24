@@ -31,7 +31,7 @@ const routeConfigs: FuseRouteConfigsType = [
   ...userManagementConfigs,
   ...formulaManagementConfigs,
   // chatConfig,
-  ...notificationsConfigs,
+//   ...notificationsConfigs,
   setupConfigs,
   entryConfigs,
   utilitiesConfigs,
