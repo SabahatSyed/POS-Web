@@ -18,7 +18,6 @@ import { useEffect, useState } from 'react';
 function UsersTablePage() {
 	const navigate = useNavigate();
   const data = useAppSelector(selectRecords);
-  console.log(data)
 
 
 	// const data = {

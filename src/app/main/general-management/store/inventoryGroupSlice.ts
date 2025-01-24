@@ -74,12 +74,11 @@ export const dataSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(getRecords.fulfilled, (state, action) => action?.payload);
+    builder?.addCase(getRecords?.fulfilled, (state, action) => action?.payload);
   },
 });
 
 export const selectRecords = (state: AppRootStateType) => {
-  console.log(state?.generalManagement);
   return state?.generalManagement[storeName];
 };
 

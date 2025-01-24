@@ -100,6 +100,11 @@ const MainGroupConfig = {
       auth: null,
     },
     {
+      path: '/setup/inventory-group/form/:id',
+      element: <InventoryGroupForm />,
+      auth: null,
+    },
+    {
       path: '/setup/inventory-information',
       element: <InventoryInformationTable />,
       auth: null,
