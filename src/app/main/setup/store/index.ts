@@ -1,6 +1,8 @@
 import { combineReducers } from '@reduxjs/toolkit';
 
 import maingroup from "./mainGroupSlice"
+import chartOfAccount from "./chartOfAccountSlice"
+import inventoryInformation from "./inventoryInformationSlice"
 
 
 /**
@@ -9,6 +11,8 @@ import maingroup from "./mainGroupSlice"
 const reducer = combineReducers({
 	
 	maingroup,
+	chartOfAccount,
+	inventoryInformation
 	
 });
 

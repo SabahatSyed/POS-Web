@@ -75,7 +75,7 @@ const MainGroupConfig = {
       auth: null,
     },
     {
-      path: '/setup/main-group/form',
+      path: '/setup/main-group/form/:id',
       element: <MainGroupForm />,
       auth: null,
     },
@@ -85,7 +85,7 @@ const MainGroupConfig = {
       auth: null,
     },
     {
-      path: '/setup/chart-accounts/form',
+      path: '/setup/chart-accounts/form/:id',
       element: <ChartAccountsForm />,
       auth: null,
     },
@@ -111,6 +111,11 @@ const MainGroupConfig = {
     },
     {
       path: '/setup/inventory-information/form',
+      element: <InventoryInformationForm />,
+      auth: null,
+    },
+    {
+      path: '/setup/inventory-information/form/:id',
       element: <InventoryInformationForm />,
       auth: null,
     },

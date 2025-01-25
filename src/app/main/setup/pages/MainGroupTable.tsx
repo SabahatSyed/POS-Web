@@ -4,20 +4,21 @@ import { useNavigate } from "react-router-dom";
 import {
   getRecords,
   selectRecords,
-} from '../../general-management/store/userDataSlice';
+} from '../../setup/store/mainGroupSlice';
 
 import { TableConfig, TableEvent } from 'app/shared-components/data-table-widget/types/dataTypes';
 import TablePageWidget from 'app/shared-components/TablePageWidget';
-import { User } from '../../general-management/types/dataTypes';
+import { MainGroup } from '../../general-management/types/dataTypes';
 
 
 /**
- * The UsersTablePage.
+ * The MainGroupsTablePage.
  */
-function UsersTablePage() {
+function MainGroupsTablePage() {
 	const navigate = useNavigate();
+	const data = useAppSelector(selectRecords);
 
-	const data = {pages:1,count:1,records:[{code:1,description:"description"}]};
+	// const data = {pages:1,count:1,records:[{code:1,description:"description"}]};
 
 	const title = 'Main Group';
 	const tableConfig: TableConfig = {
@@ -46,7 +47,7 @@ function UsersTablePage() {
 		
 		if (event.event == 'rowAction') {
 			if (event.action == 'onEdit') {
-				const row = event.params.row as User;
+				const row = event.params.row as MainGroup;
 				navigate(`/setup/main-group/form/${row._id}`);
 
 			}
@@ -58,4 +59,4 @@ function UsersTablePage() {
 	);
 }
 
-export default UsersTablePage;
+export default MainGroupsTablePage;

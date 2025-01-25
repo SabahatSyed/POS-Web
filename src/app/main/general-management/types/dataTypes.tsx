@@ -83,3 +83,9 @@ export type Page = {
     companyType: CompanyType,
     isDelete: boolean,
 }
+
+export type MainGroup = {
+    seqNumber: number,
+    name: string,
+    description: string,
+}

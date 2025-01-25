@@ -36,9 +36,10 @@ import {
   addRecord,
   getRecords,
   updateRecord,
-} from '../../general-management/store/userDataSlice';
+} from '../../setup/store/inventoryInformationSlice';
 import { User } from '../../general-management/types/dataTypes';
 import { getRecords as getRolesRecords } from '../../general-management/store/roleDataSlice'; 
+import { getRecords as getInventoryGroupRecords } from '../../general-management/store/inventoryGroupSlice'; 
 
 import { useAppSelector } from 'app/store';
 import { useDebounce } from '@fuse/hooks';
@@ -55,25 +56,27 @@ function UsersFormPage() {
 	 * Form Validation Schema
 	 */
 
-	const title = 'Main Group';
+	const title = 'Inventory Information';
 
 	const defaultValues = {
 		code: '',
 		name: '',
 		description: '',
-		packsize: 0,
-		purchaseprice:0,
-		tradeprice:0
+		packPrice: 0,
+		purchasePrice:0,
+		tradePrice:0,
+		inventoryGroup: '',
 	};
 
 	const schema = yup.object().shape({
 		code: yup.string().required('You must enter a value'),
 		name: yup.string().required('You must enter a value'),
 
-		description: yup.string().email().required('You must enter a value'),
-		packsize: yup.number().required('You must enter a value'),
-		purchaseprice: yup.number().required('You must enter a value'),
-		tradeprice: yup.number().required('You must enter a value'),
+		description: yup.string().required('You must enter a value'),
+		packPrice: yup.number().required('You must enter a value'),
+		purchasePrice: yup.number().required('You must enter a value'),
+		tradePrice: yup.number().required('You must enter a value'),
+		inventoryGroup: yup.string().required('You must select inventory group'),
 
 	});
 
@@ -89,6 +92,7 @@ function UsersFormPage() {
 	const [rowData, setRowData] = useState<User | undefined>(undefined);
 	const [loading, setLoading] = useState(false);
 	const { isValid, dirtyFields, errors, touchedFields } = formState;
+	const[inventoryGroupOptions,setInventoryGroupOptions]=useState([])
 
 	const onSubmit = async (formData: User) => {
 
@@ -156,6 +160,25 @@ function UsersFormPage() {
 			fetchData();
 		}
 	}, [dispatch, id]);
+	useEffect(()=>{
+		const fetchInventoryGroupsData = async () => {
+		  try {
+			const response = await dispatch(getInventoryGroupRecords({limit: 100}));
+			console.log(response);
+			if (response.payload.records.length > 0) {
+			  const data = response.payload.records;
+			  const options = data.map((item: any) => ({
+				name:  `${item.code}: (${item.description})`,
+				value: item._id,
+			  }));
+			  setInventoryGroupOptions(options);
+			}
+		  } catch (error) {
+			console.error('Error fetching role data:', error);
+		  }
+		};
+		fetchInventoryGroupsData();
+	  },[])
 
 	const data = watch();
 
@@ -163,6 +186,33 @@ function UsersFormPage() {
     <form className="w-full" onSubmit={handleSubmit(onSubmit)}>
       <div className="grid sm:grid-cols-2 gap-16 gap-y-40 gap-x-12 lg:w-full w-full  lg:ml-10">
         {/* First row */}
+		<div className='sm:col-span-1'>
+		<Controller
+            render={({ field }) => (
+              <TextField
+                {...field}
+                select
+                label="Inventory Group"
+                variant="outlined"
+                className=" bg-white"
+                error={!!errors.inventoryGroup}
+                helperText={errors?.inventoryGroup?.message}
+                required
+                fullWidth
+              >
+                {
+                  inventoryGroupOptions.map((option: any) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.name}
+                    </MenuItem>
+                  ))
+                }
+              </TextField>
+            )}
+            name="inventoryGroup"
+            control={control}
+          />
+		</div>
         <div className="sm:col-span-1 ">
           <Controller
             render={({ field }) => (
@@ -225,16 +275,16 @@ function UsersFormPage() {
             render={({ field }) => (
               <TextField
                 {...field}
-                label="Pack Size"
+                label="Pack Price"
                 variant="outlined"
                 className="bg-white"
-                error={!!errors.packsize}
-                helperText={errors?.packsize?.message}
+                error={!!errors.packPrice}
+                helperText={errors?.packPrice?.message}
                 required
                 fullWidth
               />
             )}
-            name="packsize"
+            name="packPrice"
             control={control}
           />
         </div>
@@ -246,13 +296,13 @@ function UsersFormPage() {
                 label="Purchase Price"
                 variant="outlined"
                 className="bg-white"
-                error={!!errors.purchaseprice}
-                helperText={errors?.purchaseprice?.message}
+                error={!!errors.purchasePrice}
+                helperText={errors?.purchasePrice?.message}
                 required
                 fullWidth
               />
             )}
-            name="purchaseprice"
+            name="purchasePrice"
             control={control}
           />
         </div>
@@ -264,13 +314,13 @@ function UsersFormPage() {
                 label="Trade Price"
                 variant="outlined"
                 className="bg-white"
-                error={!!errors.tradeprice}
-                helperText={errors?.tradeprice?.message}
+                error={!!errors.tradePrice}
+                helperText={errors?.tradePrice?.message}
                 required
                 fullWidth
               />
             )}
-            name="tradeprice"
+            name="tradePrice"
             control={control}
           />
         </div>
