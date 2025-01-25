@@ -7,6 +7,8 @@ import labels from './labelDataSlice';
 import newsletter from './newsletterDataSlice';
 import contactus from './contactUsDataSlice';
 import InventoryGroup from './inventoryGroupSlice';
+import CompanyType from './companyTypeDataSlice';
+import CompanyInfo from './companyInfoDataSlice';
 
 /**
  * The Finance dashboard reducer.
@@ -19,7 +21,9 @@ const reducer = combineReducers({
 	labels,
 	newsletter,
 	contactus,
-	InventoryGroup
+	InventoryGroup,
+	CompanyType,
+	CompanyInfo
 });
 
 export default reducer;

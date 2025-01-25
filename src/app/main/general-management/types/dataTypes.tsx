@@ -53,3 +53,33 @@ export type InventoryGroup = {
     code: string,
     description: string
 }
+
+export type CompanyInfo = {
+    _id: string,
+    seqNumber: number,
+    name: string,
+    logoURL: string,
+    address: string,
+    phone: string,
+    email: string,
+    website: string,
+    description: string,
+    contact: string,
+    pageAccess: Page,
+    status: string,
+    isDelete: boolean,
+    companyType: CompanyType,
+}
+export type CompanyType ={
+    _id: string,
+    seqNumber: number,
+    name: string,
+    isDelete: boolean,
+}
+
+export type Page = {
+    seqNumber: number,
+    name: string,
+    companyType: CompanyType,
+    isDelete: boolean,
+}
