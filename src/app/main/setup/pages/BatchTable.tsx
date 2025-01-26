@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import {
   getRecords,
   selectRecords,
-} from '../../general-management/store/userDataSlice';
+} from '../../setup/store/batchSlice';
 
 import { TableConfig, TableEvent } from 'app/shared-components/data-table-widget/types/dataTypes';
 import TablePageWidget from 'app/shared-components/TablePageWidget';
@@ -16,8 +16,10 @@ import { User } from '../../general-management/types/dataTypes';
  */
 function UsersTablePage() {
 	const navigate = useNavigate();
+	const data = useAppSelector(selectRecords);
 
-	const data = {pages:1,count:1,records:[{code:1,description:"description" , date:'06-sep-2024' , supplier:"SWISS ENERGY"}]};
+
+	// const data = {pages:1,count:1,records:[{code:1,description:"description" , date:'06-sep-2024' , supplier:"SWISS ENERGY"}]};
 
 	const title = 'Batch';
 	const tableConfig: TableConfig = {
@@ -29,7 +31,9 @@ function UsersTablePage() {
 			{name: 'code', title: 'Code', type: 'text', sort: false},
 			{name: 'description', title: 'Description', type: 'text', sort: false},
 			{name: 'date', title: 'Date', type: 'datetime', sort: false , width: 'w-50'},
-			{name: 'supplier', title: 'Supplier', type: 'text', sort: false},
+			{name: 'supplierCode', title: 'Supplier Code', type: 'text', sort: false},
+			{name: 'supplierName', title: 'Supplier Name', type: 'text', sort: false},
+			{name: 'inventoryInformation', title: 'Inventory Information', type: 'text', sort: false},
 
 		],
 		dataSource: data,

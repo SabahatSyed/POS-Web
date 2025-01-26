@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import {
   getRecords,
   selectRecords,
-} from '../../general-management/store/userDataSlice';
+} from '../../setup/store/salesmenSlice';
 
 import { TableConfig, TableEvent } from 'app/shared-components/data-table-widget/types/dataTypes';
 import TablePageWidget from 'app/shared-components/TablePageWidget';
@@ -16,8 +16,10 @@ import { User } from '../../general-management/types/dataTypes';
  */
 function UsersTablePage() {
 	const navigate = useNavigate();
+	const data = useAppSelector(selectRecords);
+	console.log(data)
 
-	const data = {pages:1,count:1,records:[{code:1, name:"saira" , mobile:'0314-2727262' , phone:'051-735522' , cnic: '13522-75833874837' , address:'xyz' , commission: 'nill' , accounthead:'nill' }]};
+	// const data = {pages:1,count:1,records:[{code:1, name:"saira" , mobile:'0314-2727262' , phone:'051-735522' , cnic: '13522-75833874837' , address:'xyz' , commission: 'nill' , accountHead:'nill' }]};
 
 	const title = 'Salesmen';
 	const tableConfig: TableConfig = {
@@ -32,8 +34,8 @@ function UsersTablePage() {
 			{name: 'phone', title: 'Phone', type: 'text', sort: false},
 			{name: 'cnic', title: 'CNIC', type: 'text', sort: false},
 			{name: 'address', title: 'Address', type: 'text', sort: false},
-			{name: 'commission', title: 'commission', type: 'text', sort: false},
-			{name: 'accounthead', title: 'accounthead', type: 'text', sort: false},
+			{name: 'commission', title: 'Commission', type: 'text', sort: false},
+			{name: 'accountHead', title: 'AccountHead', type: 'text', sort: false},
 		],
 		dataSource: data,
 		onSomeEvent: onTableEvent,

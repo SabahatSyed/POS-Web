@@ -160,6 +160,7 @@ function UsersFormPage() {
 			fetchData();
 		}
 	}, [dispatch, id]);
+	
 	useEffect(()=>{
 		const fetchInventoryGroupsData = async () => {
 		  try {

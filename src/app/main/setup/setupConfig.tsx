@@ -75,6 +75,11 @@ const MainGroupConfig = {
       auth: null,
     },
     {
+      path: '/setup/main-group/form',
+      element: <MainGroupForm />,
+      auth: null,
+    },
+    {
       path: '/setup/main-group/form/:id',
       element: <MainGroupForm />,
       auth: null,
@@ -82,6 +87,11 @@ const MainGroupConfig = {
     {
       path: '/setup/chart-accounts',
       element: <ChartAccountsPage />,
+      auth: null,
+    },
+    {
+      path: '/setup/chart-accounts/form',
+      element: <ChartAccountsForm />,
       auth: null,
     },
     {
@@ -130,6 +140,11 @@ const MainGroupConfig = {
       auth: null,
     },
     {
+      path: '/setup/salesmen/form/:id',
+      element: <SalesmenForm />,
+      auth: null,
+    },
+    {
       path: '/setup/company-names',
       element: <CompaniesTable />,
       auth: null,
@@ -150,12 +165,22 @@ const MainGroupConfig = {
       auth: null,
     },
     {
+      path: '/setup/batch/form/:id',
+      element: <BatchForm />,
+      auth: null,
+    },
+    {
       path: '/setup/opening-balances',
       element: <OpeningBalances />,
       auth: null,
     },
     {
       path: '/setup/opening-balances/form',
+      element: <OpeningBalancesForm />,
+      auth: null,
+    },
+    {
+      path: '/setup/opening-balances/form/:id',
       element: <OpeningBalancesForm />,
       auth: null,
     },
