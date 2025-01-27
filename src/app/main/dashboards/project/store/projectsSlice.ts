@@ -11,9 +11,9 @@ type ProjectType = {
 };
 
 export const getProjects = createAppAsyncThunk('projectDashboardApp/projects/getProjects', async () => {
-	const response = await axios.get('/api/dashboards/project/projects');
+	const response = await fetch('http://localhost:4000/api/dashboards/project/projects');
 
-	const data = (await response.data) as ProjectType[];
+	const data = (await response.json) as ProjectType[];
 
 	return data;
 });

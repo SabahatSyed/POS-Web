@@ -17,11 +17,6 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import FusePageSimple from "@fuse/core/FusePageSimple";
 import { motion } from "framer-motion";
 import colorNames from "./color-names.json";
-import { addRecord } from "../../general-management/store/companyTypeDataSlice";
-import { addRecord as companyInfoAddRecord } from "../../general-management/store/companyInfoDataSlice";
-import { addRecord as pageAddRecord } from "../../general-management/store/pageDataSlice";
-import { addRecord as userAddRecord } from "../../general-management/store/userDataSlice";
-import { C } from "@fullcalendar/core/internal-common";
 
 const CompanyInfo = () => {
   const title = "Company Information";
@@ -33,9 +28,9 @@ const CompanyInfo = () => {
       address: "",
       contact: "",
       theme: {
-        primary: "blue",
-        secondary: "gray",
-        background: "white",
+        primary: "",
+        secondary: "",
+        background: "",
       },
       owner: {
         name: "",
@@ -54,6 +49,7 @@ const CompanyInfo = () => {
         email: yup.string().email().required("You must enter a value"),
         address: yup.string().required("You must enter a value"),
         contact: yup.string().required("You must enter a value"),
+        logo: yup.object(),
         theme: yup.object().shape({
           primary: yup.string().required("Select primary color"),
           secondary: yup.string().required("Select secondary color"),
@@ -68,6 +64,7 @@ const CompanyInfo = () => {
           role: yup.string().required("Select a role"),
           status: yup.string().required("Select a status"),
         }),
+        pagesAccess: yup.array()
       })
     ),
   });
@@ -80,77 +77,15 @@ const CompanyInfo = () => {
   const onSubmit = async (data) => {
     try {
       setLoading(true);
-
-      if (data?.pagesAccess?.length < 0) {
-        return dispatch(
-          showMessage({ message: "select the access page", variant: "error" })
-        );
-      }
-
-      // Helper function to dispatch actions and handle responses
-      const dispatchAction = async (action, payload) => {
-        const response = await dispatch(action({ payload }));
-        return response;
-      };
-
-      // Step 1: Add company type
-      const companyTypePayload = { name: data.name };
-      const companyTypeData = await dispatchAction(
-        addRecord,
-        companyTypePayload
-      );
-
-      // Step 2: Add pages
-      const pagePayload = {
-        pages: data.pagesAccess,
-        companyType: companyTypeData.payload.companyType.id,
-      };
-      const pageData = await dispatchAction(pageAddRecord, pagePayload);
-
-      // Step 3: Prepare and add company information
-      const pageIds = pageData.payload.data.map((page) => page._id);
-      const companyInfoPayload = {
-        companyType: companyTypeData.payload.companyType.id,
-        pagesAccess: pageIds,
-        logoURL: data.logo,
-        name: data.name,
-        email: data.email,
-        address: data.address,
-        contact: data.contact,
-        theme: data.theme.secondary,
-      };
-      const companyData = await dispatchAction(
-        companyInfoAddRecord,
-        companyInfoPayload
-      );
-
-      const userPayload = {
-        name: data.owner.name,
-        email: data.owner.email,
-        contact: data.owner.contact,
-        cnic: data.owner.cnic,
-        photoURL: data.owner.photo,
-        role: data.owner.role,
-        status: data.owner.status,
-        companyId: companyData.payload.company.id,
-        pagesAccess: pageIds,
-        theme: data.theme.secondary,
-      };
-      await await dispatchAction(userAddRecord, userPayload);
-
-      // Success Message
+      // Call your dispatch function for adding or updating company info
+      // Example: await dispatch(addCompanyInfo(data));
+      // if successful:
       dispatch(
         showMessage({ message: "Company Info Saved", variant: "success" })
       );
+      setLoading(false);
     } catch (error) {
-      // Error Handling
-      dispatch(
-        showMessage({
-          message: error?.message || "An unexpected error occurred",
-          variant: "error",
-        })
-      );
-    } finally {
+      dispatch(showMessage({ message: error?.message, variant: "error" }));
       setLoading(false);
     }
   };
@@ -179,31 +114,37 @@ const CompanyInfo = () => {
             name="logo"
             control={control}
             render={({ field }) => (
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setValue("logo", e.target.files[0])}
-                {...field}
-              />
+              <div className="flex justify-center mb-4">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setValue("logo", e.target.files[0])}
+                  {...field}
+                  style={{
+                    display: "none",
+                  }}
+                  id="logo-upload"
+                />
+                <label htmlFor="logo-upload">
+                  <img
+                    src={
+                      field.value
+                        ? URL.createObjectURL(field?.value)
+                        : "https://via.placeholder.com/150"
+                    }
+                    alt="Company Logo"
+                    className="rounded-full cursor-pointer"
+                    style={{
+                      width: "150px",
+                      height: "150px",
+                      objectFit: "cover",
+                    }}
+                  />
+                </label>
+              </div>
             )}
           />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Controller
-              name="seqNumber"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Seq Number"
-                  variant="outlined"
-                  fullWidth
-                  error={!!errors.seqNumber}
-                  helperText={errors?.seqNumber?.message}
-                  required
-                  style={{ backgroundColor: "white" }}
-                />
-              )}
-            />
             <Controller
               name="name"
               control={control}
@@ -286,8 +227,7 @@ const CompanyInfo = () => {
                   fullWidth
                   variant="outlined"
                   displayEmpty
-                  style={{ backgroundColor: "white" }}
-                >
+                  style={{ backgroundColor: "white" }}>
                   <MenuItem value="" disabled>
                     Primary Color
                   </MenuItem>
@@ -295,8 +235,7 @@ const CompanyInfo = () => {
                     <MenuItem
                       key={hex}
                       value={hex}
-                      style={{ backgroundColor: hex }}
-                    >
+                      style={{ backgroundColor: hex }}>
                       {name}
                     </MenuItem>
                   ))}
@@ -312,8 +251,7 @@ const CompanyInfo = () => {
                   fullWidth
                   variant="outlined"
                   displayEmpty
-                  style={{ backgroundColor: "white" }}
-                >
+                  style={{ backgroundColor: "white" }}>
                   <MenuItem value="" disabled>
                     Secondary Color
                   </MenuItem>
@@ -321,8 +259,7 @@ const CompanyInfo = () => {
                     <MenuItem
                       key={hex}
                       value={hex}
-                      style={{ backgroundColor: hex }}
-                    >
+                      style={{ backgroundColor: hex }}>
                       {name}
                     </MenuItem>
                   ))}
@@ -338,8 +275,7 @@ const CompanyInfo = () => {
                   fullWidth
                   variant="outlined"
                   displayEmpty
-                  style={{ backgroundColor: "white" }}
-                >
+                  style={{ backgroundColor: "white" }}>
                   <MenuItem value="" disabled>
                     Background Color
                   </MenuItem>
@@ -347,8 +283,7 @@ const CompanyInfo = () => {
                     <MenuItem
                       key={hex}
                       value={hex}
-                      style={{ backgroundColor: hex }}
-                    >
+                      style={{ backgroundColor: hex }}>
                       {name}
                     </MenuItem>
                   ))}
@@ -432,17 +367,17 @@ const CompanyInfo = () => {
               name="owner.photoURL"
               control={control}
               render={({ field }) => (
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) =>
-                    setValue("owner.photoURL", e.target.files[0])
-                  }
+                <TextField
                   {...field}
+                  label="Owner Photo URL"
+                  variant="outlined"
+                  fullWidth
+                  error={!!errors.owner?.photoURL}
+                  helperText={errors?.owner?.photoURL?.message}
+                  style={{ backgroundColor: "white" }}
                 />
               )}
             />
-
             <Controller
               name="owner.role"
               control={control}
@@ -452,8 +387,7 @@ const CompanyInfo = () => {
                   fullWidth
                   variant="outlined"
                   displayEmpty
-                  style={{ backgroundColor: "white" }}
-                >
+                  style={{ backgroundColor: "white" }}>
                   <MenuItem value="SuperAdmin">SuperAdmin</MenuItem>
                   <MenuItem value="Admin">Admin</MenuItem>
                   <MenuItem value="Employee">Employee</MenuItem>
@@ -469,8 +403,7 @@ const CompanyInfo = () => {
                   fullWidth
                   variant="outlined"
                   displayEmpty
-                  style={{ backgroundColor: "white" }}
-                >
+                  style={{ backgroundColor: "white" }}>
                   <MenuItem value="Active">Active</MenuItem>
                   <MenuItem value="Inactive">Inactive</MenuItem>
                 </Select>
@@ -539,31 +472,54 @@ const CompanyInfo = () => {
             },
           ].map((section) => (
             <div key={section.id}>
-              <Typography variant="subtitle1">{section.title}</Typography>
+              <Typography variant="subtitle1" className="my-4 font-800 underline">{section.title}</Typography>
               {section.children.map((page) => (
-                <FormControlLabel
-                  key={page.id}
-                  control={
-                    <Controller
-                      name="pagesAccess"
-                      control={control}
-                      render={({ field }) => (
-                        <Checkbox
-                          {...field}
-                          value={page.id}
-                          checked={field.value.includes(page.id)}
-                          onChange={(e) => {
-                            const newValue = e.target.checked
-                              ? [...field.value, page.id]
-                              : field.value.filter((id) => id !== page.id);
-                            field.onChange(newValue);
-                          }}
-                        />
-                      )}
-                    />
-                  }
-                  label={page.title}
-                />
+                <div key={page.id} className="flex flex-col ">
+                  <Typography variant="body2" className="mr-4 font-600 my-4">
+                    {page.title}:
+                  </Typography>
+                  <div className="flex items-center"><Controller
+                    name={`pagesAccess.${page.id}.read`}
+                    control={control}
+                    render={({ field }) => (
+                      <FormControlLabel
+                        control={<Checkbox {...field} />}
+                        label="Read"
+                      />
+                    )}
+                  />
+                  <Controller
+                    name={`pagesAccess.${page.id}.add`}
+                    control={control}
+                    render={({ field }) => (
+                      <FormControlLabel
+                        control={<Checkbox {...field} />}
+                        label="Add"
+                      />
+                    )}
+                  />
+                  <Controller
+                    name={`pagesAccess.${page.id}.update`}
+                    control={control}
+                    render={({ field }) => (
+                      <FormControlLabel
+                        control={<Checkbox {...field} />}
+                        label="Update"
+                      />
+                    )}
+                  />
+                  <Controller
+                    name={`pagesAccess.${page.id}.delete`}
+                    control={control}
+                    render={({ field }) => (
+                      <FormControlLabel
+                        control={<Checkbox {...field} />}
+                        label="Delete"
+                      />
+                    )}
+                  />
+                  </div>
+                </div>
               ))}
             </div>
           ))}
@@ -575,8 +531,7 @@ const CompanyInfo = () => {
         <Button
           className="mx-8 text-black"
           type="button"
-          onClick={handleCancel}
-        >
+          onClick={handleCancel}>
           Cancel
         </Button>
 
@@ -584,8 +539,7 @@ const CompanyInfo = () => {
           variant="contained"
           color="secondary"
           type="submit"
-          disabled={!isValid || loading}
-        >
+          disabled={!isValid || loading}>
           <div className="flex items-center">
             Save
             {loading && (
@@ -608,8 +562,7 @@ const CompanyInfo = () => {
           </Typography>
           <Typography
             className="font-medium tracking-tight"
-            color="text.secondary"
-          >
+            color="text.secondary">
             Manage company details and settings
           </Typography>
         </div>
@@ -638,8 +591,7 @@ const CompanyInfo = () => {
             className="flex flex-col gap-8 mt-32"
             variants={container}
             initial="hidden"
-            animate="show"
-          >
+            animate="show">
             {formContent}
           </motion.div>
         );

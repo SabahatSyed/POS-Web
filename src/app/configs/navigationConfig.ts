@@ -240,11 +240,11 @@ const navigationConfig: FuseNavigationType = [
   },
   {
   	id: 'dashboards.projects',
-  	title: 'Finance',
+  	title: 'Dashboard',
   	type: 'item',
   	icon: 'heroicons-outline:cash',
-  	url: '/dashboards/project',
-  	// auth: ['Admin'],
+  	url: '/dashboard',
+  	auth: ['Admin'],
 
   },
   {

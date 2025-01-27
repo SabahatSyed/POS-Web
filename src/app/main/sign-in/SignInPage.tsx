@@ -64,7 +64,7 @@ function SignInPage() {
 			.signInWithEmailAndPassword(email, password)
 			.then((user: UserType) => {
 				// eslint-disable-next-line no-console
-				console.log(user);
+				console.log("user",user);
 				dispatch(setUser(user))
 
 				// No need to do anything, user data will be set at app/auth/AuthContext
@@ -88,16 +88,7 @@ function SignInPage() {
 					<Typography className="mt-32 text-4xl font-extrabold leading-tight tracking-tight">
 						Sign in
 					</Typography>
-					<div className="mt-2 flex items-baseline font-medium">
-						<Typography>Don't have an account?</Typography>
-						<Link
-							className="ml-4"
-							to="/sign-up"
-						>
-							Sign up
-						</Link>
-					</div>
-
+					
 					<form
 						name="loginForm"
 						noValidate

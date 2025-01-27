@@ -19,9 +19,38 @@ function GithubIssuesWidget() {
 	const [awaitRender, setAwaitRender] = useState(true);
 	const [tabValue, setTabValue] = useState(0);
 	const widgets = useAppSelector(selectWidgets);
-	const { overview, series, ranges, labels } = widgets.githubIssues as GithubIssuesDataType;
+	const { overview, series, ranges, labels } = widgets?.githubIssues as GithubIssuesDataType;
 	const currentRange = Object.keys(ranges)[tabValue];
-
+	const dummyData = {
+    overview: {
+      totalIssues: 120,
+      openIssues: 45,
+      closedIssues: 75,
+    },
+    issues: [
+      {
+        id: 1,
+        title: "Issue 1",
+        status: "open",
+        createdAt: "2023-01-01",
+        updatedAt: "2023-01-02",
+      },
+      {
+        id: 2,
+        title: "Issue 2",
+        status: "closed",
+        createdAt: "2023-01-03",
+        updatedAt: "2023-01-04",
+      },
+      {
+        id: 3,
+        title: "Issue 3",
+        status: "open",
+        createdAt: "2023-01-05",
+        updatedAt: "2023-01-06",
+      },
+    ],
+  };
 	const chartOptions: ApexOptions = {
 		chart: {
 			fontFamily: 'inherit',
@@ -167,13 +196,13 @@ function GithubIssuesWidget() {
 					<div className="flex-auto grid grid-cols-4 gap-16 mt-24">
 						<div className="col-span-2 flex flex-col items-center justify-center py-32 px-4 rounded-2xl bg-indigo-50 text-indigo-800">
 							<Typography className="text-5xl sm:text-7xl font-semibold leading-none tracking-tight">
-								{overview[currentRange]['new-issues']}
+								{dummyData.overview.openIssues}
 							</Typography>
 							<Typography className="mt-4 text-sm sm:text-lg font-medium">New Issues</Typography>
 						</div>
 						<div className="col-span-2 flex flex-col items-center justify-center py-32 px-4 rounded-2xl bg-green-50 text-green-800">
 							<Typography className="text-5xl sm:text-7xl font-semibold leading-none tracking-tight">
-								{overview[currentRange]['closed-issues']}
+								{dummyData.overview.closedIssues}
 							</Typography>
 							<Typography className="mt-4 text-sm sm:text-lg font-medium">Closed</Typography>
 						</div>
@@ -187,7 +216,7 @@ function GithubIssuesWidget() {
 							className="col-span-2 sm:col-span-1 flex flex-col items-center justify-center py-32 px-4 rounded-2xl"
 						>
 							<Typography className="text-5xl font-semibold leading-none tracking-tight">
-								{overview[currentRange].fixed}
+								{}
 							</Typography>
 							<Typography className="mt-4 text-sm font-medium text-center">Fixed</Typography>
 						</Box>
@@ -201,7 +230,6 @@ function GithubIssuesWidget() {
 							className="col-span-2 sm:col-span-1 flex flex-col items-center justify-center py-32 px-4 rounded-2xl"
 						>
 							<Typography className="text-5xl font-semibold leading-none tracking-tight">
-								{overview[currentRange]['wont-fix']}
 							</Typography>
 							<Typography className="mt-4 text-sm font-medium text-center">Won't Fix</Typography>
 						</Box>
@@ -215,7 +243,6 @@ function GithubIssuesWidget() {
 							className="col-span-2 sm:col-span-1 flex flex-col items-center justify-center py-32 px-4 rounded-2xl"
 						>
 							<Typography className="text-5xl font-semibold leading-none tracking-tight">
-								{overview[currentRange]['re-opened']}
 							</Typography>
 							<Typography className="mt-4 text-sm font-medium text-center">Re-opened</Typography>
 						</Box>
@@ -229,7 +256,6 @@ function GithubIssuesWidget() {
 							className="col-span-2 sm:col-span-1 flex flex-col items-center justify-center py-32 px-4 rounded-2xl"
 						>
 							<Typography className="text-5xl font-semibold leading-none tracking-tight">
-								{overview[currentRange]['needs-triage']}
 							</Typography>
 							<Typography className="mt-4 text-sm font-medium text-center">Needs Triage</Typography>
 						</Box>
