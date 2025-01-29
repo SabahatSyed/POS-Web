@@ -30,6 +30,7 @@ function UsersTablePage() {
 		columns: [
 			{name: 'code', title: 'Code', type: 'text', sort: false},
 			{name: 'description', title: 'Description', type: 'text', sort: false},
+			{name: 'quantity', title: 'Quantity', type: 'text', sort: false},
 			{name: 'date', title: 'Date', type: 'datetime', sort: false , width: 'w-50'},
 			{name: 'supplierCode', title: 'Supplier Code', type: 'text', sort: false},
 			{name: 'supplierName', title: 'Supplier Name', type: 'text', sort: false},

@@ -1,6 +1,7 @@
 import { combineReducers } from '@reduxjs/toolkit';
 
 import salesbill from "./SalesBillSlice"
+import purchaseBill from "./PurchaseBillSlice"
 
 
 /**
@@ -9,6 +10,7 @@ import salesbill from "./SalesBillSlice"
 const reducer = combineReducers({
 	
 	salesbill,
+	purchaseBill
 	
 });
 

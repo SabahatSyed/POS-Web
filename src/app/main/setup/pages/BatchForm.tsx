@@ -59,19 +59,21 @@ function UsersFormPage() {
   const defaultValues = {
     code: "",
     description: "",
+    quantity: "",
     date: "",
     supplierCode: "",
     supplierName: "",
-	inventoryInformation: "",
+    inventoryInformation: "",
   };
 
   const schema = yup.object().shape({
     code: yup.string().required("You must enter a value"),
     description: yup.string().required("You must enter a value"),
+    quantity: yup.string().required("You must enter a value"),
     date: yup.string().required("You must enter a value"),
     supplierCode: yup.string().required("You must enter a value"),
     supplierName: yup.string().required("You must enter a value"),
-	inventoryInformation: yup.string().required("You must select a value"),
+    inventoryInformation: yup.string().required("You must select a value"),
   });
 
   const { handleSubmit, register, reset, control, watch, formState, setValue } =
@@ -86,7 +88,8 @@ function UsersFormPage() {
   const dispatch = useDispatch<any>();
   const [rowData, setRowData] = useState<User | undefined>(undefined);
   const [loading, setLoading] = useState(false);
-  const [inventoryInformationOptions,setInventoryInformationOptions]=useState([])
+  const [inventoryInformationOptions, setInventoryInformationOptions] =
+    useState([]);
   const { isValid, dirtyFields, errors, touchedFields } = formState;
 
   const onSubmit = async (formData: User) => {
@@ -102,6 +105,7 @@ function UsersFormPage() {
               );
             } else {
               dispatch(showMessage({ message: "Success", variant: "success" }));
+			  reset()
             }
           }
         );
@@ -110,10 +114,11 @@ function UsersFormPage() {
           console.log(resp);
           if (resp.error) {
             dispatch(
-              showMessage({ message: resp.error.message, variant: "error" })
+				showMessage({ message: resp.error.message, variant: "error" })
             );
-          } else {
-            dispatch(showMessage({ message: "Success", variant: "success" }));
+		} else {
+			dispatch(showMessage({ message: "Success", variant: "success" }));
+			reset()
           }
         });
       }
@@ -152,25 +157,27 @@ function UsersFormPage() {
     }
   }, [dispatch, id]);
 
-  useEffect(()=>{
-	const fetchInventoryInformationData = async () => {
-	  try {
-		const response = await dispatch(getInventoryInformationRecords({limit: 100}));
-		console.log(response);
-		if (response.payload.records.length > 0) {
-		  const data = response.payload.records;
-		  const options = data.map((item: any) => ({
-			name:  `${item.code}: (${item.description})`,
-			value: item._id,
-		  }));
-		  setInventoryInformationOptions(options);
-		}
-	  } catch (error) {
-		console.error('Error fetching role data:', error);
-	  }
-	};
-	fetchInventoryInformationData();
-  },[])
+  useEffect(() => {
+    const fetchInventoryInformationData = async () => {
+      try {
+        const response = await dispatch(
+          getInventoryInformationRecords({ limit: 100 })
+        );
+        console.log(response);
+        if (response.payload.records.length > 0) {
+          const data = response.payload.records;
+          const options = data.map((item: any) => ({
+            name: `${item.code}: (${item.description})`,
+            value: item._id,
+          }));
+          setInventoryInformationOptions(options);
+        }
+      } catch (error) {
+        console.error("Error fetching role data:", error);
+      }
+    };
+    fetchInventoryInformationData();
+  }, []);
 
   const data = watch();
 
@@ -241,25 +248,44 @@ function UsersFormPage() {
             control={control}
           />
         </div>
+
         <div className="sm:col-span-1 ">
-		  <Controller
-              name="date"
-              control={control}
-              defaultValue={new Date()} // Set a default value
-              render={({ field: { onChange, value } }) => (
-                <DatePicker
-                  className="col-span-3"
-                  value={value ? new Date(value) : null} // Ensure value is either a Date or null
-                  onChange={onChange}
-                  slotProps={{
-                    textField: {
-                      label: "Date",
-                      error: false, // Prevent the initial red border
-                    },
-                  }}
-                />
-              )}
-            />
+          <Controller
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Quantity"
+                variant="outlined"
+                className="bg-white"
+                error={!!errors.quantity}
+                helperText={errors?.quantity?.message}
+                required
+                fullWidth
+              />
+            )}
+            name="quantity"
+            control={control}
+          />
+        </div>
+        <div className="sm:col-span-1 ">
+          <Controller
+            name="date"
+            control={control}
+            defaultValue={new Date()} // Set a default value
+            render={({ field: { onChange, value } }) => (
+              <DatePicker
+                className="col-span-3"
+                value={value ? new Date(value) : null} // Ensure value is either a Date or null
+                onChange={onChange}
+                slotProps={{
+                  textField: {
+                    label: "Date",
+                    error: false, // Prevent the initial red border
+                  },
+                }}
+              />
+            )}
+          />
         </div>
         <div className="sm:col-span-1 ">
           <Controller

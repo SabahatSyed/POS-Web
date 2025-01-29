@@ -54,9 +54,13 @@ import {
   addRecord,
   getRecords,
   updateRecord,
-} from "../../general-management/store/userDataSlice";
+} from "../../entry/store/SalesBillSlice";
 import { User } from "../../general-management/types/dataTypes";
 import { getRecords as getRolesRecords } from "../../general-management/store/roleDataSlice";
+import { getRecords as getBatchRecords } from "../../setup/store/batchSlice";
+import { getRecords as getInventoryInformationRecords } from "../../setup/store/inventoryInformationSlice";
+import { getRecords as getSalesmenRecords } from "../../setup/store/salesmenSlice";
+import { getRecords as getChartOfAccountsRecords } from "../../setup/store/chartOfAccountSlice";
 
 import { useAppSelector } from "app/store";
 import { useDebounce } from "@fuse/hooks";
@@ -64,6 +68,7 @@ import DropdownWidget from "app/shared-components/DropdownWidget";
 import { showMessage } from "app/store/fuse/messageSlice";
 import A4Print from "./A4PrintDialog";
 import ThermalPrintDialog from "./ThermalPrintDialog";
+import { C } from "@fullcalendar/core/internal-common";
 
 /**
  * UsersFormPage
@@ -76,13 +81,44 @@ function UsersFormPage() {
   const title = "Sales Bill";
 
   const defaultValues = {
-    code: "",
+    batch: "",
+    inventoryInformation: "",
+    salesmen: "",
     description: "",
+    quantity: 0,
+    saleBill: "",
+    chartOfAccount: "",
+    date: "",
+    paymentType: "cash",
+    balance: "",
+    remarks: "",
+    tradeRate: "",
+    discount: "",
+    discountValue: "",
+    netRate: "",
+    amount: "",
+    return: false,
   };
 
   const schema = yup.object().shape({
-    code: yup.string().required("You must enter a value"),
-    description: yup.string().email().required("You must enter a value"),
+    description: yup.string().required("Description is required"),
+    chartOfAccount: yup.string().required("Chart of Account is required"),
+    salesmen: yup.string().required("Salesman is required"),
+    inventoryInformation: yup
+      .string()
+      .required("Inventory Information is required"),
+    batch: yup.string().required("Batch is required"),
+    quantity: yup.number().required("Quantity is required").min(1),
+    tradeRate: yup.number().required("Trade Rate is required").min(0),
+    discount: yup.number().min(0),
+    discountValue: yup.number().min(0),
+    netRate: yup.number().required("Net Rate is required").min(0),
+    amount: yup.number().required("Amount is required").min(0),
+    return: yup.boolean(),
+    balance: yup.number().required("Balance is required").min(0),
+    remarks: yup.string(),
+    date: yup.date().required("Date is required"),
+    paymentType: yup.string().required("Payment Type is required"),
   });
 
   const { handleSubmit, register, reset, control, watch, formState, setValue } =
@@ -98,9 +134,15 @@ function UsersFormPage() {
   const [rowData, setRowData] = useState<User | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const { isValid, dirtyFields, errors, touchedFields } = formState;
+  console.log(isValid, errors);
   const [open, setOpen] = useState(false);
   const [openThermal, setOpenThermal] = useState(false);
   const [discount, setDiscount] = useState("");
+  const [salesMenOptions, setSalesMenOptions] = useState([]);
+  const [chartOfAccounts, setChartOfAccounts] = useState([]);
+  const [inventoryInformationOptions, setInventoryInformationOptions] =
+    useState([]);
+  const [batchOptions, setBatchOptions] = useState([]);
 
   const handleOpen = () => {
     console.log("dshjhskjsds");
@@ -121,7 +163,30 @@ function UsersFormPage() {
     setOpenThermal(false);
   };
 
-  const onSubmit = async (formData: User) => {
+  const onSubmit = async (data: any) => {
+
+    const formData = {
+      chartOfAccount: data.chartOfAccount,
+      salesmen: data.salesmen,
+      products: [
+        {
+          inventoryInformation: data.inventoryInformation,
+          batch: data.batch,
+        },
+      ],
+      quantity: data.quantity,
+      tradeRate: data.tradeRate,
+      discount: data.discount,
+      discountValue: data.discountValue,
+      netRate: data.netRate,
+      amount: data.amount,
+      return: data.return,
+      balance: data.balance,
+      remarks: data.remarks,
+      date: data.date ? new Date(data.date).toISOString() : new Date().toISOString(),
+      paymentType: data.paymentType,
+    };
+
     try {
       setLoading(true);
       if (id) {
@@ -133,6 +198,7 @@ function UsersFormPage() {
                 showMessage({ message: resp.error.message, variant: "error" })
               );
             } else {
+              reset()
               dispatch(showMessage({ message: "Success", variant: "success" }));
             }
           }
@@ -145,6 +211,7 @@ function UsersFormPage() {
               showMessage({ message: resp.error.message, variant: "error" })
             );
           } else {
+            reset()
             dispatch(showMessage({ message: "Success", variant: "success" }));
           }
         });
@@ -184,38 +251,67 @@ function UsersFormPage() {
     }
   }, [dispatch, id]);
 
+  useEffect(() => {
+    const fetchInventoryGroupsData = async () => {
+      try {
+        const response = await dispatch(
+          getInventoryInformationRecords({ limit: 100 })
+        );
+        const batches = await dispatch(getBatchRecords({ limit: 100 }));
+        const salesmen = await dispatch(getSalesmenRecords({ limit: 100 }));
+        const chartOfAccounts = await dispatch(
+          getChartOfAccountsRecords({ limit: 100 })
+        );
+        console.log(response);
+        if (response.payload.records.length > 0) {
+          const data = response.payload.records;
+          const options = data.map((item: any) => ({
+            name: `${item.code}: (${item.name})`,
+            value: item._id,
+            code: item.code,
+          }));
+          setInventoryInformationOptions(options);
+        }
+        if (batches.payload.records.length > 0) {
+          const data = batches.payload.records;
+          const options = data.map((item: any) => ({
+            name: `${item.code}: (${item.description})`,
+            value: item._id,
+          }));
+          setBatchOptions(options);
+        }
+        if (salesmen.payload.records.length > 0) {
+          const data = salesmen.payload.records;
+          const options = data.map((item: any) => ({
+            name: `${item.code}: (${item.name})`,
+            value: item._id,
+          }));
+          setSalesMenOptions(options);
+        }
+        if (chartOfAccounts.payload.records.length > 0) {
+          const data = chartOfAccounts.payload.records;
+          const options = data.map((item: any) => ({
+            name: `${item.code}: (${item.description})`,
+            value: item._id,
+          }));
+          setChartOfAccounts(options);
+        }
+      } catch (error) {
+        console.error("Error fetching role data:", error);
+      }
+    };
+    fetchInventoryGroupsData();
+  }, []);
+
   const data = watch();
 
   const formContent = (
-    <>
-      {/* Full-screen dialog */}
-      {/* <div className="flex flex-col justify-center items-start"> */}
-      {open && (
-        <A4Print
-          discount={discount}
-          open={open}
-          handleClose={handleClose}
-          handleOpenThermal={handleOpenThermal}
-          handleCloseThermal={handleCloseThermal}
-        />
-      )}
-      {/* </div> */}
-
-      {openThermal && (
-        <ThermalPrintDialog
-          openThermal={openThermal}
-          handleCloseThermal={handleCloseThermal}
-          handleOpenThermal={handleOpenThermal}
-          handleOpen={handleOpen}
-        />
-      )}
-
-      <form className="w-full" onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex flex-col gap-16 gap-y-40 gap-x-12 lg:w-full w-full  lg:ml-10">
-          {/* First row */}
-          <div className="flex items-center gap-28 ">
-            {" "}
-            <FormControl component="fieldset">
+    <form className="w-full" onSubmit={handleSubmit(onSubmit)}>
+      <div className="flex flex-col gap-16 gap-y-40 gap-x-12 lg:w-full w-full  lg:ml-10">
+        {/* First row */}
+        <div className="flex items-center gap-28 ">
+          {" "}
+          {/* <FormControl component="fieldset">
               <RadioGroup row>
                 <FormControlLabel value="new" control={<Radio />} label="New" />
                 <FormControlLabel value="old" control={<Radio />} label="Old" />
@@ -223,8 +319,8 @@ function UsersFormPage() {
             </FormControl>
             <Typography className="text-base font-medium">
               Last Bill : 349839
-            </Typography>
-            {/* <Controller
+            </Typography> */}
+          {/* <Controller
               name="voucher"
               control={control}
               render={({ field }) => (
@@ -240,12 +336,12 @@ function UsersFormPage() {
             <Button variant="contained" className="rounded-md" color="primary">
               Print Voucher
             </Button> */}
-          </div>
+        </div>
 
-          {/* Top Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-4 mb-6">
-            <div className="flex flex-col md:col-span-1 gap-10">
-              <Controller
+        {/* Top Fields */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-4 mb-6">
+          <div className="flex flex-col md:col-span-1 gap-10">
+            {/* <Controller
                 name="saleBill"
                 control={control}
                 render={({ field }) => (
@@ -257,9 +353,9 @@ function UsersFormPage() {
                     className="bg-white md:w-1/2"
                   />
                 )}
-              />
+              /> */}
 
-              {/* <Controller
+            {/* <Controller
                 name="lastBill"
                 control={control}
                 render={({ field }) => (
@@ -274,49 +370,51 @@ function UsersFormPage() {
                 )}
               /> */}
 
-              <Controller
-                name="date"
-                control={control}
-                render={({ field }) => (
-                  <DatePicker
-                    className="md:w-1/2"
-                    {...field}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Date"
-                        variant="outlined"
-                        size="small"
-                        className="bg-white md:w-1/2"
-                      />
-                    )}
-                  />
-                )}
-              />
-            </div>
-            <div className="flex flex-col md:col-span-2 gap-10">
-              <div className="grid grid-cols-10 gap-10 items-center">
-                <Typography className="col-span-2 lg:col-span-1  whitespace-nowrap text-ellipsis">
-                  Party:{" "}
-                </Typography>
-                <Controller
-                  name="party"
-                  control={control}
-                  render={({ field }) => (
-                    <FormControl
+            <Controller
+              name="date"
+              control={control}
+              render={({ field }) => (
+                <DatePicker
+                  className="md:w-1/2"
+                  {...field}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Date"
                       variant="outlined"
                       size="small"
-                      className="bg-white col-span-8 lg:col-span-9"
-                    >
-                      <Select {...field} defaultValue="010020-AL SHIFA MEDICOS">
-                        <MenuItem value="010020-AL SHIFA MEDICOS">
-                          010020-AL SHIFA MEDICOS
-                        </MenuItem>
-                      </Select>
-                    </FormControl>
+                      className="bg-white md:w-1/2"
+                    />
                   )}
                 />
-                {/* <Controller
+              )}
+            />
+          </div>
+          <div className="flex flex-col md:col-span-2 gap-10">
+            <div className="grid grid-cols-10 gap-10 items-center">
+              <Typography className="col-span-2 lg:col-span-1  whitespace-nowrap text-ellipsis">
+                Party:{" "}
+              </Typography>
+              <Controller
+                name="chartOfAccount"
+                control={control}
+                render={({ field }) => (
+                  <FormControl
+                    variant="outlined"
+                    size="small"
+                    className="bg-white w-full col-span-5"
+                  >
+                    <Select {...field}>
+                      {chartOfAccounts.map((option: any) => (
+                        <MenuItem key={option.value} value={option.value}>
+                          {option.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
+              />
+              {/* <Controller
                   name="party"
                   control={control}
                   render={({ field }) => (
@@ -331,72 +429,92 @@ function UsersFormPage() {
                     </FormControl>
                   )}
                 /> */}
-              </div>
-              <div className="grid grid-cols-10 gap-10 items-center">
-                <Typography className="col-span-2 lg:col-span-1  whitespace-nowrap text-ellipsis">
-                  Balance:{" "}
-                </Typography>
+            </div>
+            <div className="grid grid-cols-10 gap-10 items-center">
+              <Typography className="col-span-2 lg:col-span-1  whitespace-nowrap text-ellipsis">
+                Balance:{" "}
+              </Typography>
 
-                <TextField
-                  label="Balance"
-                  variant="outlined"
-                  size="small"
-                  className="bg-white col-span-8 lg:col-span-9"
-                />
-              </div>
-              <div className="grid grid-cols-10 gap-10 items-center">
-                <Typography className="col-span-2 lg:col-span-1  whitespace-nowrap text-ellipsis">
-                  Salesman:{" "}
-                </Typography>
-                <Controller
-                  name="salesman"
-                  control={control}
-                  render={({ field }) => (
-                    <FormControl
+              <Controller
+                name="balance"
+                control={control}
+                render={({ field }) => (
+                  <FormControl
+                    variant="outlined"
+                    size="small"
+                    className="bg-white w-full col-span-3"
+                  >
+                    <TextField
+                      {...field}
+                      label="Balance"
                       variant="outlined"
-                      size="small"
-                      className="bg-white col-span-3"
-                    >
-                      <Select {...field} defaultValue="010020">
-                        <MenuItem value="010020"></MenuItem>
-                      </Select>
-                    </FormControl>
-                  )}
-                />
-                <Controller
-                  name="salesman"
-                  control={control}
-                  render={({ field }) => (
-                    <FormControl
-                      variant="outlined"
-                      size="small"
-                      className="bg-white w-full col-span-5 lg:col-span-6"
-                    >
-                      <Select {...field} defaultValue="">
-                        <MenuItem value="">Select Salesman</MenuItem>
-                        {/* Add more options as needed */}
-                      </Select>
-                    </FormControl>
-                  )}
-                />
-              </div>
-              <div className="grid grid-cols-10 gap-10 items-center">
-                <Typography className="col-span-2 lg:col-span-1  whitespace-nowrap text-ellipsis">
-                  Remarks:{" "}
-                </Typography>
+                      className="bg-white"
+                      error={!!errors.balance}
+                      helperText={errors?.balance?.message}
+                      required
+                      fullWidth
+                    />
+                  </FormControl>
+                )}
+              />
+            </div>
+            <div className="grid grid-cols-10 gap-10 items-center">
+              <Typography className="col-span-2 lg:col-span-1  whitespace-nowrap text-ellipsis">
+                Salesman:{" "}
+              </Typography>
+              <Controller
+                name="salesmen"
+                control={control}
+                render={({ field }) => (
+                  <FormControl
+                    variant="outlined"
+                    size="small"
+                    className="bg-white w-full col-span-5"
+                  >
+                    <Select {...field}>
+                      {salesMenOptions.map((option: any) => (
+                        <MenuItem key={option.value} value={option.value}>
+                          {option.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
+              />
+            </div>
+            <div className="grid grid-cols-10 gap-10 items-center">
+              <Typography className="col-span-2 lg:col-span-1  whitespace-nowrap text-ellipsis">
+                Remarks:{" "}
+              </Typography>
 
-                <TextField
-                  label="Remarks"
-                  variant="outlined"
-                  size="small"
-                  className="bg-white col-span-8 lg:col-span-9"
-                />
-              </div>
+              <Controller
+                name="remarks"
+                control={control}
+                render={({ field }) => (
+                  <FormControl
+                    variant="outlined"
+                    size="small"
+                    className="bg-white w-full col-span-3"
+                  >
+                    <TextField
+                      {...field}
+                      label="Remarks"
+                      variant="outlined"
+                      className="bg-white"
+                      error={!!errors.remarks}
+                      helperText={errors?.remarks?.message}
+                      required
+                      fullWidth
+                    />
+                  </FormControl>
+                )}
+              />
             </div>
           </div>
+        </div>
 
-          {/* Purchase and Balance Information */}
-          {/* <div className="flex gap-24 my-10 w-full justify-between  border border-t-1 border-b-1 border-l-0 border-r-0 py-40">
+        {/* Purchase and Balance Information */}
+        {/* <div className="flex gap-24 my-10 w-full justify-between  border border-t-1 border-b-1 border-l-0 border-r-0 py-40">
             <TextField
               label="Purchase Rate"
               variant="outlined"
@@ -416,197 +534,352 @@ function UsersFormPage() {
               className="bg-white w-full"
             />
           </div> */}
-
+        <div className="flex gap-24 my-10 w-full border border-t-1 border-b-1 border-l-0 border-r-0 py-40">
           <FormControl component="fieldset">
             <RadioGroup row>
               <div className="flex justify-center items-center gap-6">
                 <Typography className="text-lg  mr-2">Payment Type:</Typography>
-                <FormControlLabel
-                  value="Cash"
-                  control={<Radio />}
-                  label="Cash"
-                />
-                <FormControlLabel
-                  value="Credit"
-                  control={<Radio />}
-                  label="Credit"
+                <Controller
+                  name="paymentType"
+                  control={control}
+                  render={({ field }) => (
+                    <FormControl
+                      variant="outlined"
+                      size="small"
+                      className="bg-white w-full col-span-5"
+                    >
+                      <Select {...field} defaultValue="cash">
+                        <MenuItem value="cash">Cash</MenuItem>
+                        <MenuItem value="credit">Credit</MenuItem>
+                      </Select>
+                    </FormControl>
+                  )}
                 />
               </div>
             </RadioGroup>
           </FormControl>
 
-          {/* Product Details */}
-          <div className="w-full overflow-auto">
+          <FormControl component="fieldset">
+            <RadioGroup row>
+              <div className="flex justify-center items-center gap-6">
+                <Typography className="text-lg  mr-2">Return:</Typography>
+                <Controller
+                  name="return"
+                  control={control}
+                  render={({ field }) => (
+                    <FormControl
+                      variant="outlined"
+                      size="small"
+                      className="bg-white w-full col-span-5"
+                    >
+                      <Select {...field} defaultValue={false}>
+                        <MenuItem value="true">True</MenuItem>
+                        <MenuItem value="false">False</MenuItem>
+                      </Select>
+                    </FormControl>
+                  )}
+                />
+              </div>
+            </RadioGroup>
+          </FormControl>
+        </div>
 
-            {/* Main Grid for all fields */}
-            <div className="min-w-[1200px] md:p-4">
-
+        {/* Product Details */}
+        <div className="w-full overflow-auto">
+          {/* Main Grid for all fields */}
+          <div className="min-w-[1200px] md:p-4">
             <div className="grid grid-cols-10 gap-4 mb-6">
+              {/* Product Code */}
+              {/* <div className="flex flex-col ">
+                <Typography className="text-sm font-medium mb-1 text-left md:text-center">
+                  Product Code
+                </Typography>
+                <Controller
+                  name="ProductCode"
+                  control={control}
+                  render={({ field }) => (
+                    <FormControl
+                      variant="outlined"
 
-                {/* Product Code */}
-                <div className="flex flex-col ">
-                  <Typography className="text-sm font-medium mb-1 text-left md:text-center">
-                    Product Code
-                  </Typography>
-                  <Controller
-                    name="productCode"
-                    control={control}
-                    render={({ field }) => (
-                      <FormControl
+                      size="small"
+                      className="bg-white w-full col-span-5"
+                    >
+                      <Select {...field}>
+                        {inventoryInformationOptions.map((option: any) => (
+                          <MenuItem key={option.code} value={option.code}>
+                            {option.code}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  )}
+                />
+              </div> */}
+
+              {/* Product Name */}
+              <div className="flex flex-col ">
+                <Typography className="text-sm font-medium mb-1 text-left md:text-center">
+                  Product
+                </Typography>
+                <Controller
+                  name="inventoryInformation"
+                  control={control}
+                  render={({ field }) => (
+                    <FormControl
+                      variant="outlined"
+                      label="Product"
+                      size="small"
+                      className="bg-white w-full col-span-5"
+                    >
+                      <Select {...field}>
+                        {inventoryInformationOptions.map((option: any) => (
+                          <MenuItem key={option.value} value={option.value}>
+                            {option.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  )}
+                />
+              </div>
+
+              {/* Batch Code */}
+              <div className="flex flex-col ">
+                <Typography className="text-sm font-medium mb-1 text-left md:text-center">
+                  Batch
+                </Typography>
+                <Controller
+                  name="batch"
+                  control={control}
+                  render={({ field }) => (
+                    <FormControl
+                      variant="outlined"
+                      size="small"
+                      label="Batch"
+                      className="bg-white w-full col-span-5"
+                    >
+                      <Select {...field}>
+                        {batchOptions.map((option: any) => (
+                          <MenuItem key={option.value} value={option.value}>
+                            {option.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  )}
+                />
+              </div>
+
+              {/* Batch Description */}
+              <div className="flex flex-col ">
+                <Typography className="text-sm font-medium mb-1 text-left md:text-center">
+                  Description
+                </Typography>
+                <Controller
+                  name="description"
+                  control={control}
+                  render={({ field }) => (
+                    <FormControl
+                      variant="outlined"
+                      size="small"
+                      className="bg-white w-full col-span-3"
+                    >
+                      <TextField
+                        {...field}
+                        label="Description"
                         variant="outlined"
-                        size="small"
-                        className="bg-white w-full"
-                      >
-                        <Select {...field} defaultValue="01001">
-                          <MenuItem value="01001">ACTIVE VIT</MenuItem>
-                        </Select>
-                      </FormControl>
-                    )}
-                  />
-                </div>
+                        className="bg-white"
+                        error={!!errors.description}
+                        helperText={errors?.description?.message}
+                        required
+                        fullWidth
+                      />
+                    </FormControl>
+                  )}
+                />
+              </div>
 
-                {/* Product Name */}
-                <div className="flex flex-col ">
-                  <Typography className="text-sm font-medium mb-1 text-left md:text-center">
-                    Product Name
-                  </Typography>
-                  <Controller
-                    name="productName"
-                    control={control}
-                    render={({ field }) => (
-                      <FormControl
+              {/* Quantity */}
+              <div className="flex flex-col ">
+                <Typography className="text-sm font-medium mb-1 text-left md:text-center">
+                  Qty
+                </Typography>
+                <Controller
+                  name="quantity"
+                  control={control}
+                  render={({ field }) => (
+                    <FormControl
+                      variant="outlined"
+                      size="small"
+                      className="bg-white w-full col-span-3"
+                    >
+                      <TextField
+                        {...field}
+                        label="Quantity"
                         variant="outlined"
-                        size="small"
-                        className="bg-white w-full"
-                      >
-                        <Select {...field} defaultValue="ACTIVE VIT">
-                          <MenuItem value="ACTIVE VIT">ACTIVE VIT</MenuItem>
-                        </Select>
-                      </FormControl>
-                    )}
-                  />
-                </div>
+                        className="bg-white"
+                        error={!!errors.quantity}
+                        helperText={errors?.quantity?.message}
+                        required
+                        fullWidth
+                      />
+                    </FormControl>
+                  )}
+                />
+              </div>
 
-                {/* Batch Code */}
-                <div className="flex flex-col ">
-                  <Typography className="text-sm font-medium mb-1 text-left md:text-center">
-                    Batch Code
-                  </Typography>
-                  <Controller
-                    name="batchCode"
-                    control={control}
-                    render={({ field }) => (
-                      <FormControl
+              {/* Trade Rate */}
+              <div className="flex flex-col ">
+                <Typography className="text-sm font-medium mb-1 text-left md:text-center">
+                  Trade Rate
+                </Typography>
+                <Controller
+                  name="tradeRate"
+                  control={control}
+                  render={({ field }) => (
+                    <FormControl
+                      variant="outlined"
+                      size="small"
+                      className="bg-white w-full col-span-3"
+                    >
+                      <TextField
+                        {...field}
+                        label="Trade Rate"
                         variant="outlined"
-                        size="small"
-                        className="bg-white w-full"
-                      >
-                        <Select {...field} defaultValue="001">
-                          <MenuItem value="001">001</MenuItem>
-                        </Select>
-                      </FormControl>
-                    )}
-                  />
-                </div>
+                        className="bg-white"
+                        error={!!errors.tradeRate}
+                        helperText={errors?.tradeRate?.message}
+                        required
+                        fullWidth
+                      />
+                    </FormControl>
+                  )}
+                />
+              </div>
 
-                {/* Batch Description */}
-                <div className="flex flex-col ">
-                  <Typography className="text-sm font-medium mb-1 text-left md:text-center">
-                    Batch Description
-                  </Typography>
-                  <TextField
-                    placeholder="Batch Description"
-                    variant="outlined"
-                    size="small"
-                    className="bg-white w-full"
-                  />
-                </div>
+              {/* Discount (%) */}
+              <div className="flex flex-col ">
+                <Typography className="text-sm font-medium mb-1 text-left md:text-center">
+                  Disc. (%)
+                </Typography>
+                <Controller
+                  name="discount"
+                  control={control}
+                  render={({ field }) => (
+                    <FormControl
+                      variant="outlined"
+                      size="small"
+                      className="bg-white w-full col-span-3"
+                    >
+                      <TextField
+                        {...field}
+                        label="Discount"
+                        variant="outlined"
+                        className="bg-white"
+                        error={!!errors.discount}
+                        helperText={errors?.discount?.message}
+                        required
+                        fullWidth
+                      />
+                    </FormControl>
+                  )}
+                />
+              </div>
 
-                {/* Quantity */}
-                <div className="flex flex-col ">
-                  <Typography className="text-sm font-medium mb-1 text-left md:text-center">
-                    Qty
-                  </Typography>
-                  <TextField
-                    placeholder="Qty"
-                    variant="outlined"
-                    size="small"
-                    className="bg-white w-full"
-                  />
-                </div>
+              {/* Discount Value */}
+              <div className="flex flex-col ">
+                <Typography className="text-sm font-medium mb-1 text-left md:text-center">
+                  Disc. Value
+                </Typography>
+                <Controller
+                  name="discountValue"
+                  control={control}
+                  render={({ field }) => (
+                    <FormControl
+                      variant="outlined"
+                      size="small"
+                      className="bg-white w-full col-span-3"
+                    >
+                      <TextField
+                        {...field}
+                        label="Discount Value"
+                        variant="outlined"
+                        className="bg-white"
+                        error={!!errors.discountValue}
+                        helperText={errors?.discountValue?.message}
+                        required
+                        fullWidth
+                      />
+                    </FormControl>
+                  )}
+                />
+              </div>
 
-                {/* Trade Rate */}
-                <div className="flex flex-col ">
-                  <Typography className="text-sm font-medium mb-1 text-left md:text-center">
-                    Trade Rate
-                  </Typography>
-                  <TextField
-                    placeholder="Trade Rate"
-                    variant="outlined"
-                    size="small"
-                    className="bg-white w-full"
-                  />
-                </div>
+              {/* Net Rate */}
+              <div className="flex flex-col ">
+                <Typography className="text-sm font-medium mb-1 text-left md:text-center">
+                  Net Rate
+                </Typography>
+                <Controller
+                  name="netRate"
+                  control={control}
+                  render={({ field }) => (
+                    <FormControl
+                      variant="outlined"
+                      size="small"
+                      className="bg-white w-full col-span-3"
+                    >
+                      <TextField
+                        {...field}
+                        label="Net Rate"
+                        variant="outlined"
+                        className="bg-white"
+                        error={!!errors.netRate}
+                        helperText={errors?.netRate?.message}
+                        required
+                        fullWidth
+                      />
+                    </FormControl>
+                  )}
+                />
+              </div>
 
-                {/* Discount (%) */}
-                <div className="flex flex-col ">
-                  <Typography className="text-sm font-medium mb-1 text-left md:text-center">
-                    Disc. (%)
-                  </Typography>
-                  <TextField
-                    placeholder="Disc. (%)"
-                    variant="outlined"
-                    size="small"
-                    className="bg-white w-full"
-                  />
-                </div>
-
-                {/* Discount Value */}
-                <div className="flex flex-col ">
-                  <Typography className="text-sm font-medium mb-1 text-left md:text-center">
-                    Disc. Value
-                  </Typography>
-                  <TextField
-                    placeholder="Disc. Value"
-                    variant="outlined"
-                    size="small"
-                    className="bg-white w-full"
-                  />
-                </div>
-
-                {/* Net Rate */}
-                <div className="flex flex-col ">
-                  <Typography className="text-sm font-medium mb-1 text-left md:text-center">
-                    Net Rate
-                  </Typography>
-                  <TextField
-                    placeholder="Net Rate"
-                    variant="outlined"
-                    size="small"
-                    className="bg-white w-full"
-                  />
-                </div>
-
-                {/* Amount */}
-                <div className="flex flex-col ">
-                  <Typography className="text-sm font-medium mb-1 text-left md:text-center">
-                    Amount
-                  </Typography>
-                  <TextField
-                    placeholder="Amount"
-                    variant="outlined"
-                    size="small"
-                    className="bg-white w-full"
-                  />
-                </div>
+              {/* Amount */}
+              <div className="flex flex-col ">
+                <Typography className="text-sm font-medium mb-1 text-left md:text-center">
+                  Amount
+                </Typography>
+                <Controller
+                  name="amount"
+                  control={control}
+                  render={({ field }) => (
+                    <FormControl
+                      variant="outlined"
+                      size="small"
+                      className="bg-white w-full col-span-3"
+                    >
+                      <TextField
+                        {...field}
+                        label="Amount"
+                        variant="outlined"
+                        className="bg-white"
+                        error={!!errors.amount}
+                        helperText={errors?.amount?.message}
+                        required
+                        fullWidth
+                      />
+                    </FormControl>
+                  )}
+                />
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Footer Fields */}
+        {/* Footer Fields */}
 
-          <div className="flex gap-4 mb-6 flex-wrap items-center justify-center">
-            <Button variant="contained" className="rounded-md" color="primary">
+        <div className="flex gap-4 mb-6 flex-wrap items-center justify-center">
+          {/* <Button variant="contained" className="rounded-md" color="primary">
               Edit
             </Button>
             <Button
@@ -618,25 +891,54 @@ function UsersFormPage() {
             </Button>
             <Button variant="contained" className="rounded-md">
               Update
-            </Button>
-            <Button variant="outlined" className="rounded-md">
-              Add
-            </Button>
-            <Button variant="outlined" className="rounded-md" color="primary">
-              Cancel
-            </Button>
-            <Button variant="contained" className="rounded-md" color="success">
+            </Button> */}
+          <Button
+            variant="contained"
+            className="rounded-md"
+            type="submit"
+            disabled={!isValid && loading}
+            onClick={() => console.log("Loading")}
+          >
+            Save
+            {loading && (
+              <div className="ml-8 mt-2">
+                <CircularProgress size={16} color="inherit" />
+              </div>
+            )}
+          </Button>
+
+          <Button
+            variant="outlined"
+            className="rounded-md"
+            color="primary"
+            type="button"
+            onClick={handleClose}
+          >
+            Cancel
+          </Button>
+          {/* <Button variant="contained" className="rounded-md" color="success">
+          Report
+        </Button> */}
+          <Button
+            variant="outlined"
+            className="rounded-md"
+            type="button"
+            onClick={handleClose}
+          >
+            Back
+          </Button>
+          {/* <Button variant="contained" className="rounded-md" color="success">
               Close Bill
             </Button>
             <Button variant="contained" className="rounded-md">
               Return
-            </Button>
-            <Button variant="outlined" className="rounded-md">
+            </Button> */}
+          {/* <Button variant="outlined" className="rounded-md">
               Back
-            </Button>
-          </div>
-          {/* Buttons */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6 justify-center">
+            </Button> */}
+        </div>
+        {/* Buttons */}
+        {/* <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6 justify-center">
             <TextField
               label="Total Amount"
               variant="outlined"
@@ -661,7 +963,7 @@ function UsersFormPage() {
               size="small"
               className="bg-white col-span-1"
             />
-            {/* <TextField
+             <TextField
                      label="From"
                      variant="outlined"
                      size="small"
@@ -672,7 +974,7 @@ function UsersFormPage() {
                      variant="outlined"
                      size="small"
                      className="bg-white"
-                   /> */}
+                   />
             <Button
               // size={small}
               variant="contained"
@@ -681,10 +983,9 @@ function UsersFormPage() {
             >
               Report
             </Button>
-          </div>
-        </div>
-      </form>
-    </>
+          </div> */}
+      </div>
+    </form>
   );
 
   const header = (

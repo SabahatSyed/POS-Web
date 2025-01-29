@@ -106,6 +106,7 @@ function UsersFormPage() {
 						}
 						else {
 							dispatch(showMessage({ message: 'Success', variant: 'success' }));
+              reset();
 						}
 					});
 
@@ -118,6 +119,7 @@ function UsersFormPage() {
 						}
 						else {
 							dispatch(showMessage({ message: 'Success', variant: 'success' }));
+              reset();
 						}
 					});
 			}

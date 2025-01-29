@@ -93,6 +93,7 @@ function MainGroupsFormPage() {
 						}
 						else {
 							dispatch(showMessage({ message: 'Success', variant: 'success' }));
+							reset()
 						}
 					});
 
@@ -105,6 +106,7 @@ function MainGroupsFormPage() {
 						}
 						else {
 							dispatch(showMessage({ message: 'Success', variant: 'success' }));
+							reset()
 						}
 					});
 			}

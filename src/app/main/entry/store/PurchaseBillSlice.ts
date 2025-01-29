@@ -12,10 +12,10 @@ type DataType = {
 };
 
 const storeName = 'settings';
-const apiEndPoint = '/api/salesBill';
+const apiEndPoint = '/api/purchaseBill';
 
 export const getRecords = createAppAsyncThunk(
-  `salesbill/${storeName}/getRecords`,
+  `purchasebill/${storeName}/getRecords`,
   async ({
     page,
     limit,
@@ -33,7 +33,7 @@ export const getRecords = createAppAsyncThunk(
       }&text=${search ? search : ''}`,
     );
     console.log('re', response);
-    const data = (await response.data.data) as DataType;
+    const data = (await response.data.records) as DataType;
 
     return data;
   },
@@ -43,7 +43,7 @@ export const getRecords = createAppAsyncThunk(
  * The add user.
  */
 export const addRecord = createAppAsyncThunk(
-  `salesbill/${storeName}/addRecord`,
+  `purchasebill/${storeName}/addRecord`,
   async ({ payload }: { payload: SettingType }) => {
     const response = await axios.post(`${apiEndPoint}/`, payload);
     console.log('r', response);
@@ -54,7 +54,7 @@ export const addRecord = createAppAsyncThunk(
 );
 
 export const updateRecord = createAppAsyncThunk(
-  `salesbill/${storeName}/updateRecord`,
+  `purchasebill/${storeName}/updateRecord`,
   async ({ payload, id }: { payload: SettingType; id: string }) => {
     const response = await axios.put(`${apiEndPoint}?id=${id}`, payload);
 
@@ -70,7 +70,7 @@ const initialState: DataType = {};
  * The setting dashboard widgets slice.
  */
 export const dataSlice = createSlice({
-  name: `salesbill/${storeName}`,
+  name: `purchasebill/${storeName}`,
   initialState,
   reducers: {},
   extraReducers: (builder) => {
@@ -83,7 +83,7 @@ export const dataSlice = createSlice({
   },
 });
 
-export const selectRecords = (state: AppRootStateType) => state.salesbill[storeName];
+export const selectRecords = (state: AppRootStateType) => state.purchaseBill[storeName];
 
 export type dataSliceType = typeof dataSlice;
 
