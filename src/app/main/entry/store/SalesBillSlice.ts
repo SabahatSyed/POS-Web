@@ -12,7 +12,7 @@ type DataType = {
 };
 
 const storeName = 'settings';
-const apiEndPoint = '/api/sales-bill';
+const apiEndPoint = '/api/salesBill';
 
 export const getRecords = createAppAsyncThunk(
   `salesbill/${storeName}/getRecords`,
@@ -33,7 +33,7 @@ export const getRecords = createAppAsyncThunk(
       }&text=${search ? search : ''}`,
     );
     console.log('re', response);
-    const data = (await response.data.records) as DataType;
+    const data = (await response.data.data) as DataType;
 
     return data;
   },
@@ -45,7 +45,7 @@ export const getRecords = createAppAsyncThunk(
 export const addRecord = createAppAsyncThunk(
   `salesbill/${storeName}/addRecord`,
   async ({ payload }: { payload: SettingType }) => {
-    const response = await axios.post(`${apiEndPoint}/add`, payload);
+    const response = await axios.post(`${apiEndPoint}/`, payload);
     console.log('r', response);
     const data = (await response.data._doc) as DataType;
     console.log('data', data);
@@ -56,7 +56,7 @@ export const addRecord = createAppAsyncThunk(
 export const updateRecord = createAppAsyncThunk(
   `salesbill/${storeName}/updateRecord`,
   async ({ payload, id }: { payload: SettingType; id: string }) => {
-    const response = await axios.put(`${apiEndPoint}/update?id=${id}`, payload);
+    const response = await axios.put(`${apiEndPoint}?id=${id}`, payload);
 
     const data = (await response.data._doc) as DataType;
 

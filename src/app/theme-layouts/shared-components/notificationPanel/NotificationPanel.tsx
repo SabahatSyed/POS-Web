@@ -17,7 +17,7 @@ import NotificationCard from './NotificationCard';
 import { addNotification, dismissAll, dismissItem, getNotifications, selectNotifications } from './store/dataSlice';
 import { closeNotificationPanel, selectNotificationPanelState, toggleNotificationPanel } from './store/stateSlice';
 import reducer from './store';
-import io from 'socket.io-client';
+import io from '-client';
 
 
 const StyledSwipeableDrawer = styled(SwipeableDrawer)(({ theme }) => ({
@@ -38,51 +38,51 @@ function NotificationPanel() {
 
 	const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
-	useEffect(() => {
-		const socket = io(`${process.env.REACT_APP_BASE_URL}/api/socket`);
+	// useEffect(() => {
+	// 	const socket = io(`${process.env.REACT_APP_BASE_URL}/api/socket`);
 
-		socket.on('connect', () => {
-			console.log('Connected to the Socket.IO server!');
-		});
-		socket.on('connect_error', (error) => {
-			console.error('Connection error:', error);
-		});
+	// 	socket.on('connect', () => {
+	// 		console.log('Connected to the Socket.IO server!');
+	// 	});
+	// 	socket.on('connect_error', (error) => {
+	// 		console.error('Connection error:', error);
+	// 	});
 
-		socket.on('new notification', (notification) => {
-			console.log('notification', notification);
-			enqueueSnackbar(notification.title, {
-				key: notification.id,
-				// autoHideDuration: 3000,
-				content: (
-					<NotificationTemplate
-						item={notification}
-						onClose={() => {
-							closeSnackbar(notification.id);
-						}}
-					/>
-				)
-			});
-			dispatch(getNotifications());
-		});
+	// 	socket.on('new notification', (notification) => {
+	// 		console.log('notification', notification);
+	// 		enqueueSnackbar(notification.title, {
+	// 			key: notification.id,
+	// 			// autoHideDuration: 3000,
+	// 			content: (
+	// 				<NotificationTemplate
+	// 					item={notification}
+	// 					onClose={() => {
+	// 						closeSnackbar(notification.id);
+	// 					}}
+	// 				/>
+	// 			)
+	// 		});
+	// 		dispatch(getNotifications());
+	// 	});
 
-		return () => {
-			socket.disconnect();
-		};
-	}, []);
+	// 	return () => {
+	// 		socket.disconnect();
+	// 	};
+	// }, []);
 
-	useEffect(() => {
-		/*
-		Get Notifications from db
-		 */
-		dispatch(getNotifications());
-	}, [dispatch]);
+	// useEffect(() => {
+	// 	/*
+	// 	Get Notifications from db
+	// 	 */
+	// 	dispatch(getNotifications());
+	// }, [dispatch]);
 
-	useEffect(() => {
-		if (state) {
-			dispatch(closeNotificationPanel());
-		}
-		// eslint-disable-next-line
-	}, [location, dispatch]);
+	// useEffect(() => {
+	// 	if (state) {
+	// 		dispatch(closeNotificationPanel());
+	// 	}
+	// 	// eslint-disable-next-line
+	// }, [location, dispatch]);
 
 	function handleClose() {
 		dispatch(closeNotificationPanel());

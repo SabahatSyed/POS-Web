@@ -11,8 +11,8 @@ type DataType = {
   [key: string]: unknown;
 };
 
-const storeName = 'maingroup';
-const apiEndPoint = '/api/mainGroup';
+const storeName = 'batch';
+const apiEndPoint = '/api/batch';
 
 export const getRecords = createAppAsyncThunk(
   `maingroup/${storeName}/getRecords`,

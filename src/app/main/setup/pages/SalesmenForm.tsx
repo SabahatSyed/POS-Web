@@ -36,9 +36,8 @@ import {
   addRecord,
   getRecords,
   updateRecord,
-} from '../../general-management/store/userDataSlice';
+} from '../../setup/store/salesmenSlice';
 import { User } from '../../general-management/types/dataTypes';
-import { getRecords as getRolesRecords } from '../../general-management/store/roleDataSlice'; 
 
 import { useAppSelector } from 'app/store';
 import { useDebounce } from '@fuse/hooks';
@@ -65,7 +64,7 @@ function UsersFormPage() {
 		cnic:'',
 		address:'',
 		commission:'',
-		accounthead:'',
+		accountHead:'',
 		
 	};
 
@@ -77,7 +76,7 @@ function UsersFormPage() {
 		cnic: yup.string().required('You must enter a value'),
 		address: yup.string().required('You must enter a value'),
 		commission: yup.string().required('You must enter a value'),
-		accounthead: yup.string().required('You must enter a value'),
+		accountHead: yup.string().required('You must enter a value'),
 		
 	});
 
@@ -107,6 +106,7 @@ function UsersFormPage() {
 						}
 						else {
 							dispatch(showMessage({ message: 'Success', variant: 'success' }));
+              reset();
 						}
 					});
 
@@ -119,6 +119,7 @@ function UsersFormPage() {
 						}
 						else {
 							dispatch(showMessage({ message: 'Success', variant: 'success' }));
+              reset();
 						}
 					});
 			}
@@ -302,13 +303,13 @@ function UsersFormPage() {
                 label="Account Head"
                 variant="outlined"
                 className="bg-white"
-                error={!!errors.accounthead}
-                helperText={errors?.accounthead?.message}
+                error={!!errors.accountHead}
+                helperText={errors?.accountHead?.message}
                 required
                 fullWidth
               />
             )}
-            name="accounthead"
+            name="accountHead"
             control={control}
           />
         </div>

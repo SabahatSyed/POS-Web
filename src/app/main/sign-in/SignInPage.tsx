@@ -18,6 +18,8 @@ import Paper from '@mui/material/Paper';
 import { useEffect } from 'react';
 import { UserType } from 'app/store/user';
 import jwtService from '../../auth/services/jwtService';
+import { useAppDispatch } from 'app/store';
+import { setUser } from 'app/store/user/userSlice';
 
 /**
  * Form Validation Schema
@@ -42,6 +44,7 @@ const defaultValues = {
  */
 function SignInPage() {
 	const navigate= useNavigate()
+	const dispatch = useAppDispatch();
 	const { control, formState, handleSubmit, setError, setValue } = useForm({
 		mode: 'onChange',
 		defaultValues,
@@ -56,23 +59,24 @@ function SignInPage() {
 	}, [setValue]);
 
 	function onSubmit({ email, password }: InferType<typeof schema>) {
-		navigate('/dashboards/project');
-		{/*jwtService
+		// navigate('/dashboards/project');
+		jwtService
 			.signInWithEmailAndPassword(email, password)
 			.then((user: UserType) => {
 				// eslint-disable-next-line no-console
-				// console.info(user);
+				console.log("user",user);
+				dispatch(setUser(user))
 
 				// No need to do anything, user data will be set at app/auth/AuthContext
 			})
 			.catch((_errors: { type: 'email' | 'password' | `root.${string}` | 'root'; message: string }[]) => {
-				_errors.forEach((error) => {
+				_errors?.forEach((error) => {
 					setError(error.type, {
 						type: 'manual',
 						message: error.message
 					});
 				});
-			});*/}
+			});
 	}
 
 	return (
@@ -84,16 +88,7 @@ function SignInPage() {
 					<Typography className="mt-32 text-4xl font-extrabold leading-tight tracking-tight">
 						Sign in
 					</Typography>
-					<div className="mt-2 flex items-baseline font-medium">
-						<Typography>Don't have an account?</Typography>
-						<Link
-							className="ml-4"
-							to="/sign-up"
-						>
-							Sign up
-						</Link>
-					</div>
-
+					
 					<form
 						name="loginForm"
 						noValidate

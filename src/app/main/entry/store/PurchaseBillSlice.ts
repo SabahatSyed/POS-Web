@@ -11,11 +11,11 @@ type DataType = {
   [key: string]: unknown;
 };
 
-const storeName = 'maingroup';
-const apiEndPoint = '/api/mainGroup';
+const storeName = 'settings';
+const apiEndPoint = '/api/purchaseBill';
 
 export const getRecords = createAppAsyncThunk(
-  `maingroup/${storeName}/getRecords`,
+  `purchasebill/${storeName}/getRecords`,
   async ({
     page,
     limit,
@@ -28,23 +28,22 @@ export const getRecords = createAppAsyncThunk(
     search?: string;
   }) => {
     const response = await axios.get(
-      `${apiEndPoint}?page=${page ? page : ""}&limit=${limit ? limit : ""}&id=${
-        id ? id : ""
-      }&text=${search ? search : ""}`
+      `${apiEndPoint}?page=${page ? page : ''}&limit=${limit ? limit : ''}&id=${
+        id ? id : ''
+      }&text=${search ? search : ''}`,
     );
+    console.log('re', response);
+    const data = (await response.data.records) as DataType;
 
-    const data = (await response.data) as DataType;
-    console.log(data);
-
-    return data?.data;
-  }
+    return data;
+  },
 );
 
 /**
  * The add user.
  */
 export const addRecord = createAppAsyncThunk(
-  `maingroup/${storeName}/addRecord`,
+  `purchasebill/${storeName}/addRecord`,
   async ({ payload }: { payload: SettingType }) => {
     const response = await axios.post(`${apiEndPoint}/`, payload);
     console.log('r', response);
@@ -55,9 +54,9 @@ export const addRecord = createAppAsyncThunk(
 );
 
 export const updateRecord = createAppAsyncThunk(
-  `maingroup/${storeName}/updateRecord`,
+  `purchasebill/${storeName}/updateRecord`,
   async ({ payload, id }: { payload: SettingType; id: string }) => {
-    const response = await axios.put(`${apiEndPoint}/${id}`, payload);
+    const response = await axios.put(`${apiEndPoint}?id=${id}`, payload);
 
     const data = (await response.data._doc) as DataType;
 
@@ -71,7 +70,7 @@ const initialState: DataType = {};
  * The setting dashboard widgets slice.
  */
 export const dataSlice = createSlice({
-  name: `maingroup/${storeName}`,
+  name: `purchasebill/${storeName}`,
   initialState,
   reducers: {},
   extraReducers: (builder) => {
@@ -84,7 +83,7 @@ export const dataSlice = createSlice({
   },
 });
 
-export const selectRecords = (state: AppRootStateType) => state.maingroup[storeName];
+export const selectRecords = (state: AppRootStateType) => state.purchaseBill[storeName];
 
 export type dataSliceType = typeof dataSlice;
 

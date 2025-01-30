@@ -16,11 +16,12 @@ const apiEndPoint = '/api/notifications';
 
 export const getRecords = createAppAsyncThunk(`notificationManagement/${storeName}/getRecords`, async ({page, limit, id, search}: {page?: number, limit?: number, id?: string, search?: string}) => {
 	
-	const response = await axios.get(`${apiEndPoint}?page=${page ? page : ''}&limit=${limit ? limit : ''}&id=${id ? id : ''}&text=${search ? search : ''}`);
+	// const response = await axios.get(`${apiEndPoint}?page=${page ? page : ''}&limit=${limit ? limit : ''}&id=${id ? id : ''}&text=${search ? search : ''}`);
 
-	const data = (await response.data) as DataType;
+	// const data = (await response.data) as DataType;
 
-	return data;
+	// return data;
+	return [] ;
 });
 
 /**
@@ -54,7 +55,7 @@ export const dataSlice = createSlice({
 	initialState,
 	reducers: {},
 	extraReducers: (builder) => {
-		builder.addCase(getRecords.fulfilled, (state, action) => action.payload);
+		// builder.addCase(getRecords.fulfilled, (state, action) => action.payload);
 	}
 });
 

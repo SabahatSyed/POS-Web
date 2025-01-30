@@ -36,8 +36,8 @@ import {
   addRecord,
   getRecords,
   updateRecord,
-} from '../../general-management/store/userDataSlice';
-import { User } from '../../general-management/types/dataTypes';
+} from '../../setup/store/mainGroupSlice';
+import { MainGroup } from '../../general-management/types/dataTypes';
 import { getRecords as getRolesRecords } from '../../general-management/store/roleDataSlice'; 
 
 import { useAppSelector } from 'app/store';
@@ -47,9 +47,9 @@ import { showMessage } from 'app/store/fuse/messageSlice';
 
 
 /**
- * UsersFormPage
+ * MainGroupsFormPage
  */
-function UsersFormPage() {
+function MainGroupsFormPage() {
 
 	/**
 	 * Form Validation Schema
@@ -64,7 +64,7 @@ function UsersFormPage() {
 
 	const schema = yup.object().shape({
 		code: yup.string().required('You must enter a value'),
-		description: yup.string().email().required('You must enter a value'),
+		description: yup.string().required('You must enter a value'),
 	});
 
 	const { handleSubmit, register, reset, control, watch, formState, setValue } = useForm({
@@ -76,11 +76,11 @@ function UsersFormPage() {
 	const { id } = useParams();
 	const navigate = useNavigate();
 	const dispatch = useDispatch<any>()
-	const [rowData, setRowData] = useState<User | undefined>(undefined);
+	const [rowData, setRowData] = useState<MainGroup | undefined>(undefined);
 	const [loading, setLoading] = useState(false);
 	const { isValid, dirtyFields, errors, touchedFields } = formState;
 
-	const onSubmit = async (formData: User) => {
+	const onSubmit = async (formData: MainGroup) => {
 
 		try {
 			setLoading(true);
@@ -93,6 +93,7 @@ function UsersFormPage() {
 						}
 						else {
 							dispatch(showMessage({ message: 'Success', variant: 'success' }));
+							reset()
 						}
 					});
 
@@ -105,6 +106,7 @@ function UsersFormPage() {
 						}
 						else {
 							dispatch(showMessage({ message: 'Success', variant: 'success' }));
+							reset()
 						}
 					});
 			}
@@ -307,4 +309,4 @@ function UsersFormPage() {
 
 }
 
-export default UsersFormPage;
+export default MainGroupsFormPage;

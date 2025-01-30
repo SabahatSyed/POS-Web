@@ -31,7 +31,7 @@ const routeConfigs: FuseRouteConfigsType = [
   ...userManagementConfigs,
   ...formulaManagementConfigs,
   // chatConfig,
-  ...notificationsConfigs,
+//   ...notificationsConfigs,
   setupConfigs,
   entryConfigs,
   utilitiesConfigs,
@@ -42,23 +42,26 @@ const routeConfigs: FuseRouteConfigsType = [
  * The routes of the application.
  */
 const routes: FuseRoutesType = [
-	...FuseUtils.generateRoutesFromConfigs(routeConfigs, settingsConfig.defaultAuth),
-	{
-		path: '/',
-		element: <Navigate to="/dashboards/project" />,
-	},
-	{
-		path: 'loading',
-		element: <FuseLoading />
-	},
-	{
-		path: '404',
-		element: <Error404Page />
-	},
-	{
-		path: '*',
-		element: <Navigate to="404" />
-	}
+  ...FuseUtils.generateRoutesFromConfigs(
+    routeConfigs,
+    settingsConfig.defaultAuth
+  ),
+  {
+    path: "/",
+    element: <Navigate to="/utilities/company-info" />,
+  },
+  {
+    path: "loading",
+    element: <FuseLoading />,
+  },
+  {
+    path: "404",
+    element: <Error404Page />,
+  },
+  {
+    path: "*",
+    element: <Navigate to="404" />,
+  },
 ];
 
 export default routes;

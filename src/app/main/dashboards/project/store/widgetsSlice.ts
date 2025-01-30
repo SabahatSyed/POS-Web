@@ -10,7 +10,7 @@ type WidgetsType = {
 };
 
 export const getWidgets = createAppAsyncThunk('projectDashboardApp/widgets/getWidgets', async () => {
-	const response = await axios.get('/api/dashboards/project/widgets');
+	const response = await axios.get("http://127.0.0.1:4000/api/dashboards/project/widgets");
 	const data = (await response.data) as WidgetsType;
 
 	return data;

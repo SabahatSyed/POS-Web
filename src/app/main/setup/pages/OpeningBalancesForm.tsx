@@ -36,9 +36,11 @@ import {
   addRecord,
   getRecords,
   updateRecord,
-} from "../../general-management/store/userDataSlice";
+} from "../../setup/store/batchWiseOpeningSlice";
 import { User } from "../../general-management/types/dataTypes";
 import { getRecords as getRolesRecords } from "../../general-management/store/roleDataSlice";
+import { getRecords as getBatchRecords } from "../store/batchSlice";
+import { getRecords as getInventoryInformationRecords } from "../../setup/store/inventoryInformationSlice";
 
 import { useAppSelector } from "app/store";
 import { useDebounce } from "@fuse/hooks";
@@ -56,20 +58,20 @@ function UsersFormPage() {
   const title = " Batch Wise Opening Stock";
 
   const defaultValues = {
-    batchcode: "001",
-    batchdescription: "Main Group",
-    code: "001001",
-    description: "Main Group",
-    qty: 0,
+    batch: "",
+    inventoryInformation: "",
+    code: "",
+    description: "",
+    quantity: 0,
   };
 
   const schema = yup.object().shape({
-    batchcode: yup.string().required("You must enter a value"),
-    batchdescription: yup.string().required("You must enter a value"),
+    batch: yup.string().required("You must enter a value"),
+    inventoryInformation: yup.string().required("You must enter a value"),
 
     code: yup.string().required("You must enter a value"),
     description: yup.string().required("You must enter a value"),
-    qty: yup.number().required("you must enter some value"),
+    quantity: yup.number().required("you must enter some value"),
   });
 
   const { handleSubmit, register, reset, control, watch, formState, setValue } =
@@ -84,6 +86,9 @@ function UsersFormPage() {
   const dispatch = useDispatch<any>();
   const [rowData, setRowData] = useState<User | undefined>(undefined);
   const [loading, setLoading] = useState(false);
+  const [inventoryInformationOptions, setInventoryInformationOptions] =
+    useState([]);
+  const [batchOptions, setBatchOptions] = useState([]);
   const { isValid, dirtyFields, errors, touchedFields } = formState;
 
   const onSubmit = async (formData: User) => {
@@ -99,6 +104,7 @@ function UsersFormPage() {
               );
             } else {
               dispatch(showMessage({ message: "Success", variant: "success" }));
+              reset()
             }
           }
         );
@@ -111,6 +117,7 @@ function UsersFormPage() {
             );
           } else {
             dispatch(showMessage({ message: "Success", variant: "success" }));
+            reset()
           }
         });
       }
@@ -149,6 +156,37 @@ function UsersFormPage() {
     }
   }, [dispatch, id]);
 
+  useEffect(() => {
+    const fetchInventoryGroupsData = async () => {
+      try {
+        const response = await dispatch(
+          getInventoryInformationRecords({ limit: 100 })
+        );
+        const batches = await dispatch(getBatchRecords({ limit: 100 }));
+        console.log(response);
+        if (response.payload.records.length > 0) {
+          const data = response.payload.records;
+          const options = data.map((item: any) => ({
+            name: `${item.code}: (${item.description})`,
+            value: item._id,
+          }));
+          setInventoryInformationOptions(options);
+        }
+        if (batches.payload.records.length > 0) {
+          const data = batches.payload.records;
+          const options = data.map((item: any) => ({
+            name: `${item.code}: (${item.description})`,
+            value: item._id,
+          }));
+          setBatchOptions(options);
+        }
+      } catch (error) {
+        console.error("Error fetching role data:", error);
+      }
+    };
+    fetchInventoryGroupsData();
+  }, []);
+
   const data = watch();
 
   const formContent = (
@@ -158,7 +196,7 @@ function UsersFormPage() {
           <div className="grid grid-cols-12 gap-10 items-center">
             <Typography className="col-span-1">Batch Code </Typography>
             <Controller
-              name="batchcode"
+              name="batch"
               control={control}
               render={({ field }) => (
                 <FormControl
@@ -166,90 +204,37 @@ function UsersFormPage() {
                   size="small"
                   className="bg-white w-full col-span-5"
                 >
-                  <Select {...field} defaultValue="001">
-                    <MenuItem value="001">001</MenuItem>
-                    <MenuItem value="1.b">1.b</MenuItem>
-                    <MenuItem value="1.c">1.c</MenuItem>
-                    <MenuItem value="1.d">1.d</MenuItem>
-                    <MenuItem value="1.e">1.e</MenuItem>
-                    <MenuItem value="1.f">1.f</MenuItem>
-                    <MenuItem value="1.g">1.g</MenuItem>
-                    <MenuItem value="1.h">1.h</MenuItem>
-                    <MenuItem value="1.i">1.i</MenuItem>
-                    <MenuItem value="2.a">2.a</MenuItem>
-                    <MenuItem value="2.b">2.b</MenuItem>
-                    <MenuItem value="2.c">2.c</MenuItem>
-                    <MenuItem value="2.d">2.d</MenuItem>
-                    <MenuItem value="2.e">2.e</MenuItem>
-                    <MenuItem value="3.a">3.a</MenuItem>
-                    <MenuItem value="3.b">3.b</MenuItem>
-                    <MenuItem value="3.c">3.c</MenuItem>
-                    <MenuItem value="3.d">3.d</MenuItem>
-                    <MenuItem value="4.a">4.a</MenuItem>
-                    <MenuItem value="4.b">4.b</MenuItem>
-                    <MenuItem value="4.c">4.c</MenuItem>
-                    <MenuItem value="4.d">4.d</MenuItem>
-                    <MenuItem value="4.e">4.e</MenuItem>
-                    <MenuItem value="4.f">4.f</MenuItem>
-                    <MenuItem value="4.g">4.g</MenuItem>
+                  <Select {...field}>
+                    {batchOptions.map((option: any) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.name}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
               )}
             />
-            <Typography className="col-span-1">Description </Typography>
+            <Typography className="col-span-1">
+              Inventory Information{" "}
+            </Typography>
             <Controller
-              name="batchdescription"
+              name="inventoryInformation"
               control={control}
+              error={!!errors.inventoryInformation}
+              helperText={errors?.inventoryInformation?.message}
+              required
               render={({ field }) => (
                 <FormControl
                   variant="outlined"
                   size="small"
                   className="bg-white col-span-5"
                 >
-                  <Select {...field} defaultValue="Main Group">
-                    <MenuItem value="Main Group">Main Group</MenuItem>
-                    <MenuItem value="chartofaccounts">
-                      Chart Of Accounts
-                    </MenuItem>
-                    <MenuItem value="inventorygroup">Inventory Group</MenuItem>
-                    <MenuItem value="inventoryinformation">
-                      Inventory Information
-                    </MenuItem>
-                    <MenuItem value="salesmen">Salesmen</MenuItem>
-                    <MenuItem value="companynames">Company Names</MenuItem>
-                    <MenuItem value="batch">Batch</MenuItem>
-                    <MenuItem value="openingbalances">
-                      Opening Balances
-                    </MenuItem>
-                    <MenuItem value="expirydates">Expiry Dates</MenuItem>
-                    <MenuItem value="salesbill">Sales Bill</MenuItem>
-                    <MenuItem value="purchasebill">Purchase Bill</MenuItem>
-                    <MenuItem value="salesreturnbill">
-                      Sales Return Bill
-                    </MenuItem>
-                    <MenuItem value="purchasereturnbill">
-                      Purchase Return Bill
-                    </MenuItem>
-                    <MenuItem value="accountvouchers">
-                      Account Vouchers
-                    </MenuItem>
-                    <MenuItem value="oneacheadledger">
-                      One A/C Head Ledger
-                    </MenuItem>
-                    <MenuItem value="daybook">Day Book</MenuItem>
-                    <MenuItem value="onetimeledger">One Time Ledger</MenuItem>
-                    <MenuItem value="accountsreports">Acounts Reports</MenuItem>
-                    <MenuItem value="changepassword">Change Password</MenuItem>
-                    <MenuItem value="addnewuser">Add New User</MenuItem>
-                    <MenuItem value="formnames">Form Names</MenuItem>
-                    <MenuItem value="permissions">Permissions</MenuItem>
-                    <MenuItem value="untallyvouchers">
-                      Untally Vouchers
-                    </MenuItem>
-                    <MenuItem value="untallystockbills">
-                      Untally Stock Bills
-                    </MenuItem>
-                    <MenuItem value="emails">Emails</MenuItem>
+                  <Select {...field}>
+                    {inventoryInformationOptions.map((option: any) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.name}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
               )}
@@ -268,33 +253,16 @@ function UsersFormPage() {
                   size="small"
                   className="bg-white w-full col-span-3"
                 >
-                  <Select {...field} defaultValue="001001">
-                    <MenuItem value="001001">001001</MenuItem>
-                    <MenuItem value="1.b">1.b</MenuItem>
-                    <MenuItem value="1.c">1.c</MenuItem>
-                    <MenuItem value="1.d">1.d</MenuItem>
-                    <MenuItem value="1.e">1.e</MenuItem>
-                    <MenuItem value="1.f">1.f</MenuItem>
-                    <MenuItem value="1.g">1.g</MenuItem>
-                    <MenuItem value="1.h">1.h</MenuItem>
-                    <MenuItem value="1.i">1.i</MenuItem>
-                    <MenuItem value="2.a">2.a</MenuItem>
-                    <MenuItem value="2.b">2.b</MenuItem>
-                    <MenuItem value="2.c">2.c</MenuItem>
-                    <MenuItem value="2.d">2.d</MenuItem>
-                    <MenuItem value="2.e">2.e</MenuItem>
-                    <MenuItem value="3.a">3.a</MenuItem>
-                    <MenuItem value="3.b">3.b</MenuItem>
-                    <MenuItem value="3.c">3.c</MenuItem>
-                    <MenuItem value="3.d">3.d</MenuItem>
-                    <MenuItem value="4.a">4.a</MenuItem>
-                    <MenuItem value="4.b">4.b</MenuItem>
-                    <MenuItem value="4.c">4.c</MenuItem>
-                    <MenuItem value="4.d">4.d</MenuItem>
-                    <MenuItem value="4.e">4.e</MenuItem>
-                    <MenuItem value="4.f">4.f</MenuItem>
-                    <MenuItem value="4.g">4.g</MenuItem>
-                  </Select>
+                  <TextField
+                    {...field}
+                    label="Code"
+                    variant="outlined"
+                    className="bg-white"
+                    error={!!errors.code}
+                    helperText={errors?.code?.message}
+                    required
+                    fullWidth
+                  />
                 </FormControl>
               )}
             />
@@ -308,57 +276,22 @@ function UsersFormPage() {
                   size="small"
                   className="bg-white col-span-3"
                 >
-                  <Select {...field} defaultValue="Main Group">
-                    <MenuItem value="Main Group">Main Group</MenuItem>
-                    <MenuItem value="chartofaccounts">
-                      Chart Of Accounts
-                    </MenuItem>
-                    <MenuItem value="inventorygroup">Inventory Group</MenuItem>
-                    <MenuItem value="inventoryinformation">
-                      Inventory Information
-                    </MenuItem>
-                    <MenuItem value="salesmen">Salesmen</MenuItem>
-                    <MenuItem value="companynames">Company Names</MenuItem>
-                    <MenuItem value="batch">Batch</MenuItem>
-                    <MenuItem value="openingbalances">
-                      Opening Balances
-                    </MenuItem>
-                    <MenuItem value="expirydates">Expiry Dates</MenuItem>
-                    <MenuItem value="salesbill">Sales Bill</MenuItem>
-                    <MenuItem value="purchasebill">Purchase Bill</MenuItem>
-                    <MenuItem value="salesreturnbill">
-                      Sales Return Bill
-                    </MenuItem>
-                    <MenuItem value="purchasereturnbill">
-                      Purchase Return Bill
-                    </MenuItem>
-                    <MenuItem value="accountvouchers">
-                      Account Vouchers
-                    </MenuItem>
-                    <MenuItem value="oneacheadledger">
-                      One A/C Head Ledger
-                    </MenuItem>
-                    <MenuItem value="daybook">Day Book</MenuItem>
-                    <MenuItem value="onetimeledger">One Time Ledger</MenuItem>
-                    <MenuItem value="accountsreports">Acounts Reports</MenuItem>
-                    <MenuItem value="changepassword">Change Password</MenuItem>
-                    <MenuItem value="addnewuser">Add New User</MenuItem>
-                    <MenuItem value="formnames">Form Names</MenuItem>
-                    <MenuItem value="permissions">Permissions</MenuItem>
-                    <MenuItem value="untallyvouchers">
-                      Untally Vouchers
-                    </MenuItem>
-                    <MenuItem value="untallystockbills">
-                      Untally Stock Bills
-                    </MenuItem>
-                    <MenuItem value="emails">Emails</MenuItem>
-                  </Select>
+                  <TextField
+                    {...field}
+                    label="Description"
+                    variant="outlined"
+                    className="bg-white"
+                    error={!!errors.description}
+                    helperText={errors?.description?.message}
+                    required
+                    fullWidth
+                  />
                 </FormControl>
               )}
             />
-            <Typography className="col-span-1">Qty </Typography>
+            <Typography className="col-span-1">Quantity </Typography>
             <Controller
-              name="qty"
+              name="quantity"
               control={control}
               // Initial value for the field
               rules={{
@@ -383,28 +316,49 @@ function UsersFormPage() {
       </div>
 
       <div className="flex gap-4 my-32 items-center justify-center">
-          <Button variant="contained" className="rounded-md" color="primary">
-            Add
-          </Button>
-		  <Button variant="contained" className="rounded-md" color="primary">
-            Edit
-          </Button>
-          <Button variant="contained" className="rounded-md" color="secondary">
-            Delete
-          </Button>
-          <Button variant="contained" className="rounded-md">
-            Save
-          </Button>
-          <Button variant="outlined" className="rounded-md" color="primary">
-            Cancel
-          </Button>
-          <Button variant="contained" className="rounded-md" color="success">
-           Report
-          </Button>
-          <Button variant="outlined" className="rounded-md">
-            Back
-          </Button>
-        </div>
+        {/* <Button variant="contained" className="rounded-md" color="primary">
+          Add
+        </Button>
+        <Button variant="contained" className="rounded-md" color="primary">
+          Edit
+        </Button>
+        <Button variant="contained" className="rounded-md" color="secondary">
+          Delete
+        </Button> */}
+        <Button
+          variant="contained"
+          className="rounded-md"
+          type="submit"
+          disabled={!isValid || loading}
+        >
+          Save
+          {loading && (
+            <div className="ml-8 mt-2">
+              <CircularProgress size={16} color="inherit" />
+            </div>
+          )}
+        </Button>
+        <Button
+          variant="outlined"
+          className="rounded-md"
+          color="primary"
+          type="button"
+          onClick={handleCancel}
+        >
+          Cancel
+        </Button>
+        {/* <Button variant="contained" className="rounded-md" color="success">
+          Report
+        </Button> */}
+        <Button
+          variant="outlined"
+          className="rounded-md"
+          type="button"
+          onClick={handleCancel}
+        >
+          Back
+        </Button>
+      </div>
     </form>
   );
 

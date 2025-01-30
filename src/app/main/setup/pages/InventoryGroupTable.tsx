@@ -4,11 +4,12 @@ import { useNavigate } from "react-router-dom";
 import {
   getRecords,
   selectRecords,
-} from '../../general-management/store/userDataSlice';
+} from '../../general-management/store/inventoryGroupSlice';
 
 import { TableConfig, TableEvent } from 'app/shared-components/data-table-widget/types/dataTypes';
 import TablePageWidget from 'app/shared-components/TablePageWidget';
 import { User } from '../../general-management/types/dataTypes';
+import { useEffect, useState } from 'react';
 
 
 /**
@@ -16,26 +17,28 @@ import { User } from '../../general-management/types/dataTypes';
  */
 function UsersTablePage() {
 	const navigate = useNavigate();
+  const data = useAppSelector(selectRecords);
 
-	const data = {
-    pages: 1,
-    count: 1,
-    records: [
-      {
-        code: 1,
-        description: 'description',
-        cnic: '61101-8189772-8',
-        phone: '0320-2323223',
-        mobile: '0320-2323223',
-		balBF:'as',
-		crlimit:324,
-		address:"g-7",
-		TPB:'T',
-		ntn:'32',
-		strn:''
-      },
-    ],
-  };
+
+	// const data = {
+  //   pages: 1,
+  //   count: 1,
+  //   records: [
+  //     {
+  //       code: 1,
+  //       description: 'description',
+  //       cnic: '61101-8189772-8',
+  //       phone: '0320-2323223',
+  //       mobile: '0320-2323223',
+	// 	balBF:'as',
+	// 	crlimit:324,
+	// 	address:"g-7",
+	// 	TPB:'T',
+	// 	ntn:'32',
+	// 	strn:''
+  //     },
+  //   ],
+  // };
 
 	const title = 'Inventory Group';
 	const tableConfig: TableConfig = {
@@ -56,7 +59,7 @@ function UsersTablePage() {
       // { name: 'ntn', title: 'NTN', type: 'text', sort: false },
       // { name: 'strn', title: 'STRN', type: 'text', sort: false },
     ],
-    dataSource: data,
+    dataSource: data && data,
     onSomeEvent: onTableEvent,
     // actions: this.actions,
     // events: this.events,
@@ -79,6 +82,7 @@ function UsersTablePage() {
 			}
 		}
 	}
+
 
 	return (
 		<TablePageWidget title={title} tableConfig={tableConfig} getRecords={getRecords}  />

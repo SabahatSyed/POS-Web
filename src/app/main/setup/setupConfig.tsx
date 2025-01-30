@@ -80,12 +80,22 @@ const MainGroupConfig = {
       auth: null,
     },
     {
+      path: '/setup/main-group/form/:id',
+      element: <MainGroupForm />,
+      auth: null,
+    },
+    {
       path: '/setup/chart-accounts',
       element: <ChartAccountsPage />,
       auth: null,
     },
     {
       path: '/setup/chart-accounts/form',
+      element: <ChartAccountsForm />,
+      auth: null,
+    },
+    {
+      path: '/setup/chart-accounts/form/:id',
       element: <ChartAccountsForm />,
       auth: null,
     },
@@ -100,6 +110,11 @@ const MainGroupConfig = {
       auth: null,
     },
     {
+      path: '/setup/inventory-group/form/:id',
+      element: <InventoryGroupForm />,
+      auth: null,
+    },
+    {
       path: '/setup/inventory-information',
       element: <InventoryInformationTable />,
       auth: null,
@@ -110,12 +125,22 @@ const MainGroupConfig = {
       auth: null,
     },
     {
+      path: '/setup/inventory-information/form/:id',
+      element: <InventoryInformationForm />,
+      auth: null,
+    },
+    {
       path: '/setup/salesmen',
       element: <SalesmenTable />,
       auth: null,
     },
     {
       path: '/setup/salesmen/form',
+      element: <SalesmenForm />,
+      auth: null,
+    },
+    {
+      path: '/setup/salesmen/form/:id',
       element: <SalesmenForm />,
       auth: null,
     },
@@ -140,12 +165,22 @@ const MainGroupConfig = {
       auth: null,
     },
     {
+      path: '/setup/batch/form/:id',
+      element: <BatchForm />,
+      auth: null,
+    },
+    {
       path: '/setup/opening-balances',
       element: <OpeningBalances />,
       auth: null,
     },
     {
       path: '/setup/opening-balances/form',
+      element: <OpeningBalancesForm />,
+      auth: null,
+    },
+    {
+      path: '/setup/opening-balances/form/:id',
       element: <OpeningBalancesForm />,
       auth: null,
     },

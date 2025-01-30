@@ -238,15 +238,15 @@ const navigationConfig: FuseNavigationType = [
       },     
     ],
   },
-  // {
-  // 	id: 'dashboards.finance',
-  // 	title: 'Finance',
-  // 	type: 'item',
-  // 	icon: 'heroicons-outline:cash',
-  // 	url: '/dashboards/finance',
-  // 	auth: ['Admin'],
+  {
+  	id: 'dashboards.projects',
+  	title: 'Dashboard',
+  	type: 'item',
+  	icon: 'heroicons-outline:cash',
+  	url: '/dashboard',
+  	auth: ['Admin'],
 
-  // },
+  },
   {
     id: 'apps-management',
     title: 'Applications',

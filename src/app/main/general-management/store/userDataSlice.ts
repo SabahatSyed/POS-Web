@@ -11,7 +11,7 @@ type DataType = {
 };
 
 const storeName = 'users';
-const apiEndPoint = '/api/users';
+const apiEndPoint = '/api/user';
 
 export const getRecords = createAppAsyncThunk(`generalManagement/${storeName}/getRecords`, async ({page, limit, id, search}: {page?: number, limit?: number, id?: string, search?: string}) => {
 	

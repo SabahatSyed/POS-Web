@@ -36,9 +36,13 @@ import {
   addRecord,
   getRecords,
   updateRecord,
-} from '../../general-management/store/userDataSlice';
+} from '../store/chartOfAccountSlice';
 import { User } from '../../general-management/types/dataTypes';
 import { getRecords as getRolesRecords } from '../../general-management/store/roleDataSlice'; 
+import {
+  getRecords as getMainGroupRecords,
+  selectRecords,
+} from '../../setup/store/mainGroupSlice';
 
 import { useAppSelector } from 'app/store';
 import { useDebounce } from '@fuse/hooks';
@@ -58,33 +62,33 @@ function UsersFormPage() {
 	const title = 'Chart of Accounts';
 
 	const defaultValues = {
-		maingroup: '',
+		mainGroup: '',
 		code: '',
 		description: '',
 		cnic:'',
 		phone:'',
 		mobile:'',
-		balBF:'',
-		crlimit:'',
+		balanceBF:'',
+		creditLimit:'',
 		address:'',
 		TPB:'',
-		ntn:'',
-		strn:''
+		NTN:'',
+		STRN:''
 	};
 
 	const schema = yup.object().shape({
-		maingroup: yup.string().required('You must enter a value'),
+		mainGroup: yup.string().required('You must enter a value'),
 		code: yup.string().required('You must enter a value'),
 		description: yup.string().required('You must enter a value'),
 		cnic: yup.string().required('You must enter a value'),
 		phone: yup.string().required('You must enter a value'),
 		mobile: yup.string().required('You must enter a value'),
-		balBF: yup.string().required('You must enter a value'),
-		crlimit: yup.string().required('You must enter a value'),
+		balanceBF: yup.string().required('You must enter a value'),
+		creditLimit: yup.string().required('You must enter a value'),
 		address: yup.string().required('You must enter a value'),
 		TPB: yup.string().required('You must enter a value'),
-		ntn: yup.string().required('You must enter a value'),
-		strn: yup.string().required('You must enter a value')
+		NTN: yup.string().required('You must enter a value'),
+		STRN: yup.string().required('You must enter a value')
 	});
 
 	const { handleSubmit, register, reset, control, watch, formState, setValue } = useForm({
@@ -96,11 +100,12 @@ function UsersFormPage() {
 	const { id } = useParams();
 	const navigate = useNavigate();
 	const dispatch = useDispatch<any>()
-	const [rowData, setRowData] = useState<User | undefined>(undefined);
+	const [rowData, setRowData] = useState<{} | undefined>(undefined);
 	const [loading, setLoading] = useState(false);
 	const { isValid, dirtyFields, errors, touchedFields } = formState;
+  const [mainGroupOptions, setMainGroupOptions] = useState([]);
 
-	const onSubmit = async (formData: User) => {
+	const onSubmit = async (formData: any) => {
 
 		try {
 			setLoading(true);
@@ -113,6 +118,7 @@ function UsersFormPage() {
 						}
 						else {
 							dispatch(showMessage({ message: 'Success', variant: 'success' }));
+              reset()
 						}
 					});
 
@@ -125,6 +131,7 @@ function UsersFormPage() {
 						}
 						else {
 							dispatch(showMessage({ message: 'Success', variant: 'success' }));
+              reset()
 						}
 					});
 			}
@@ -167,6 +174,26 @@ function UsersFormPage() {
 		}
 	}, [dispatch, id]);
 
+  useEffect(()=>{
+    const fetchMainGroupsData = async () => {
+      try {
+        const response = await dispatch(getMainGroupRecords({limit: 100}));
+        console.log(response);
+        if (response.payload.records.length > 0) {
+          const data = response.payload.records;
+          const options = data.map((item: any) => ({
+            name:  `${item.code}: (${item.description})`,
+            value: item._id,
+          }));
+          setMainGroupOptions(options);
+        }
+      } catch (error) {
+        console.error('Error fetching role data:', error);
+      }
+    };
+    fetchMainGroupsData();
+  },[])
+
 	const data = watch();
 
 	const formContent = (
@@ -182,15 +209,21 @@ function UsersFormPage() {
                 label="Main Group"
                 variant="outlined"
                 className=" bg-white"
-                error={!!errors.maingroup}
-                helperText={errors?.maingroup?.message}
+                error={!!errors.mainGroup}
+                helperText={errors?.mainGroup?.message}
                 required
                 fullWidth
               >
-                <MenuItem value={'Value'}>Value</MenuItem>
+                {
+                  mainGroupOptions.map((option: any) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.name}
+                    </MenuItem>
+                  ))
+                }
               </TextField>
             )}
-            name="maingroup"
+            name="mainGroup"
             control={control}
           />
         </div>
@@ -297,13 +330,13 @@ function UsersFormPage() {
                 label="Bal B/F"
                 variant="outlined"
                 className="bg-white"
-                error={!!errors.balBF}
-                helperText={errors?.balBF?.message}
+                error={!!errors.balanceBF}
+                helperText={errors?.balanceBF?.message}
                 required
                 fullWidth
               />
             )}
-            name="balBF"
+            name="balanceBF"
             control={control}
           />
         </div>
@@ -316,13 +349,13 @@ function UsersFormPage() {
                 label="CR Limit"
                 variant="outlined"
                 className="bg-white"
-                error={!!errors.crlimit}
-                helperText={errors?.crlimit?.message}
+                error={!!errors.creditLimit}
+                helperText={errors?.creditLimit?.message}
                 required
                 fullWidth
               />
             )}
-            name="crlimit"
+            name="creditLimit"
             control={control}
           />
         </div>
@@ -378,13 +411,13 @@ function UsersFormPage() {
                 label="NTN"
                 variant="outlined"
                 className="bg-white"
-                error={!!errors.ntn}
-                helperText={errors?.ntn?.message}
+                error={!!errors.NTN}
+                helperText={errors?.NTN?.message}
                 required
                 fullWidth
               />
             )}
-            name="ntn"
+            name="NTN"
             control={control}
           />
         </div>
@@ -397,13 +430,13 @@ function UsersFormPage() {
                 label="STRN"
                 variant="outlined"
                 className="bg-white"
-                error={!!errors.strn}
-                helperText={errors?.strn?.message}
+                error={!!errors.STRN}
+                helperText={errors?.STRN?.message}
                 required
                 fullWidth
               />
             )}
-            name="strn"
+            name="STRN"
             control={control}
           />
         </div>
