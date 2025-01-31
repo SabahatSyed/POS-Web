@@ -48,8 +48,9 @@ function AuthProvider(props: AuthProviderProps) {
 
 		jwtService.on('onLogout', () => {
 			pass('Signed out');
-
+			console.log("here")
 			dispatch(logoutUser());
+
 		});
 
 		jwtService.on('onAutoLogout', (message: string) => {

@@ -223,6 +223,7 @@ class JwtService extends FuseUtils.EventEmitter {
    * Signs out the user.
    */
   logout = () => {
+    console.log("hellos")
     _setSession(null);
     this.emit("onLogout", "Logged out");
   };

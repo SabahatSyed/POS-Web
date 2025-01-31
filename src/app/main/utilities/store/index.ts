@@ -1,6 +1,6 @@
 import { combineReducers } from '@reduxjs/toolkit';
 
-import maingroup from "./utilitiesGroupSlice"
+import utilities from "./utilitiesGroupSlice"
 
 
 /**
@@ -8,7 +8,7 @@ import maingroup from "./utilitiesGroupSlice"
  */
 const reducer = combineReducers({
 	
-	maingroup,
+	utilities,
 	
 });
 

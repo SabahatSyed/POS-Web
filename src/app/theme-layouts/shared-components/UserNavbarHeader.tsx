@@ -43,12 +43,12 @@ function UserNavbarHeader() {
 			</div>
 
 
-			<Typography className="username whitespace-nowrap text-14 font-medium">{user.data.displayName}</Typography>
+			<Typography className="username whitespace-nowrap text-14 font-medium">{user.data?.displayName || user?.data?.name}</Typography>
 			<Typography
 				className="email whitespace-nowrap text-13 font-medium"
 				color="text.secondary"
 			>
-				{user.data.email}
+				{user?.data?.email}
 			</Typography>
 		</Root>
 	);

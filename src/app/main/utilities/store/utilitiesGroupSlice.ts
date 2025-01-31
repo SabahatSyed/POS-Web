@@ -2,8 +2,6 @@ import { createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { RootStateType } from 'app/store/types';
 import createAppAsyncThunk from 'app/store/createAppAsyncThunk';
-import SettingType from '../types/setting';
-
 
 type AppRootStateType = RootStateType<dataSliceType>;
 
@@ -11,55 +9,24 @@ type DataType = {
   [key: string]: unknown;
 };
 
-const storeName = 'settings';
-const apiEndPoint = '/api/main-group';
+const storeName = 'company';
+const companyApiEndPoint = '/api/company';
+const userApiEndPoint = '/api/user';
 
-export const getRecords = createAppAsyncThunk(
-  `maingroup/${storeName}/getRecords`,
-  async ({
-    page,
-    limit,
-    id,
-    search,
-  }: {
-    page?: number;
-    limit?: number;
-    id?: string;
-    search?: string;
-  }) => {
-    const response = await axios.get(
-      `${apiEndPoint}?page=${page ? page : ''}&limit=${limit ? limit : ''}&id=${
-        id ? id : ''
-      }&text=${search ? search : ''}`,
-    );
-    console.log('re', response);
-    const data = (await response.data.records) as DataType;
-
+export const createCompany = createAppAsyncThunk(
+  `company/${storeName}/createCompany`,
+  async ({ payload }: { payload: any }) => {
+    const response = await axios.post(`${companyApiEndPoint}/`, payload);
+    const data = (await response.data) as DataType;
     return data;
   },
 );
 
-/**
- * The add user.
- */
-export const addRecord = createAppAsyncThunk(
-  `maingroup/${storeName}/addRecord`,
-  async ({ payload }: { payload: SettingType }) => {
-    const response = await axios.post(`${apiEndPoint}/add`, payload);
-    console.log('r', response);
-    const data = (await response.data._doc) as DataType;
-    console.log('data', data);
-    return data;
-  },
-);
-
-export const updateRecord = createAppAsyncThunk(
-  `maingroup/${storeName}/updateRecord`,
-  async ({ payload, id }: { payload: SettingType; id: string }) => {
-    const response = await axios.put(`${apiEndPoint}/update?id=${id}`, payload);
-
-    const data = (await response.data._doc) as DataType;
-
+export const createUser = createAppAsyncThunk(
+  `company/${storeName}/createUser`,
+  async ({ payload }: { payload: DataType }) => {
+    const response = await axios.post(`${userApiEndPoint}/add`, payload);
+    const data = (await response.data) as DataType;
     return data;
   },
 );
@@ -67,24 +34,30 @@ export const updateRecord = createAppAsyncThunk(
 const initialState: DataType = {};
 
 /**
- * The setting dashboard widgets slice.
+ * The company slice.
  */
-export const dataSlice = createSlice({
-  name: `maingroup/${storeName}`,
+export const companySlice = createSlice({
+  name: `company/${storeName}`,
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(getRecords.fulfilled, (state, action) => {
+    builder.addCase(createCompany.fulfilled, (state, action) => {
       return {
         ...state,
-        ...action.payload,
+        company: action.payload,
+      };
+    });
+    builder.addCase(createUser.fulfilled, (state, action) => {
+      return {
+        ...state,
+        user: action.payload,
       };
     });
   },
 });
 
-export const selectRecords = (state: AppRootStateType) => state.maingroup[storeName];
+export const selectCompany = (state: AppRootStateType) => state.company[storeName];
 
-export type dataSliceType = typeof dataSlice;
+export type dataSliceType = typeof companySlice;
 
-export default dataSlice.reducer;
+export default companySlice.reducer;

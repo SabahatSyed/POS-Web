@@ -24,6 +24,9 @@ export const setUser = createAsyncThunk('user/setUser', (user: UserType) => {
 	if (user.loginRedirectUrl) {
 		settingsConfig.loginRedirectUrl = user.loginRedirectUrl; // for example 'apps/academy'
 	}
+	console.log("user in setUser",user)
+	dispatch(updateUserThemeSettings(user.theme));
+
 
 	return Promise.resolve(user);
 });
@@ -37,18 +40,14 @@ export const updateUserSettings = createAppAsyncThunk(
 		const AppState = getState() as AppRootStateType;
 		const { user } = AppState;
 
-		const isUserGuest = selectIsUserGuest(AppState);
-
-		if (isUserGuest) {
-			return null;
-		}
-
-		const userRequestData = { data: { ...user.data, settings } } as UserType;
-
+		
+		const userRequestData = { data: { ...user.data, settings, displayName:user.data.name } } as UserType;
+		console.log("suwr",userRequestData)
 		try {
 			const response = await jwtService.updateUserData(userRequestData);
 
 			dispatch(showMessage({ message: 'User settings saved with api' }));
+
 
 			return response.data as UserType;
 		} catch (error) {
@@ -70,12 +69,7 @@ export const updateUserShortcuts = createAppAsyncThunk(
 		const AppState = getState() as AppRootStateType;
 		const { user } = AppState;
 
-		const isUserGuest = selectIsUserGuest(AppState);
-
-		if (isUserGuest) {
-			return null;
-		}
-
+		
 		const userRequestData = { data: { ...user.data, shortcuts } } as PartialDeep<UserType>;
 
 		try {
@@ -100,12 +94,7 @@ export const updateUserShortcuts = createAppAsyncThunk(
 export const logoutUser = () => async (dispatch: AppDispatchType, getState: () => RootStateType) => {
 	const AppState = getState() as AppRootStateType;
 
-	const isUserGuest = selectIsUserGuest(AppState);
-
-	if (isUserGuest) {
-		return null;
-	}
-
+	console.log("app",AppState)
 	history.push({
 		pathname: '/'
 	});
@@ -150,16 +139,23 @@ export const updateUserData = createAppAsyncThunk<UserType, PartialDeep<UserType
  */
 const initialState: UserType = {
 	uuid: '',
-	role: [], // guest
+	role: null, // guest
 	permissions: [],
 	data: {
-		displayName: 'John Doe',
+		name: 'John Doe',
 		photoURL: 'assets/images/avatars/brian-hughes.jpg',
 		email: 'johndoe@withinpixels.com',
 		shortcuts: ['apps.calendar', 'apps.mailbox', 'apps.contacts', 'apps.tasks']
 	}
 };
 
+
+interface CompanySettings {
+	primaryColor: string;
+	secondaryColor: string;
+	backgroundColor: string;
+  }
+  
 /**
  * The User slice
  */
@@ -167,7 +163,14 @@ export const userSlice = createSlice({
 	name: 'user',
 	initialState,
 	reducers: {
-		userLoggedOut: () => initialState
+		userLoggedOut: () => initialState,
+		updateUserThemeSettings: (state, action: PayloadAction<CompanySettings>) => {
+			if (state) {
+			  state.theme.primary = action.payload.primaryColor;
+			  state.theme.secondary = action.payload.secondaryColor;
+			  state.theme.background = action.payload.backgroundColor;
+			}
+		  },
 	},
 	extraReducers: (builder) => {
 		builder
@@ -182,9 +185,11 @@ export const userSlice = createSlice({
 	}
 });
 
-export const { userLoggedOut } = userSlice.actions;
+export const { userLoggedOut, updateUserThemeSettings } = userSlice.actions;
 
 export const selectUser = (state: AppRootStateType) => state.user;
+export const selectTheme = (state: RootStateType) => state.user.theme;
+
 
 export const selectUserRole = (state: AppRootStateType) => state.user.role;
 

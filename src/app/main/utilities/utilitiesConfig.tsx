@@ -39,38 +39,38 @@ const MainGroupConfig = {
     {
       path: '/utilities/new-user',
       element: <Users />,
-      auth: null,
+      auth: ['Admin'],
     },
     {
       path: '/utilities/users',
       element: <UsersTable />,
-      auth: null,
+      auth: ['Admin'],
     },
 
     {
       path: '/utilities/form-names',
       element: <FormNames />,
-      auth: null,
+      auth: ['Admin'],
     },
     {
       path: '/utilities/form-names/form',
       element: <FormNamesForm />,
-      auth: null,
+      auth: ['Admin'],
     },
     {
       path: '/utilities/carry-opening-balances',
       element: <CarryOpeningBalances />,
-      auth: null,
+      auth: ['Admin'],
     },
     {
       path: '/utilities/permissions',
       element: <Permissions />,
-      auth: null,
+      auth: ['Admin'],
     },
     {
       path: '/utilities/company-info',
       element: <CompanyInfo />,
-      auth: null,
+      auth: ['Admin'],
     },
   
   ],

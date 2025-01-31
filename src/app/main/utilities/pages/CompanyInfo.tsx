@@ -10,23 +10,59 @@ import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import { useNavigate } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { showMessage } from "app/store/fuse/messageSlice";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import FusePageSimple from "@fuse/core/FusePageSimple";
 import { motion } from "framer-motion";
 import colorNames from "./color-names.json";
+import { uploadImageToCloudinary } from "app/shared-components/uploadImage";
+import axios from "axios";
+import { createCompany, createUser } from "../store/utilitiesGroupSlice";
+import { useAppSelector } from "app/store";
+import { selectUser } from "app/store/user/userSlice";
 
+
+interface FormData {
+  logoURL: string;
+  name: string;
+  email: string;
+  address: string;
+  contact: string;
+  companyType: string;
+  theme: {
+    primary?: string;
+    secondary?: string;
+    background?: string;
+  };
+  owner: {
+    name: string;
+    email: string;
+    cnic: string;
+  };
+  pagesAccess: {
+    [key: string]: {
+      read: boolean;
+      add: boolean;
+      update: boolean;
+      delete: boolean;
+    };
+  };
+}
 const CompanyInfo = () => {
+  const dispatch = useDispatch<any>();
+  const { data: user } = useAppSelector(selectUser);
+  console.log('userDa',user)
   const title = "Company Information";
   const { control, handleSubmit, formState, setValue, watch } = useForm({
     defaultValues: {
-      logo: null,
+      logoURL: "",
       name: "",
       email: "",
       address: "",
       contact: "",
+      companyType: "",
       theme: {
         primary: "",
         secondary: "",
@@ -41,7 +77,7 @@ const CompanyInfo = () => {
         role: "Employee",
         status: "Inactive",
       },
-      pagesAccess: [],
+      pagesAccess: {},
     },
     resolver: yupResolver(
       yup.object().shape({
@@ -49,7 +85,8 @@ const CompanyInfo = () => {
         email: yup.string().email().required("You must enter a value"),
         address: yup.string().required("You must enter a value"),
         contact: yup.string().required("You must enter a value"),
-        logo: yup.object(),
+        logoURL: yup.string(),
+        companyType: yup.string().required("You must select a company type"),
         theme: yup.object().shape({
           primary: yup.string().required("Select primary color"),
           secondary: yup.string().required("Select secondary color"),
@@ -64,27 +101,54 @@ const CompanyInfo = () => {
           role: yup.string().required("Select a role"),
           status: yup.string().required("Select a status"),
         }),
-        pagesAccess: yup.array()
+        pagesAccess: yup.object(),
       })
     ),
   });
+  const [companyTypes, setCompanyTypes] = useState([]);
+
+  useEffect(() => {
+    const fetchCompanyTypes = async () => {
+      try {
+        const response = await axios.get("/api/companytype"); // Adjust the URL to your backend endpoint
+        setCompanyTypes(response.data.data);
+      } catch (error) {
+        console.error("Error fetching company types:", error);
+      }
+    };
+
+    fetchCompanyTypes();
+  }, []);
 
   const [loading, setLoading] = useState(false);
   const { isValid, errors } = formState;
   const navigate = useNavigate();
-  const dispatch = useDispatch();
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data:FormData) => {
     try {
+      // Create company
       setLoading(true);
-      // Call your dispatch function for adding or updating company info
-      // Example: await dispatch(addCompanyInfo(data));
-      // if successful:
+      const companyResponse = await dispatch(
+        createCompany({ payload: data })
+      ).unwrap();
+
+      console.log("res",companyResponse)
+      const companyId = companyResponse.company.id;
+
+      // Create user with company ID and page access
+      const userPayload = {
+        ...data.owner,
+        companyId,
+        pagesAccess: data.pagesAccess,
+      };
+      await dispatch(createUser({ payload: userPayload })).unwrap();
       dispatch(
         showMessage({ message: "Company Info Saved", variant: "success" })
       );
       setLoading(false);
+      console.log("Company and user created successfully");
     } catch (error) {
+      console.error("Error creating company or user:", error);
       dispatch(showMessage({ message: error?.message, variant: "error" }));
       setLoading(false);
     }
@@ -101,50 +165,74 @@ const CompanyInfo = () => {
   };
 
   const data = watch();
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const response = await axios.post(
+          "http://localhost:5000/upload-image",
+          formData
+        );
+        const uploadedUrl = response.data.imageUrl;
+        setValue("logoURL", uploadedUrl); // Set the URL in the field
+      } catch (error) {
+        console.error("Error uploading image:", error);
+      }
+    }
+  };
+
+  const handlePermissionChange = (field, value, readField) => {
+    setValue(field, value);
+    if (value) {
+      setValue(readField, true);
+    }
+  };
+
+  const handleSelectAllChange = (page: string, value: boolean) => {
+    setValue(`pagesAccess.${page}.read` as keyof FormData['pagesAccess'], value);
+    setValue(`pagesAccess.${page}.add` as keyof FormData['pagesAccess'], value);
+    setValue(`pagesAccess.${page}.update` as keyof FormData['pagesAccess'], value);
+    setValue(`pagesAccess.${page}.delete` as keyof FormData['pagesAccess'], value);
+  };
 
   const formContent = (
     <form onSubmit={handleSubmit(onSubmit)} className="w-full">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-16 gap-y-40 gap-x-12 lg:w-full w-full lg:ml-10">
         {/* Company Information Section */}
         <div className="col-span-1 md:col-span-2">
-          <Typography variant="h6" gutterBottom>
-            Company Information
-          </Typography>
           <Controller
-            name="logo"
+            name="logoURL"
             control={control}
             render={({ field }) => (
-              <div className="flex justify-center mb-4">
+              <div className="mb-20">
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => setValue("logo", e.target.files[0])}
-                  {...field}
-                  style={{
-                    display: "none",
+                  onChange={(e) => {
+                    field.onChange(e);
+                    handleFileChange(e);
                   }}
+                  style={{ display: "none" }}
                   id="logo-upload"
                 />
                 <label htmlFor="logo-upload">
                   <img
                     src={
                       field.value
-                        ? URL.createObjectURL(field?.value)
+                        ? field.value
                         : "https://via.placeholder.com/150"
                     }
-                    alt="Company Logo"
-                    className="rounded-full cursor-pointer"
-                    style={{
-                      width: "150px",
-                      height: "150px",
-                      objectFit: "cover",
-                    }}
+                    className="rounded-full cursor-pointer border border-2 mb-5 h-80 w-80"
+                    // alt="Company Logo"
                   />
                 </label>
               </div>
             )}
           />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
             <Controller
               name="name"
               control={control}
@@ -209,6 +297,28 @@ const CompanyInfo = () => {
                 />
               )}
             />
+            <Controller
+              name="companyType"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  fullWidth
+                  variant="outlined"
+                  displayEmpty
+                  style={{ backgroundColor: "white" }}
+                >
+                  <MenuItem value="" disabled>
+                    Select Company Type
+                  </MenuItem>
+                  {companyTypes.map((type) => (
+                    <MenuItem key={type._id} value={type._id}>
+                      {type.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              )}
+            />
           </div>
         </div>
 
@@ -217,7 +327,7 @@ const CompanyInfo = () => {
           <Typography variant="h6" gutterBottom>
             Theme
           </Typography>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-20">
             <Controller
               name="theme.primary"
               control={control}
@@ -227,7 +337,8 @@ const CompanyInfo = () => {
                   fullWidth
                   variant="outlined"
                   displayEmpty
-                  style={{ backgroundColor: "white" }}>
+                  style={{ backgroundColor: "white" }}
+                >
                   <MenuItem value="" disabled>
                     Primary Color
                   </MenuItem>
@@ -235,7 +346,17 @@ const CompanyInfo = () => {
                     <MenuItem
                       key={hex}
                       value={hex}
-                      style={{ backgroundColor: hex }}>
+                      style={{ display: "flex", alignItems: "center" }}
+                    >
+                      <div
+                        style={{
+                          width: 20,
+                          height: 20,
+                          borderRadius: "50%",
+                          backgroundColor: hex,
+                          marginRight: 10,
+                        }}
+                      ></div>
                       {name}
                     </MenuItem>
                   ))}
@@ -251,7 +372,8 @@ const CompanyInfo = () => {
                   fullWidth
                   variant="outlined"
                   displayEmpty
-                  style={{ backgroundColor: "white" }}>
+                  style={{ backgroundColor: "white" }}
+                >
                   <MenuItem value="" disabled>
                     Secondary Color
                   </MenuItem>
@@ -259,7 +381,17 @@ const CompanyInfo = () => {
                     <MenuItem
                       key={hex}
                       value={hex}
-                      style={{ backgroundColor: hex }}>
+                      style={{ display: "flex", alignItems: "center" }}
+                    >
+                      <div
+                        style={{
+                          width: 20,
+                          height: 20,
+                          borderRadius: "50%",
+                          backgroundColor: hex,
+                          marginRight: 10,
+                        }}
+                      ></div>
                       {name}
                     </MenuItem>
                   ))}
@@ -275,7 +407,8 @@ const CompanyInfo = () => {
                   fullWidth
                   variant="outlined"
                   displayEmpty
-                  style={{ backgroundColor: "white" }}>
+                  style={{ backgroundColor: "white" }}
+                >
                   <MenuItem value="" disabled>
                     Background Color
                   </MenuItem>
@@ -283,7 +416,17 @@ const CompanyInfo = () => {
                     <MenuItem
                       key={hex}
                       value={hex}
-                      style={{ backgroundColor: hex }}>
+                      style={{ display: "flex", alignItems: "center" }}
+                    >
+                      <div
+                        style={{
+                          width: 20,
+                          height: 20,
+                          borderRadius: "50%",
+                          backgroundColor: hex,
+                          marginRight: 10,
+                        }}
+                      ></div>
                       {name}
                     </MenuItem>
                   ))}
@@ -300,7 +443,7 @@ const CompanyInfo = () => {
           <Typography variant="h6" gutterBottom>
             Owner Information
           </Typography>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
             <Controller
               name="owner.name"
               control={control}
@@ -363,21 +506,7 @@ const CompanyInfo = () => {
                 />
               )}
             />
-            <Controller
-              name="owner.photoURL"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Owner Photo URL"
-                  variant="outlined"
-                  fullWidth
-                  error={!!errors.owner?.photoURL}
-                  helperText={errors?.owner?.photoURL?.message}
-                  style={{ backgroundColor: "white" }}
-                />
-              )}
-            />
+
             <Controller
               name="owner.role"
               control={control}
@@ -387,25 +516,12 @@ const CompanyInfo = () => {
                   fullWidth
                   variant="outlined"
                   displayEmpty
-                  style={{ backgroundColor: "white" }}>
-                  <MenuItem value="SuperAdmin">SuperAdmin</MenuItem>
+                  style={{ backgroundColor: "white" }}
+                >
+                  <MenuItem value="" disabled>
+                    Select Role
+                  </MenuItem>
                   <MenuItem value="Admin">Admin</MenuItem>
-                  <MenuItem value="Employee">Employee</MenuItem>
-                </Select>
-              )}
-            />
-            <Controller
-              name="owner.status"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  fullWidth
-                  variant="outlined"
-                  displayEmpty
-                  style={{ backgroundColor: "white" }}>
-                  <MenuItem value="Active">Active</MenuItem>
-                  <MenuItem value="Inactive">Inactive</MenuItem>
                 </Select>
               )}
             />
@@ -419,110 +535,163 @@ const CompanyInfo = () => {
           <Typography variant="h6" gutterBottom>
             Pages Access
           </Typography>
-          {[
-            {
-              id: "setup",
-              title: "Setup",
-              children: [
-                { id: "setup-maingroup", title: "Main Group" },
-                { id: "setup-chartofaccounts", title: "Chart Of Accounts" },
-                { id: "setup-inventorygroup", title: "Inventory Group" },
-                { id: "setup-inventory", title: "Inventory Information" },
-                { id: "setup-salesmen", title: "Salesmen" },
-                { id: "setup-companynames", title: "Company Names" },
-                { id: "setup-batch", title: "Batch" },
-                { id: "setup-opening-balances", title: "Opening Balances" },
-                { id: "setup-expiry-dates", title: "Expiry Dates" },
-              ],
-            },
-            {
-              id: "utilities",
-              title: "Utilities",
-              children: [
-                { id: "utilities-newuser", title: "Add New User" },
-                { id: "utilities-userlist", title: "All Users" },
-                { id: "utilities-formname", title: "Form Names" },
-                { id: "utilities-permissions", title: "Permissions" },
-                {
-                  id: "utilities-opening-balances",
-                  title: "Carry Opening Balances",
-                },
-              ],
-            },
-            {
-              id: "entry",
-              title: "Entry",
-              children: [
-                { id: "entry-salesbill", title: "Sales Bill" },
-                { id: "entry-purchasebill", title: "Purchase Bill" },
-                { id: "entry-paymentreceipt", title: "Payment Receipt" },
-                { id: "entry-estimatebill", title: "Estimate Bill" },
-                { id: "entry-generalbill", title: "General Bill" },
-              ],
-            },
-            {
-              id: "reports",
-              title: "Reports",
-              children: [
-                { id: "one-a/c-head-ledger", title: "One A/C Head Ledger" },
-                { id: "day-book-for-date", title: "Day Book For Date" },
-                { id: "one-item-ledger", title: "One Item Ledger" },
-                { id: "accounts-reports", title: "Accounts Report" },
-              ],
-            },
-          ].map((section) => (
-            <div key={section.id}>
-              <Typography variant="subtitle1" className="my-4 font-800 underline">{section.title}</Typography>
-              {section.children.map((page) => (
-                <div key={page.id} className="flex flex-col ">
-                  <Typography variant="body2" className="mr-4 font-600 my-4">
-                    {page.title}:
-                  </Typography>
-                  <div className="flex items-center"><Controller
-                    name={`pagesAccess.${page.id}.read`}
-                    control={control}
-                    render={({ field }) => (
+          <div className="col-span-1 md:col-span-2 grid grid-cols-2 gap-10 ">
+            {[
+              {
+                id: "setup",
+                title: "Setup",
+                children: [
+                  { id: "setup-maingroup", title: "Main Group" },
+                  { id: "setup-chartofaccounts", title: "Chart Of Accounts" },
+                  { id: "setup-inventorygroup", title: "Inventory Group" },
+                  { id: "setup-inventory", title: "Inventory Information" },
+                  { id: "setup-salesmen", title: "Salesmen" },
+                  { id: "setup-companynames", title: "Company Names" },
+                  { id: "setup-batch", title: "Batch" },
+                  { id: "setup-opening-balances", title: "Opening Balances" },
+                  { id: "setup-expiry-dates", title: "Expiry Dates" },
+                ],
+              },
+              {
+                id: "utilities",
+                title: "Utilities",
+                children: [
+                  { id: "utilities-newuser", title: "Add New User" },
+                  { id: "utilities-userlist", title: "All Users" },
+                  // { id: "utilities-formname", title: "Form Names" },
+                  // { id: "utilities-permissions", title: "Permissions" },
+                  {
+                    id: "utilities-opening-balances",
+                    title: "Carry Opening Balances",
+                  },
+                ],
+              },
+              {
+                id: "entry",
+                title: "Entry",
+                children: [
+                  { id: "entry-salesbill", title: "Sales Bill" },
+                  { id: "entry-purchasebill", title: "Purchase Bill" },
+                  { id: "entry-paymentreceipt", title: "Payment Receipt" },
+                  { id: "entry-estimatebill", title: "Estimate Bill" },
+                  { id: "entry-generalbill", title: "General Bill" },
+                ],
+              },
+              {
+                id: "reports",
+                title: "Reports",
+                children: [
+                  { id: "one-a/c-head-ledger", title: "One A/C Head Ledger" },
+                  { id: "day-book-for-date", title: "Day Book For Date" },
+                  { id: "one-item-ledger", title: "One Item Ledger" },
+                  { id: "accounts-reports", title: "Accounts Report" },
+                ],
+              },
+            ].map((section) => (
+              <div key={section.id} className="border border-b p-10">
+                <Typography
+                  variant="subtitle1"
+                  className="my-4 font-800 underline"
+                >
+                  {section.title}
+                </Typography>
+                {section.children.map((page, index) => (
+                  <div key={page.id} className="flex flex-col ">
+                    <Typography variant="body2" className="mr-4 font-600 my-4">
+                      {page.title}:
+                    </Typography>
+                    <div className="flex items-center">
                       <FormControlLabel
-                        control={<Checkbox {...field} />}
-                        label="Read"
+                        control={
+                          <Checkbox
+                            onChange={(e) =>
+                              handleSelectAllChange(page.id, e.target.checked)
+                            }
+                          />
+                        }
+                        label="Select All"
                       />
-                    )}
-                  />
-                  <Controller
-                    name={`pagesAccess.${page.id}.add`}
-                    control={control}
-                    render={({ field }) => (
-                      <FormControlLabel
-                        control={<Checkbox {...field} />}
-                        label="Add"
+                    </div>
+                    <div className="flex items-center">
+                      <Controller
+                        name={`pagesAccess.${page.id}.read` as keyof FormData['pagesAccess']}
+                        control={control}
+                        render={({ field }) => (
+                          <FormControlLabel
+                            control={<Checkbox {...field} />}
+                            label="Read"
+                          />
+                        )}
                       />
-                    )}
-                  />
-                  <Controller
-                    name={`pagesAccess.${page.id}.update`}
-                    control={control}
-                    render={({ field }) => (
-                      <FormControlLabel
-                        control={<Checkbox {...field} />}
-                        label="Update"
+                      <Controller
+                        name={`pagesAccess.${page.id}.add` as keyof FormData['pagesAccess']}
+                        control={control}
+                        render={({ field }) => (
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                {...field}
+                                onChange={(e) =>
+                                  handlePermissionChange(
+                                    field.name,
+                                    e.target.checked,
+                                    `pagesAccess.${page.id}.read`
+                                  )
+                                }
+                              />
+                            }
+                            label="Add"
+                          />
+                        )}
                       />
-                    )}
-                  />
-                  <Controller
-                    name={`pagesAccess.${page.id}.delete`}
-                    control={control}
-                    render={({ field }) => (
-                      <FormControlLabel
-                        control={<Checkbox {...field} />}
-                        label="Delete"
+                      <Controller
+                        name={`pagesAccess.${page.id}.update` as keyof FormData['pagesAccess']}
+                        control={control}
+                        render={({ field }) => (
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                {...field}
+                                onChange={(e) =>
+                                  handlePermissionChange(
+                                    field.name,
+                                    e.target.checked,
+                                    `pagesAccess.${page.id}.read`
+                                  )
+                                }
+                              />
+                            }
+                            label="Update"
+                          />
+                        )}
                       />
-                    )}
-                  />
+                      <Controller
+                        name={`pagesAccess.${page.id}.delete` as keyof FormData['pagesAccess']}
+                        control={control}
+                        render={({ field }) => (
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                {...field}
+                                onChange={(e) =>
+                                  handlePermissionChange(
+                                    field.name,
+                                    e.target.checked,
+                                    `pagesAccess.${page.id}.read`
+                                  )
+                                }
+                              />
+                            }
+                            label="Delete"
+                          />
+                        )}
+                      />
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          ))}
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -531,7 +700,8 @@ const CompanyInfo = () => {
         <Button
           className="mx-8 text-black"
           type="button"
-          onClick={handleCancel}>
+          onClick={handleCancel}
+        >
           Cancel
         </Button>
 
@@ -539,7 +709,8 @@ const CompanyInfo = () => {
           variant="contained"
           color="secondary"
           type="submit"
-          disabled={!isValid || loading}>
+          disabled={!isValid || loading}
+        >
           <div className="flex items-center">
             Save
             {loading && (
@@ -562,7 +733,8 @@ const CompanyInfo = () => {
           </Typography>
           <Typography
             className="font-medium tracking-tight"
-            color="text.secondary">
+            color="text.secondary"
+          >
             Manage company details and settings
           </Typography>
         </div>
@@ -591,7 +763,8 @@ const CompanyInfo = () => {
             className="flex flex-col gap-8 mt-32"
             variants={container}
             initial="hidden"
-            animate="show">
+            animate="show"
+          >
             {formContent}
           </motion.div>
         );
@@ -603,7 +776,7 @@ const CompanyInfo = () => {
     <FusePageSimple
       header={header}
       content={content}
-      sidebarInner
+      // sidebarInner
       scroll="page"
     />
   );
