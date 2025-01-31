@@ -25,7 +25,7 @@ export const setUser = createAsyncThunk('user/setUser', (user: UserType) => {
 		settingsConfig.loginRedirectUrl = user.loginRedirectUrl; // for example 'apps/academy'
 	}
 	console.log("user in setUser",user)
-	dispatch(updateUserThemeSettings(user.theme));
+	// dispatch(updateUserThemeSettings(user.theme));
 
 
 	return Promise.resolve(user);
