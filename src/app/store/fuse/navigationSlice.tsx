@@ -16,7 +16,6 @@ type AppRootStateType = RootStateType<[navigationSliceType, userSliceType]>;
 const navigationAdapter = createEntityAdapter<FuseNavItemType>();
 
 const emptyInitialState = navigationAdapter.getInitialState([]);
-
 const initialState = navigationAdapter.upsertMany(emptyInitialState, navigationConfig);
 
 /**

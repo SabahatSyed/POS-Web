@@ -24,7 +24,6 @@ export const setUser = createAsyncThunk('user/setUser', (user: UserType) => {
 	if (user.loginRedirectUrl) {
 		settingsConfig.loginRedirectUrl = user.loginRedirectUrl; // for example 'apps/academy'
 	}
-	console.log("user in setUser",user)
 	// dispatch(updateUserThemeSettings(user.theme));
 
 
@@ -42,7 +41,6 @@ export const updateUserSettings = createAppAsyncThunk(
 
 		
 		const userRequestData = { data: { ...user.data, settings, displayName:user.data.name } } as UserType;
-		console.log("suwr",userRequestData)
 		try {
 			const response = await jwtService.updateUserData(userRequestData);
 
@@ -94,7 +92,6 @@ export const updateUserShortcuts = createAppAsyncThunk(
 export const logoutUser = () => async (dispatch: AppDispatchType, getState: () => RootStateType) => {
 	const AppState = getState() as AppRootStateType;
 
-	console.log("app",AppState)
 	history.push({
 		pathname: '/'
 	});
@@ -145,7 +142,8 @@ const initialState: UserType = {
 		name: 'John Doe',
 		photoURL: 'assets/images/avatars/brian-hughes.jpg',
 		email: 'johndoe@withinpixels.com',
-		shortcuts: ['apps.calendar', 'apps.mailbox', 'apps.contacts', 'apps.tasks']
+		shortcuts: ['apps.calendar', 'apps.mailbox', 'apps.contacts', 'apps.tasks'],
+		pagesAccess:{}
 	}
 };
 
@@ -188,6 +186,7 @@ export const userSlice = createSlice({
 export const { userLoggedOut, updateUserThemeSettings } = userSlice.actions;
 
 export const selectUser = (state: AppRootStateType) => state.user;
+
 export const selectTheme = (state: RootStateType) => state.user.theme;
 
 

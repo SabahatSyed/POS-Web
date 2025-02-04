@@ -27,7 +27,7 @@ const navigationConfig: FuseNavigationType = [
     type: "collapse",
     icon: "heroicons-outline:cash",
     translate: "Setup",
-    auth: ["Admin"],
+    auth: ["Admin", "SuperAdmin", "Employee"],
     children: [
       {
         id: "setup-maingroup",
@@ -35,7 +35,7 @@ const navigationConfig: FuseNavigationType = [
         type: "item",
         url: "setup/main-group",
         end: true,
-        auth: ["Admin"],
+        auth: ["Admin", "SuperAdmin", "Employee"],
       },
       {
         id: "setup-chartofaccounts",
@@ -43,7 +43,7 @@ const navigationConfig: FuseNavigationType = [
         type: "item",
         url: "setup/chart-accounts",
         end: true,
-        auth: ["Admin"],
+        auth: ["Admin", "SuperAdmin", "Employee"],
       },
       {
         id: "setup-inventorygroup",
@@ -51,7 +51,7 @@ const navigationConfig: FuseNavigationType = [
         type: "item",
         url: "setup/inventory-group",
         end: true,
-        auth: ["Admin"],
+        auth: ["Admin", "SuperAdmin", "Employee"],
       },
       {
         id: "setup-inventory",
@@ -59,7 +59,7 @@ const navigationConfig: FuseNavigationType = [
         type: "item",
         url: "setup/inventory-information",
         end: true,
-        auth: ["Admin"],
+        auth: ["Admin", "SuperAdmin", "Employee"],
       },
       {
         id: "setup-salesmen",
@@ -67,23 +67,23 @@ const navigationConfig: FuseNavigationType = [
         type: "item",
         url: "setup/salesmen",
         end: true,
-        auth: ["Admin"],
+        auth: ["Admin", "SuperAdmin", "Employee"],
       },
-      {
-        id: "setup-companynames",
-        title: "Company Names",
-        type: "item",
-        url: "setup/company-names",
-        end: true,
-        auth: ["Admin"],
-      },
+      // {
+      //   id: "setup-companynames",
+      //   title: "Company Names",
+      //   type: "item",
+      //   url: "setup/company-names",
+      //   end: true,
+      //   auth: ["Admin", "SuperAdmin", "Employee"],
+      // },
       {
         id: "setup-batch",
         title: "Batch",
         type: "item",
         url: "setup/batch",
         end: true,
-        auth: ["Admin"],
+        auth: ["Admin", "SuperAdmin", "Employee"],
       },
       {
         id: "setup-opening-balances",
@@ -91,7 +91,7 @@ const navigationConfig: FuseNavigationType = [
         type: "item",
         url: "setup/opening-balances",
         end: true,
-        auth: ["Admin"],
+        auth: ["Admin", "SuperAdmin", "Employee"],	
       },
       {
         id: "setup-expiry-dates",
@@ -99,7 +99,7 @@ const navigationConfig: FuseNavigationType = [
         type: "item",
         url: "setup/expiry-dates",
         end: true,
-        auth: ["Admin"],
+        auth: ["Admin", "SuperAdmin", "Employee"],
       },
     ],
   },
@@ -109,7 +109,7 @@ const navigationConfig: FuseNavigationType = [
     title: "Utilities",
     type: "collapse",
     icon: "heroicons-outline:menu",
-    auth: ["Admin"],
+    auth: ["Admin", "SuperAdmin", "Employee"],
     children: [
       {
         id: "utilities-newuser",
@@ -125,7 +125,7 @@ const navigationConfig: FuseNavigationType = [
         type: "item",
         url: "utilities/users",
         end: true,
-        auth: ["Admin"],
+        auth: ["Admin", "SuperAdmin"],
       },
       // {
       //   id: 'utilities-formname',
@@ -147,7 +147,7 @@ const navigationConfig: FuseNavigationType = [
         type: "item",
         url: "utilities/company-info",
         end: true,
-        auth: ["Admin"],
+        auth: ["SuperAdmin", "Admin"],
       },
       {
         id: "utilities-opening-balances",
@@ -155,7 +155,7 @@ const navigationConfig: FuseNavigationType = [
         type: "item",
         url: "utilities/carry-opening-balances",
         end: true,
-        auth: ["Admin"],
+        auth: ["Admin", "SuperAdmin", "Employee"],
       },
     ],
   },
@@ -164,8 +164,7 @@ const navigationConfig: FuseNavigationType = [
     title: "Entry",
     type: "collapse",
     icon: "heroicons-outline:menu",
-    auth: ["Admin"],
-
+    auth: ["Admin", "SuperAdmin", "Employee"],
     children: [
       {
         id: "entry-salesbill",
@@ -173,7 +172,7 @@ const navigationConfig: FuseNavigationType = [
         type: "item",
         url: "entry/sales-bill",
         end: true,
-        auth: ["Admin"],
+        auth: ["Admin", "SuperAdmin", "Employee"],
       },
       {
         id: "entry-purchasebill",
@@ -181,7 +180,7 @@ const navigationConfig: FuseNavigationType = [
         type: "item",
         url: "entry/purchase-bill",
         end: true,
-        auth: ["Admin"],
+        auth: ["Admin", "SuperAdmin", "Employee"],
       },
       {
         id: "entry-paymentreceipt",
@@ -189,7 +188,7 @@ const navigationConfig: FuseNavigationType = [
         type: "item",
         url: "entry/payment-receipt",
         end: true,
-        auth: ["Admin"],
+        auth: ["Admin", "SuperAdmin", "Employee"],
       },
       {
         id: "entry-estimatebill",
@@ -197,7 +196,7 @@ const navigationConfig: FuseNavigationType = [
         type: "item",
         url: "entry/estimate-bill",
         end: true,
-        auth: ["Admin"],
+        auth: ["Admin", "SuperAdmin", "Employee"],
       },
       // {
       //   id: 'entry-salesreturnbill',
@@ -219,7 +218,7 @@ const navigationConfig: FuseNavigationType = [
         type: "item",
         url: "entry/general-bill",
         end: true,
-        auth: ["Admin"],
+        auth: ["Admin", "SuperAdmin", "Employee"],
       },
     ],
   },
@@ -228,7 +227,7 @@ const navigationConfig: FuseNavigationType = [
     title: "Reports",
     type: "collapse",
     icon: "heroicons-outline:menu",
-    auth: ["Admin"],
+    auth: ["Admin", "SuperAdmin", "Employee"],
     children: [
       {
         id: "one-a/c-head-ledger",
@@ -236,7 +235,7 @@ const navigationConfig: FuseNavigationType = [
         type: "item",
         url: "reports/head-ledger",
         end: true,
-        auth: ["Admin"],
+        auth: ["Admin", "SuperAdmin", "Employee"],
       },
       {
         id: "day-book-for-date",
@@ -244,7 +243,7 @@ const navigationConfig: FuseNavigationType = [
         type: "item",
         url: "reports/day-book",
         end: true,
-        auth: ["Admin"],
+        auth: ["Admin", "SuperAdmin", "Employee"],
       },
       {
         id: "one-item-ledger",
@@ -252,7 +251,7 @@ const navigationConfig: FuseNavigationType = [
         type: "item",
         url: "reports/item-ledger",
         end: true,
-        auth: ["Admin"],
+        auth: ["Admin", "SuperAdmin", "Employee"],
       },
       {
         id: "accounts-reports",
@@ -260,7 +259,7 @@ const navigationConfig: FuseNavigationType = [
         type: "item",
         url: "reports/accounts-report",
         end: true,
-        auth: ["Admin"],
+        auth: ["Admin", "SuperAdmin", "Employee"],
       },
     ],
   },
@@ -271,6 +270,14 @@ const navigationConfig: FuseNavigationType = [
     icon: "heroicons-outline:cash",
     url: "/dashboard",
     auth: ["Admin"],
+  },
+  {
+    id: "keypoints",
+    title: "Keypoints",
+    type: "item",
+    icon: "heroicons-outline:cash",
+    url: "/keypoints",
+    auth: ["Admin", "Employee"],
   },
 ];
 

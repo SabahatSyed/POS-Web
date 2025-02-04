@@ -25,6 +25,8 @@ function MainGroupsTablePage() {
 		selection: 'none',
 		rowActions: [
 			{'tooltip': 'Edit', action: 'onEdit', icon: 'heroicons-outline:pencil'},
+			{'tooltip': 'Delete', action: 'onDelete', icon: 'heroicons-outline:trash'},
+
 		],
 		columns: [
 			{name: 'code', title: 'Code', type: 'text', sort: false},
@@ -49,6 +51,11 @@ function MainGroupsTablePage() {
 			if (event.action == 'onEdit') {
 				const row = event.params.row as MainGroup;
 				navigate(`/setup/main-group/form/${row._id}`);
+
+			}
+			if (event.action == 'onDelete') {
+				const row = event.params.row as MainGroup;
+				// navigate(`/setup/main-group/form/${row._id}`);
 
 			}
 		}

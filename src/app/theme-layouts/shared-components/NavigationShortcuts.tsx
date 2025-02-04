@@ -17,7 +17,6 @@ function NavigationShortcuts(props: NavigationShortcutsProps) {
 	const dispatch = useAppDispatch();
 	const shortcuts = useSelector(selectUserShortcuts) || [];
 	const navigation = useSelector(selectFlatNavigation);
-
 	function handleShortcutsChange(newShortcuts: string[]) {
 		dispatch(updateUserShortcuts(newShortcuts));
 	}

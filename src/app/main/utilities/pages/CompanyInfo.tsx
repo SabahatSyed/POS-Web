@@ -19,10 +19,13 @@ import { motion } from "framer-motion";
 import colorNames from "./color-names.json";
 import { uploadImageToCloudinary } from "app/shared-components/uploadImage";
 import axios from "axios";
-import { createCompany, createUser } from "../store/utilitiesGroupSlice";
+import {
+  createCompany,
+  createUser,
+  updateCompany,
+} from "../store/utilitiesGroupSlice";
 import { useAppSelector } from "app/store";
 import { selectUser } from "app/store/user/userSlice";
-
 
 interface FormData {
   logoURL: string;
@@ -52,8 +55,8 @@ interface FormData {
 }
 const CompanyInfo = () => {
   const dispatch = useDispatch<any>();
-  const { data: user } = useAppSelector(selectUser);
-  console.log('userDa',user)
+  const user = useAppSelector(selectUser);
+  console.log("da", user);
   const title = "Company Information";
   const { control, handleSubmit, formState, setValue, watch } = useForm({
     defaultValues: {
@@ -92,16 +95,20 @@ const CompanyInfo = () => {
           secondary: yup.string().required("Select secondary color"),
           background: yup.string().required("Select background color"),
         }),
-        owner: yup.object().shape({
-          name: yup.string().required("You must enter a value"),
-          email: yup.string().email().required("You must enter a value"),
-          contact: yup.string(),
-          cnic: yup.string(),
-          photoURL: yup.string(),
-          role: yup.string().required("Select a role"),
-          status: yup.string().required("Select a status"),
-        }),
-        pagesAccess: yup.object(),
+        owner:
+          user.role == "SuperAdmin"
+            ? yup.object().shape({
+                name: yup.string().required("You must enter a value"),
+                email: yup.string().email().required("You must enter a value"),
+                contact: yup.string(),
+                cnic: yup.string(),
+                photoURL: yup.string(),
+                role: yup.string().required("Select a role"),
+                status: yup.string().required("Select a status"),
+              })
+            : yup.object().notRequired(),
+        pagesAccess:
+          user.role == "SuperAdmin" ? yup.object() : yup.object().notRequired(),
       })
     ),
   });
@@ -122,31 +129,43 @@ const CompanyInfo = () => {
 
   const [loading, setLoading] = useState(false);
   const { isValid, errors } = formState;
+  console.log("is", isValid, errors);
   const navigate = useNavigate();
 
-  const onSubmit = async (data:FormData) => {
+  const onSubmit = async (data: FormData) => {
     try {
-      // Create company
-      setLoading(true);
-      const companyResponse = await dispatch(
-        createCompany({ payload: data })
-      ).unwrap();
+      if (user.role == "SuperAdmin") {
+        // Create company
+        setLoading(true);
+        const companyResponse = await dispatch(
+          createCompany({ payload: data })
+        ).unwrap();
 
-      console.log("res",companyResponse)
-      const companyId = companyResponse.company.id;
+        console.log("res", companyResponse);
+        const companyId = companyResponse.company.id;
 
-      // Create user with company ID and page access
-      const userPayload = {
-        ...data.owner,
-        companyId,
-        pagesAccess: data.pagesAccess,
-      };
-      await dispatch(createUser({ payload: userPayload })).unwrap();
-      dispatch(
-        showMessage({ message: "Company Info Saved", variant: "success" })
-      );
-      setLoading(false);
-      console.log("Company and user created successfully");
+        // Create user with company ID and page access
+        const userPayload = {
+          ...data.owner,
+          companyId,
+          pagesAccess: data.pagesAccess,
+        };
+        await dispatch(createUser({ payload: userPayload })).unwrap();
+        dispatch(
+          showMessage({ message: "Company Info Saved", variant: "success" })
+        );
+        setLoading(false);
+        console.log("Company and user created successfully");
+      } else {
+        setLoading(true);
+        await dispatch(updateCompany({ payload: data, id: user.companyId }));
+
+        dispatch(
+          showMessage({ message: "Company Info Updated", variant: "success" })
+        );
+        setLoading(false);
+        console.log("Company Info Updated successfully");
+      }
     } catch (error) {
       console.error("Error creating company or user:", error);
       dispatch(showMessage({ message: error?.message, variant: "error" }));
@@ -163,6 +182,30 @@ const CompanyInfo = () => {
   const handleCancel = () => {
     navigate(-1);
   };
+
+  useEffect(() => {
+    const fetchCompanyData = async () => {
+      console.log("user", user);
+      if (user?.role && user?.companyId) {
+        try {
+          const response = await axios.get(`/api/company/${user.companyId}`);
+          const companyData = response.data.company;
+          console.log("res", response, companyData);
+          setValue("logoURL", companyData.logoURL);
+          setValue("name", companyData.name);
+          setValue("email", companyData.email);
+          setValue("address", companyData.address);
+          setValue("contact", companyData.contact);
+          setValue("companyType", companyData.companyType);
+          setValue("theme", companyData.theme);
+        } catch (error) {
+          console.error("Error fetching company data:", error);
+        }
+      }
+    };
+
+    fetchCompanyData();
+  }, [user, setValue]);
 
   const data = watch();
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -189,14 +232,16 @@ const CompanyInfo = () => {
     if (value) {
       setValue(readField, true);
     }
+
+    if (field === readField && !value) {
+      const pageId = field.split(".")[1]; // Extract the page ID from the field name
+      setValue(`pagesAccess.${pageId}.add`, false);
+      setValue(`pagesAccess.${pageId}.update`, false);
+      setValue(`pagesAccess.${pageId}.delete`, false);
+    }
   };
 
-  const handleSelectAllChange = (page: string, value: boolean) => {
-    setValue(`pagesAccess.${page}.read` as keyof FormData['pagesAccess'], value);
-    setValue(`pagesAccess.${page}.add` as keyof FormData['pagesAccess'], value);
-    setValue(`pagesAccess.${page}.update` as keyof FormData['pagesAccess'], value);
-    setValue(`pagesAccess.${page}.delete` as keyof FormData['pagesAccess'], value);
-  };
+  const pagesAccess = watch("pagesAccess");
 
   const formContent = (
     <form onSubmit={handleSubmit(onSubmit)} className="w-full">
@@ -435,264 +480,297 @@ const CompanyInfo = () => {
             />
           </div>
         </div>
+        {user.role === "SuperAdmin" && (
+          <>
+            <Divider className="my-6 col-span-1 md:col-span-2" />
 
-        <Divider className="my-6 col-span-1 md:col-span-2" />
-
-        {/* Owner Information Section */}
-        <div className="col-span-1 md:col-span-2">
-          <Typography variant="h6" gutterBottom>
-            Owner Information
-          </Typography>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
-            <Controller
-              name="owner.name"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Owner Name"
-                  variant="outlined"
-                  fullWidth
-                  error={!!errors.owner?.name}
-                  helperText={errors?.owner?.name?.message}
-                  required
-                  style={{ backgroundColor: "white" }}
+            {/* Owner Information Section */}
+            <div className="col-span-1 md:col-span-2">
+              <Typography variant="h6" gutterBottom>
+                Owner Information
+              </Typography>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
+                <Controller
+                  name="owner.name"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Owner Name"
+                      variant="outlined"
+                      fullWidth
+                      error={!!errors.owner?.name}
+                      helperText={errors?.owner?.name?.message}
+                      required
+                      style={{ backgroundColor: "white" }}
+                    />
+                  )}
                 />
-              )}
-            />
-            <Controller
-              name="owner.email"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Owner Email"
-                  variant="outlined"
-                  fullWidth
-                  error={!!errors.owner?.email}
-                  helperText={errors?.owner?.email?.message}
-                  required
-                  style={{ backgroundColor: "white" }}
+                <Controller
+                  name="owner.email"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Owner Email"
+                      variant="outlined"
+                      fullWidth
+                      error={!!errors.owner?.email}
+                      helperText={errors?.owner?.email?.message}
+                      required
+                      style={{ backgroundColor: "white" }}
+                    />
+                  )}
                 />
-              )}
-            />
-            <Controller
-              name="owner.contact"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Owner Contact"
-                  variant="outlined"
-                  fullWidth
-                  error={!!errors.owner?.contact}
-                  helperText={errors?.owner?.contact?.message}
-                  style={{ backgroundColor: "white" }}
+                <Controller
+                  name="owner.contact"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Owner Contact"
+                      variant="outlined"
+                      fullWidth
+                      error={!!errors.owner?.contact}
+                      helperText={errors?.owner?.contact?.message}
+                      style={{ backgroundColor: "white" }}
+                    />
+                  )}
                 />
-              )}
-            />
-            <Controller
-              name="owner.cnic"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Owner CNIC"
-                  variant="outlined"
-                  fullWidth
-                  error={!!errors.owner?.cnic}
-                  helperText={errors?.owner?.cnic?.message}
-                  style={{ backgroundColor: "white" }}
+                <Controller
+                  name="owner.cnic"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Owner CNIC"
+                      variant="outlined"
+                      fullWidth
+                      error={!!errors.owner?.cnic}
+                      helperText={errors?.owner?.cnic?.message}
+                      style={{ backgroundColor: "white" }}
+                    />
+                  )}
                 />
-              )}
-            />
 
-            <Controller
-              name="owner.role"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  fullWidth
-                  variant="outlined"
-                  displayEmpty
-                  style={{ backgroundColor: "white" }}
-                >
-                  <MenuItem value="" disabled>
-                    Select Role
-                  </MenuItem>
-                  <MenuItem value="Admin">Admin</MenuItem>
-                </Select>
-              )}
-            />
-          </div>
-        </div>
+                <Controller
+                  name="owner.role"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      fullWidth
+                      variant="outlined"
+                      displayEmpty
+                      style={{ backgroundColor: "white" }}
+                    >
+                      <MenuItem value="" disabled>
+                        Select Role
+                      </MenuItem>
+                      <MenuItem value="Admin">Admin</MenuItem>
+                    </Select>
+                  )}
+                />
+              </div>
+            </div>
 
-        <Divider className="my-6 col-span-1 md:col-span-2" />
+            <Divider className="my-6 col-span-1 md:col-span-2" />
 
-        {/* Pages Access Section */}
-        <div className="col-span-1 md:col-span-2">
-          <Typography variant="h6" gutterBottom>
-            Pages Access
-          </Typography>
-          <div className="col-span-1 md:col-span-2 grid grid-cols-2 gap-10 ">
-            {[
-              {
-                id: "setup",
-                title: "Setup",
-                children: [
-                  { id: "setup-maingroup", title: "Main Group" },
-                  { id: "setup-chartofaccounts", title: "Chart Of Accounts" },
-                  { id: "setup-inventorygroup", title: "Inventory Group" },
-                  { id: "setup-inventory", title: "Inventory Information" },
-                  { id: "setup-salesmen", title: "Salesmen" },
-                  { id: "setup-companynames", title: "Company Names" },
-                  { id: "setup-batch", title: "Batch" },
-                  { id: "setup-opening-balances", title: "Opening Balances" },
-                  { id: "setup-expiry-dates", title: "Expiry Dates" },
-                ],
-              },
-              {
-                id: "utilities",
-                title: "Utilities",
-                children: [
-                  { id: "utilities-newuser", title: "Add New User" },
-                  { id: "utilities-userlist", title: "All Users" },
-                  // { id: "utilities-formname", title: "Form Names" },
-                  // { id: "utilities-permissions", title: "Permissions" },
+            {/* Pages Access Section */}
+            <div className="col-span-1 md:col-span-2">
+              <Typography variant="h6" gutterBottom>
+                Pages Access
+              </Typography>
+              <div className="col-span-1 md:col-span-2 grid grid-cols-2 gap-10 ">
+                {[
                   {
-                    id: "utilities-opening-balances",
-                    title: "Carry Opening Balances",
+                    id: "setup",
+                    title: "Setup",
+                    children: [
+                      { id: "setup-maingroup", title: "Main Group" },
+                      {
+                        id: "setup-chartofaccounts",
+                        title: "Chart Of Accounts",
+                      },
+                      { id: "setup-inventorygroup", title: "Inventory Group" },
+                      { id: "setup-inventory", title: "Inventory Information" },
+                      { id: "setup-salesmen", title: "Salesmen" },
+                      { id: "setup-companynames", title: "Company Names" },
+                      { id: "setup-batch", title: "Batch" },
+                      {
+                        id: "setup-opening-balances",
+                        title: "Opening Balances",
+                      },
+                      { id: "setup-expiry-dates", title: "Expiry Dates" },
+                    ],
                   },
-                ],
-              },
-              {
-                id: "entry",
-                title: "Entry",
-                children: [
-                  { id: "entry-salesbill", title: "Sales Bill" },
-                  { id: "entry-purchasebill", title: "Purchase Bill" },
-                  { id: "entry-paymentreceipt", title: "Payment Receipt" },
-                  { id: "entry-estimatebill", title: "Estimate Bill" },
-                  { id: "entry-generalbill", title: "General Bill" },
-                ],
-              },
-              {
-                id: "reports",
-                title: "Reports",
-                children: [
-                  { id: "one-a/c-head-ledger", title: "One A/C Head Ledger" },
-                  { id: "day-book-for-date", title: "Day Book For Date" },
-                  { id: "one-item-ledger", title: "One Item Ledger" },
-                  { id: "accounts-reports", title: "Accounts Report" },
-                ],
-              },
-            ].map((section) => (
-              <div key={section.id} className="border border-b p-10">
-                <Typography
-                  variant="subtitle1"
-                  className="my-4 font-800 underline"
-                >
-                  {section.title}
-                </Typography>
-                {section.children.map((page, index) => (
-                  <div key={page.id} className="flex flex-col ">
-                    <Typography variant="body2" className="mr-4 font-600 my-4">
-                      {page.title}:
+                  {
+                    id: "utilities",
+                    title: "Utilities",
+                    children: [
+                      { id: "utilities-newuser", title: "Add New User" },
+                      { id: "utilities-userlist", title: "All Users" },
+                      // { id: "utilities-formname", title: "Form Names" },
+                      // { id: "utilities-permissions", title: "Permissions" },
+                      {
+                        id: "utilities-opening-balances",
+                        title: "Carry Opening Balances",
+                      },
+                    ],
+                  },
+                  {
+                    id: "entry",
+                    title: "Entry",
+                    children: [
+                      { id: "entry-salesbill", title: "Sales Bill" },
+                      { id: "entry-purchasebill", title: "Purchase Bill" },
+                      { id: "entry-paymentreceipt", title: "Payment Receipt" },
+                      { id: "entry-estimatebill", title: "Estimate Bill" },
+                      { id: "entry-generalbill", title: "General Bill" },
+                    ],
+                  },
+                  {
+                    id: "reports",
+                    title: "Reports",
+                    children: [
+                      {
+                        id: "one-a/c-head-ledger",
+                        title: "One A/C Head Ledger",
+                      },
+                      { id: "day-book-for-date", title: "Day Book For Date" },
+                      { id: "one-item-ledger", title: "One Item Ledger" },
+                      { id: "accounts-reports", title: "Accounts Report" },
+                    ],
+                  },
+                ].map((section) => (
+                  <div key={section.id} className="border border-b p-10">
+                    <Typography
+                      variant="subtitle1"
+                      className="my-4 font-800 underline"
+                    >
+                      {section.title}
                     </Typography>
-                    <div className="flex items-center">
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            onChange={(e) =>
-                              handleSelectAllChange(page.id, e.target.checked)
+                    {section.children.map((page, index) => (
+                      <div key={page.id} className="flex flex-col ">
+                        <Typography
+                          variant="body2"
+                          className="mr-4 font-600 my-4"
+                        >
+                          {page.title}:
+                        </Typography>
+
+                        <div className="flex items-center">
+                          <Controller
+                            name={
+                              `pagesAccess.${page.id}.read` as keyof FormData["pagesAccess"]
                             }
-                          />
-                        }
-                        label="Select All"
-                      />
-                    </div>
-                    <div className="flex items-center">
-                      <Controller
-                        name={`pagesAccess.${page.id}.read` as keyof FormData['pagesAccess']}
-                        control={control}
-                        render={({ field }) => (
-                          <FormControlLabel
-                            control={<Checkbox {...field} />}
-                            label="Read"
-                          />
-                        )}
-                      />
-                      <Controller
-                        name={`pagesAccess.${page.id}.add` as keyof FormData['pagesAccess']}
-                        control={control}
-                        render={({ field }) => (
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                {...field}
-                                onChange={(e) =>
-                                  handlePermissionChange(
-                                    field.name,
-                                    e.target.checked,
-                                    `pagesAccess.${page.id}.read`
-                                  )
+                            control={control}
+                            render={({ field }) => (
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    {...field}
+                                    checked={
+                                      pagesAccess[page.id]?.read || false
+                                    }
+                                    onChange={(e) =>
+                                      handlePermissionChange(
+                                        field.name,
+                                        e.target.checked,
+                                        `pagesAccess.${page.id}.read`
+                                      )
+                                    }
+                                  />
                                 }
+                                label="Read"
                               />
-                            }
-                            label="Add"
+                            )}
                           />
-                        )}
-                      />
-                      <Controller
-                        name={`pagesAccess.${page.id}.update` as keyof FormData['pagesAccess']}
-                        control={control}
-                        render={({ field }) => (
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                {...field}
-                                onChange={(e) =>
-                                  handlePermissionChange(
-                                    field.name,
-                                    e.target.checked,
-                                    `pagesAccess.${page.id}.read`
-                                  )
+                          <Controller
+                            name={
+                              `pagesAccess.${page.id}.add` as keyof FormData["pagesAccess"]
+                            }
+                            control={control}
+                            render={({ field }) => (
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    {...field}
+                                    checked={pagesAccess[page.id]?.add || false}
+                                    onChange={(e) =>
+                                      handlePermissionChange(
+                                        field.name,
+                                        e.target.checked,
+                                        `pagesAccess.${page.id}.read`
+                                      )
+                                    }
+                                  />
                                 }
+                                label="Add"
                               />
-                            }
-                            label="Update"
+                            )}
                           />
-                        )}
-                      />
-                      <Controller
-                        name={`pagesAccess.${page.id}.delete` as keyof FormData['pagesAccess']}
-                        control={control}
-                        render={({ field }) => (
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                {...field}
-                                onChange={(e) =>
-                                  handlePermissionChange(
-                                    field.name,
-                                    e.target.checked,
-                                    `pagesAccess.${page.id}.read`
-                                  )
+                          <Controller
+                            name={
+                              `pagesAccess.${page.id}.update` as keyof FormData["pagesAccess"]
+                            }
+                            control={control}
+                            render={({ field }) => (
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    {...field}
+                                    checked={
+                                      pagesAccess[page.id]?.update || false
+                                    }
+                                    onChange={(e) =>
+                                      handlePermissionChange(
+                                        field.name,
+                                        e.target.checked,
+                                        `pagesAccess.${page.id}.read`
+                                      )
+                                    }
+                                  />
                                 }
+                                label="Update"
                               />
-                            }
-                            label="Delete"
+                            )}
                           />
-                        )}
-                      />
-                    </div>
+                          <Controller
+                            name={
+                              `pagesAccess.${page.id}.delete` as keyof FormData["pagesAccess"]
+                            }
+                            control={control}
+                            render={({ field }) => (
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    {...field}
+                                    checked={
+                                      pagesAccess[page.id]?.delete || false
+                                    }
+                                    onChange={(e) =>
+                                      handlePermissionChange(
+                                        field.name,
+                                        e.target.checked,
+                                        `pagesAccess.${page.id}.read`
+                                      )
+                                    }
+                                  />
+                                }
+                                label="Delete"
+                              />
+                            )}
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Submit Button */}
@@ -709,7 +787,7 @@ const CompanyInfo = () => {
           variant="contained"
           color="secondary"
           type="submit"
-          disabled={!isValid || loading}
+          disabled={!errors || loading}
         >
           <div className="flex items-center">
             Save

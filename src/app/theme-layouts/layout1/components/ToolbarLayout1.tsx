@@ -23,6 +23,8 @@ import QuickPanelToggleButton from "../../shared-components/quickPanel/QuickPane
 import { Avatar, Input, Paper } from "@mui/material";
 import { motion } from "framer-motion";
 import FuseSvgIcon from "@fuse/core/FuseSvgIcon";
+import {useAppSelector} from 'app/store'
+import { selectUser } from "app/store/user/userSlice";
 
 type ToolbarLayout1Props = {
   className?: string;
@@ -34,6 +36,7 @@ type ToolbarLayout1Props = {
 function ToolbarLayout1(props: ToolbarLayout1Props) {
   const { className } = props;
   const [searchText, setSearchText] = useState("");
+  const user = useAppSelector(selectUser);
 
   const config = useSelector(
     selectFuseCurrentLayoutConfig
@@ -111,7 +114,7 @@ function ToolbarLayout1(props: ToolbarLayout1Props) {
                 className="md:mx-4"
                 alt="user photo"
                 // src={user.data.photoURL}
-                src="https://www.shutterstock.com/image-vector/circle-line-simple-design-logo-600nw-2174926871.jpg"
+                src={user?.logoURL}
               />
             </div>
           </div>

@@ -17,12 +17,11 @@ import JwtService from "src/app/auth/services/jwtService";
  * The user menu.
  */
 function UserMenu() {
-  const data = useSelector(selectUser);
+  const data = useAppSelector(selectUser);
   const user = {
     role: data.role,
     data: data,
   };
-  console.log("user", user);
 
   const permission = useAppSelector(selectUserPermissions);
   const hasSettingsPermission = permission?.includes("Manage Settings");
@@ -105,7 +104,7 @@ function UserMenu() {
           <>
             <MenuItem
               component={NavLink}
-              to="/sign-out"
+              to="/sign-in"
               onClick={() => {
                 userMenuClose();
                 JwtService.logout()

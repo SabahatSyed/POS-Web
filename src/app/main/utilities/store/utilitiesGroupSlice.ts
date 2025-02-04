@@ -1,7 +1,7 @@
-import { createSlice } from '@reduxjs/toolkit';
-import axios from 'axios';
-import { RootStateType } from 'app/store/types';
-import createAppAsyncThunk from 'app/store/createAppAsyncThunk';
+import { createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
+import { RootStateType } from "app/store/types";
+import createAppAsyncThunk from "app/store/createAppAsyncThunk";
 
 type AppRootStateType = RootStateType<dataSliceType>;
 
@@ -9,9 +9,9 @@ type DataType = {
   [key: string]: unknown;
 };
 
-const storeName = 'company';
-const companyApiEndPoint = '/api/company';
-const userApiEndPoint = '/api/user';
+const storeName = "company";
+const companyApiEndPoint = "/api/company";
+const userApiEndPoint = "/api/user";
 
 export const createCompany = createAppAsyncThunk(
   `company/${storeName}/createCompany`,
@@ -19,7 +19,7 @@ export const createCompany = createAppAsyncThunk(
     const response = await axios.post(`${companyApiEndPoint}/`, payload);
     const data = (await response.data) as DataType;
     return data;
-  },
+  }
 );
 
 export const createUser = createAppAsyncThunk(
@@ -28,7 +28,18 @@ export const createUser = createAppAsyncThunk(
     const response = await axios.post(`${userApiEndPoint}/add`, payload);
     const data = (await response.data) as DataType;
     return data;
-  },
+  }
+);
+
+export const updateCompany = createAppAsyncThunk(
+  `company/${storeName}/updateCompany`,
+  async ({ payload, id }: { payload: any; id: string }) => {
+    const response = await axios.put(`${companyApiEndPoint}/${id}`, payload);
+
+    const data = (await response.data) as DataType;
+
+    return data;
+  }
 );
 
 const initialState: DataType = {};
@@ -56,7 +67,8 @@ export const companySlice = createSlice({
   },
 });
 
-export const selectCompany = (state: AppRootStateType) => state.company[storeName];
+export const selectCompany = (state: AppRootStateType) =>
+  state.company[storeName];
 
 export type dataSliceType = typeof companySlice;
 

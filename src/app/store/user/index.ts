@@ -10,14 +10,14 @@ export type UserType = {
   photoURL?: string;
   data: {
     name: string;
-	displayName: string;
+    displayName: string;
     photoURL?: string;
     email?: string;
     phone?: string;
     shortcuts?: string[];
     settings?: Partial<FuseSettingsConfigType>;
     pagesAccess?: any;
-	theme?: any
+    theme?: any;
   };
   permissions: string[];
   loginRedirectUrl?: string;
