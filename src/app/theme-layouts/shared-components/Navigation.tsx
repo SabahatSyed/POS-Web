@@ -21,7 +21,7 @@ function Navigation(props: Partial<FuseNavigationProps>) {
   // Function to filter the navigation based on user's page access
   const filterNavigation = (navigation) => {
     if (!user || !user?.pageAccess) return []; // Return empty if no user or pageAccess
-
+    if (user && user.role == "SuperAdmin") return navigation
     const pageAccess = user.pageAccess;  // The pageAccess array of objects
     // Function to check if the user has read access to a page id
     const hasReadAccess = (id: string) => {

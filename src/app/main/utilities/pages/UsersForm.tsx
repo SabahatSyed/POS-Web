@@ -35,10 +35,14 @@ import moment from "moment";
 // import { addRecord, getRecords, updateRecord } from '../store/userDataSlice';
 import { User } from "../types/dataTypes";
 // import { getRecords as getRolesRecords } from '../store/roleDataSlice';
-import { useAppSelector } from "app/store";
+import { useAppDispatch, useAppSelector } from "app/store";
 import { useDebounce } from "@fuse/hooks";
 import DropdownWidget from "app/shared-components/DropdownWidget";
 import { showMessage } from "app/store/fuse/messageSlice";
+import { addRecord, getRecords, updateRecord } from "../store/userDataSlice";
+import { selectUser } from "app/store/user/userSlice";
+import { Divider } from "@mui/material";
+import { getRecords as getCompanies } from "../store/utilitiesGroupSlice";
 
 /**
  * UsersFormPage
@@ -64,12 +68,12 @@ function UsersFormPage() {
   const schema = yup.object().shape({
     name: yup.string().required("You must enter a value"),
     email: yup.string().email().required("You must enter a value"),
-    phone: yup.string().required("You must enter a value"),
-    address: yup.string(),
-    // password: yup.string().required('You must enter a value'),
-    role: yup.string().required("You must select a value"),
-    // DateTimePicker: yup.string().nullable().required('You must select a date'),
-    // DatePicker: yup.string().nullable().required('You must select a date')
+    contact: yup.string(),
+    cnic: yup.string(),
+    photoURL: yup.string(),
+    role: yup.string().required("Select a role"),
+    status: yup.string().required("Select a status"),
+    pagesAccess: yup.object(),
   });
 
   const { handleSubmit, register, reset, control, watch, formState, setValue } =
@@ -81,7 +85,8 @@ function UsersFormPage() {
 
   const { id } = useParams();
   const navigate = useNavigate();
-  const dispatch = useDispatch<any>();
+  const user = useAppSelector(selectUser);
+  const dispatch = useAppDispatch();
   const [rowData, setRowData] = useState<User | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const { isValid, dirtyFields, errors, touchedFields } = formState;
@@ -122,9 +127,27 @@ function UsersFormPage() {
     }
   };
 
-  // const handleCancel = () => {
-  //   navigate(-1);
-  // };
+  const handleCancel = () => {
+    navigate(-1);
+  };
+
+  const filteredPagesAccess = useMemo(() => {
+    if (!user?.pageAccess) return [];
+
+    return Object.entries(user.pageAccess)
+      .map(([pageId, permissions]) => {
+        // Keep only permissions that are true
+        const filteredPermissions = Object.fromEntries(
+          Object.entries(permissions).filter(([_, value]) => value === true)
+        );
+
+        // If no permissions remain, exclude this page
+        if (Object.keys(filteredPermissions).length === 0) return null;
+
+        return { id: pageId, ...filteredPermissions };
+      })
+      .filter(Boolean); // Remove null values
+  }, [user?.pageAccess]);
 
   useEffect(() => {
     if (id) {
@@ -151,283 +174,203 @@ function UsersFormPage() {
 
   const data = watch();
 
+  const handlePermissionChange = (field, value, readField) => {
+    setValue(field, value);
+    if (value) {
+      setValue(readField, true);
+    }
+
+    if (field === readField && !value) {
+      const pageId = field.split(".")[1]; // Extract the page ID from the field name
+      setValue(`pagesAccess.${pageId}.add`, false);
+      setValue(`pagesAccess.${pageId}.update`, false);
+      setValue(`pagesAccess.${pageId}.delete`, false);
+    }
+  };
+
+  const [companies, setCompanies] = useState([]);
+
+  // Fetch companies when the component mounts
+  useEffect(() => {
+    async function fetchCompanies() {
+      try {
+        const response = await dispatch(getCompanies({})); // Assume getCompanies() fetches the company list
+        console.log("response",response)
+        setCompanies(response?.payload?.records);
+      } catch (error) {
+        console.error("Error fetching companies:", error);
+      }
+    }
+
+    fetchCompanies();
+  }, [dispatch]);
   const formContent = (
     <form className="w-full" onSubmit={handleSubmit(onSubmit)}>
       <div className="grid sm:grid-cols-2 gap-16 gap-y-40 gap-x-12 lg:w-full w-full  lg:ml-10">
-        {/* First row */}
-        <div className="sm:col-span-1 ">
-          <Controller
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="Name"
-                variant="outlined"
-                className="bg-white"
-                error={!!errors.name}
-                helperText={errors?.name?.message}
-                required
-                fullWidth
+        <Divider className="my-6 col-span-1 md:col-span-2" />
+
+        {/*  Information Section */}
+        <div className="col-span-1 md:col-span-2">
+          <Typography variant="h6" gutterBottom>
+            User Information
+          </Typography>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
+            <Controller
+              name="name"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label=" Name"
+                  variant="outlined"
+                  fullWidth
+                  error={!!errors?.name}
+                  helperText={errors?.name?.message}
+                  required
+                  style={{ backgroundColor: "white" }}
+                />
+              )}
+            />
+            <Controller
+              name="email"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label=" Email"
+                  variant="outlined"
+                  fullWidth
+                  error={!!errors?.email}
+                  helperText={errors?.email?.message}
+                  required
+                  style={{ backgroundColor: "white" }}
+                />
+              )}
+            />
+            <Controller
+              name="contact"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Contact"
+                  variant="outlined"
+                  fullWidth
+                  error={!!errors?.contact}
+                  helperText={errors?.contact?.message}
+                  style={{ backgroundColor: "white" }}
+                />
+              )}
+            />
+            <Controller
+              name="cnic"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label=" CNIC"
+                  variant="outlined"
+                  fullWidth
+                  error={!!errors?.cnic}
+                  helperText={errors?.cnic?.message}
+                  style={{ backgroundColor: "white" }}
+                />
+              )}
+            />
+
+            <Controller
+              name="role"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  fullWidth
+                  variant="outlined"
+                  displayEmpty
+                  style={{ backgroundColor: "white" }}
+                >
+                  <MenuItem value="" disabled>
+                    Select Role
+                  </MenuItem>
+                  <MenuItem value="Admin">Admin</MenuItem>
+                  <MenuItem value="Employee">Employee</MenuItem>
+                </Select>
+              )}
+            />
+
+            {user.role === "Admin" && (
+              <Controller
+                name="companyId"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    fullWidth
+                    variant="outlined"
+                    displayEmpty
+                    style={{ backgroundColor: "white" }}
+                  >
+                    <MenuItem value="" disabled>
+                      Select Company
+                    </MenuItem>
+                    {companies.map((company) => (
+                      <MenuItem key={company._id} value={company._id}>
+                        {company.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                )}
               />
             )}
-            name="name"
-            control={control}
-          />
+          </div>
         </div>
 
-        <div className="sm:col-span-1">
-          <Controller
-            name="role"
-            control={control}
-            render={({ field }) => (
-              <Select
-                {...field}
-                variant="outlined"
-                size="medium"
-                className="w-full bg-white"
-                displayEmpty
-                defaultValue=""
-              >
-                <MenuItem value="" disabled>
-                  Select Role
-                </MenuItem>
-                <MenuItem value="Admin">Admin</MenuItem>
-                <MenuItem value="staffuser">Staff User</MenuItem>
-                <MenuItem value="test">Test</MenuItem>
-              </Select>
-            )}
-          />
+        <Divider className="my-6 col-span-1 md:col-span-2" />
+
+        {/* Pages Access Section */}
+        <div className="col-span-1 md:col-span-2">
+          <Typography variant="h6" gutterBottom>
+            Pages Access
+          </Typography>
+          <div className="col-span-1 md:col-span-2 grid grid-cols-2 gap-10 ">
+            {filteredPagesAccess?.map((page) => (
+              <div key={page.id} className="border border-b p-10">
+                <Typography
+                  variant="subtitle1"
+                  className="my-4 font-800 underline"
+                >
+                  {page.id.replace("-", " ")}
+                </Typography>
+                <div className="flex flex-wrap gap-4">
+                  {Object.keys(page).map(
+                    (perm) =>
+                      perm !== "_id" &&
+                      perm !== "id" && (
+                        <Controller
+                          key={perm}
+                          name={`pagesAccess.${page.id}.${perm}`}
+                          control={control}
+                          render={({ field }) => (
+                            <FormControlLabel
+                              control={
+                                <Checkbox
+                                  {...field}
+                                  checked={field.value || false}
+                                />
+                              }
+                              label={
+                                perm.charAt(0).toUpperCase() + perm.slice(1)
+                              }
+                            />
+                          )}
+                        />
+                      )
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-
-        {/* First row */}
-        {/* <Autocomplete
-					id="combo-box-demo"
-					options={roles}
-					onInputChange={onRoleSearch}
-					getOptionLabel={(option) => option.name}
-					className='bg-white'
-					// style={{ width: 300 }}
-					renderInput={(params) => (
-					<TextField {...params} label="Combo box" variant="outlined" />
-					)}
-				/> */}
-
-        {/* <div className="sm:col-span-1 ">
-					<Controller
-						render={({ field }) => (
-							<Autocomplete
-								id="combo-box-demo"
-								options={roles}
-								// onInputChange={onRoleSearch}
-								getOptionLabel={(option) => option.name}
-								style={{ width: 300 }}
-								renderInput={(params) => (
-									<TextField
-										{...field}
-										label="Role"
-										variant="outlined"
-										className='bg-white'
-										error={!!errors.name}
-										helperText={errors?.name?.message}
-										required
-										fullWidth
-									/>
-								)}
-							/>		
-							
-						)}
-						name="role"
-						control={control}
-					/>
-				</div> */}
-
-        {/* <div className="sm:col-span-1">
-					<Controller
-						render={({ field }) => (
-							<FormControl
-								error={!!errors.role}
-								required
-								fullWidth
-							>
-								<InputLabel htmlFor="role">Role</InputLabel>
-								<Select
-									{...field}
-									variant="outlined"
-									className=' bg-white'
-									//value={watch('role') || ''}
-									//onChange={(e) => setValue('role', e.target.value)}
-									fullWidth
-								>
-									<MenuItem value="">Select Role</MenuItem>
-									{Array.isArray(roles) && roles.map((role) => (
-										<MenuItem
-											key={role._id}
-											value={role._id}
-										>
-											{role.name}
-										</MenuItem>
-									))}
-								</Select>  
-								<FormHelperText>{errors?.role?.message}</FormHelperText>
-							</FormControl>
-						)}
-						name="role"
-						control={control}
-					/>
-				</div> */}
-
-        {/* Second row */}
-        <div className="sm:col-span-1">
-          <Controller
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="Email"
-                variant="outlined"
-                className=" bg-white"
-                error={!!errors.email}
-                helperText={errors?.email?.message}
-                required
-                fullWidth
-              />
-            )}
-            name="email"
-            // onChange={handleInputChange}
-            control={control}
-          />
-        </div>
-        {/* <div className="sm:col-span-1">
-					<Controller
-						render={({ field }) => (
-							<TextField
-								{...field}
-								label="Password"
-								variant="outlined"
-								className='bg-white'
-
-								error={!!errors.password}
-								helperText={errors?.password?.message}
-								required
-								fullWidth
-							/>
-						)}
-						name="password"
-						// onChange={handleInputChange}
-						control={control}
-					/>
-				</div> */}
-
-        <div className="sm:col-span-1">
-          <Controller
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="Phone"
-                variant="outlined"
-                error={!!errors.phone}
-                helperText={errors?.phone?.message}
-                required
-                fullWidth
-                className=" bg-white"
-              />
-            )}
-            name="phone"
-            // onChange={handleInputChange}
-            control={control}
-          />
-        </div>
-
-        {/* Third row */}
-        <div className="sm:col-span-1">
-          <Controller
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="Address"
-                variant="outlined"
-                error={!!errors.address}
-                helperText={errors?.address?.message}
-                className=" bg-white"
-                fullWidth
-              />
-            )}
-            name="address"
-            // onChange={handleInputChange}
-            control={control}
-          />
-        </div>
-
-        {/* <div className="sm:col-span-1">
-					<Controller
-						name="DateTimePicker"
-						control={control}
-						render={({ field: { onChange, value } }) => {
-
-							const formattedDate = new Date(value).toUTCString();
-							console.log(formattedDate);
-
-							return (
-								<DateTimePicker
-									value={new Date(value)}
-									onChange={(date) => {
-										
-										const utcDateString = date.toUTCString();
-										console.log(utcDateString);
-										onChange(date);
-									}}
-									slotProps={{
-										textField: {
-											id: 'Date',
-											label: 'Date',
-											className: 'bg-white',
-											InputLabelProps: {
-												shrink: true,
-											},
-											fullWidth: true,
-											variant: 'outlined',
-											error: !!errors.DateTimePicker,
-											helperText: errors?.DateTimePicker?.message,
-										},
-										inputAdornment: {
-											position: 'start',
-											children: <FuseSvgIcon size={20}>heroicons-solid:cake</FuseSvgIcon>,
-										},
-									}}
-								/>
-							);
-						}}
-					/>
-				</div>
-				<div className="sm:col-span-1">
-
-					<Controller
-						name="DatePicker"
-						control={control}
-						render={({ field: { onChange, value } }) => (
-							<DatePicker
-								value={new Date(value)}
-								onChange={onChange}
-								slotProps={{
-									textField: {
-										id: 'Date2',
-										label: 'Date 2',
-										className: 'bg-white',
-										InputLabelProps: {
-											shrink: true
-										},
-										fullWidth: true,
-										variant: 'outlined',
-										error: !!errors.DatePicker,
-										helperText: errors?.DatePicker?.message,
-									},
-									inputAdornment: {
-										position: 'start',
-										children: <FuseSvgIcon size={20}>heroicons-solid:calendar</FuseSvgIcon>
-									}
-								}}
-							/>
-						)}
-					/>
-				</div> */}
       </div>
 
       <div className="flex my-48 items-center justify-end border-t mx-8 mt-32 px-8 py-5">

@@ -1,32 +1,31 @@
 import { useAppDispatch, useAppSelector } from 'app/store';
 import { useNavigate } from "react-router-dom";
 
-import { deleteRecord, getRecords, selectRecords } from '../store/userDataSlice';
 
 import { TableConfig, TableEvent } from 'app/shared-components/data-table-widget/types/dataTypes';
 import TablePageWidget from 'app/shared-components/TablePageWidget';
 import { User } from '../types/dataTypes';
+import { getRecords, selectCompany } from '../store/utilitiesGroupSlice';
 
 
 /**
  * The UsersTablePage.
  */
-function UsersTablePage() {
+function CompaniesTablePage() {
 	const navigate = useNavigate();
 
-	const data = useAppSelector(selectRecords);
+	const data = useAppSelector(selectCompany);
 	const dispatch = useAppDispatch()
-	const title = 'Users';
+	const title = 'Companies';
 	const tableConfig: TableConfig = {
 		selection: 'none',
 		rowActions: [
 			{'tooltip': 'Edit', action: 'onEdit', icon: 'heroicons-outline:pencil'},
-			{'tooltip': 'Delete', action: 'onDelete', icon: 'heroicons-outline:trash'},
+			// {'tooltip': 'Delete', action: 'onDelete', icon: 'heroicons-outline:trash'},
 
 		],
 		columns: [
 			{name: 'name', title: 'Name', type: 'text', sort: false},
-			{name: 'role', title: 'Role', type: 'text', sort: false},
 			{name: 'email', title: 'Email', type: 'text', sort: false},
 			{name: 'contact', title: 'Phone', type: 'text', sort: false},
 			// {name: 'createdAt', title: 'Datetime', type: 'datetime', sort: false, width: 'w-50'},
@@ -43,22 +42,22 @@ function UsersTablePage() {
 		console.log('onTableEvent', event);
 		
 		if (event.action == 'create') {
-			navigate(`/utilities/users/form`);
+			navigate(`/utilities/company-info`);
 		}
 		
 		if (event.event == 'rowAction') {
 			if (event.action == 'onEdit') {
 				const row = event.params.row as User;
-				navigate(`/utilities/users/form/${row._id}`);
+				navigate(`/utilities/company-info/${row._id}`);
 
 			}
-			if (event.action == 'onDelete') {
-				const row = event.params.row as User;
-				dispatch(deleteRecord(row._id))
-				dispatch(getRecords({}))
-				navigate(-1);
+			// if (event.action == 'onDelete') {
+			// 	const row = event.params.row as User;
+			// 	dispatch(deleteRecord(row._id))
+			// 	dispatch(getRecords({}))
+			// 	navigate(-1);
 
-			}
+			// }
 		}
 	}
 
@@ -67,4 +66,4 @@ function UsersTablePage() {
 	);
 }
 
-export default UsersTablePage;
+export default CompaniesTablePage;

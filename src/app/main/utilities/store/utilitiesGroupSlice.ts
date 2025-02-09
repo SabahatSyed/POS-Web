@@ -14,7 +14,7 @@ const companyApiEndPoint = "/api/company";
 const userApiEndPoint = "/api/user";
 
 export const createCompany = createAppAsyncThunk(
-  `company/${storeName}/createCompany`,
+  `${storeName}/createCompany`,
   async ({ payload }: { payload: any }) => {
     const response = await axios.post(`${companyApiEndPoint}/`, payload);
     const data = (await response.data) as DataType;
@@ -22,8 +22,32 @@ export const createCompany = createAppAsyncThunk(
   }
 );
 
+export const getRecords = createAppAsyncThunk(
+  `${storeName}/getRecords`,
+  async ({
+    page,
+    limit,
+    id,
+    search,
+  }: {
+    page?: number;
+    limit?: number;
+    id?: string;
+    search?: string;
+  }) => {
+    const response = await axios.get(
+      `${companyApiEndPoint}?page=${page ? page : ""}&limit=${
+        limit ? limit : ""
+      }&id=${id ? id : ""}&text=${search ? search : ""}`
+    );
+
+    const data = (await response.data) as DataType;
+    return data.data;
+  }
+);
+
 export const createUser = createAppAsyncThunk(
-  `company/${storeName}/createUser`,
+  `${storeName}/createUser`,
   async ({ payload }: { payload: DataType }) => {
     const response = await axios.post(`${userApiEndPoint}/add`, payload);
     const data = (await response.data) as DataType;
@@ -32,7 +56,7 @@ export const createUser = createAppAsyncThunk(
 );
 
 export const updateCompany = createAppAsyncThunk(
-  `company/${storeName}/updateCompany`,
+  `${storeName}/updateCompany`,
   async ({ payload, id }: { payload: any; id: string }) => {
     const response = await axios.put(`${companyApiEndPoint}/${id}`, payload);
 
@@ -48,7 +72,7 @@ const initialState: DataType = {};
  * The company slice.
  */
 export const companySlice = createSlice({
-  name: `company/${storeName}`,
+  name: `${storeName}`,
   initialState,
   reducers: {},
   extraReducers: (builder) => {
@@ -67,8 +91,8 @@ export const companySlice = createSlice({
   },
 });
 
-export const selectCompany = (state: AppRootStateType) =>
-  state.company[storeName];
+export const selectCompany = (state: AppRootStateType) =>{
+  state.companyinfo[storeName];}
 
 export type dataSliceType = typeof companySlice;
 

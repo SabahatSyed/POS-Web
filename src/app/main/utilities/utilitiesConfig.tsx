@@ -22,7 +22,7 @@ const Permissions = lazyWithReducer('permissions', () => import('./pages/Permiss
 const Users = lazyWithReducer('users', () => import('./pages/UsersForm'), reducer);
 const UsersTable = lazyWithReducer('users', () => import('./pages/UsersTable'), reducer);
 const CompanyInfo = lazyWithReducer('companyinfo', () => import('./pages/CompanyInfo'), reducer);
-
+const CompanyTable = lazyWithReducer('companyinfo',()=> import('./pages/CompaniesTable'),reducer)
 
 
 
@@ -37,40 +37,56 @@ const MainGroupConfig = {
   },
   routes: [
     {
-      path: '/utilities/new-user',
+      path: '/utilities/users/form',
       element: <Users />,
-      auth: ['Admin'],
+      auth: null,
     },
     {
       path: '/utilities/users',
       element: <UsersTable />,
-      auth: ['Admin'],
+      auth: null,
+    },
+    {
+      path: '/utilities/users/form/:id',
+      element: <Users />,
+      auth: null,
     },
 
     {
       path: '/utilities/form-names',
       element: <FormNames />,
-      auth: ['Admin'],
+      auth: null,
     },
     {
       path: '/utilities/form-names/form',
       element: <FormNamesForm />,
-      auth: ['Admin'],
+      auth: null,
     },
     {
       path: '/utilities/carry-opening-balances',
       element: <CarryOpeningBalances />,
-      auth: ['Admin'],
+      auth: null,
     },
     {
       path: '/utilities/permissions',
       element: <Permissions />,
-      auth: ['Admin'],
+      auth: null,
     },
     {
       path: '/utilities/company-info',
       element: <CompanyInfo />,
-      auth: ['Admin'],
+      auth: null,
+    },
+  
+    {
+      path: '/utilities/company-info/:id',
+      element: <CompanyInfo />,
+      auth: null,
+    },
+    {
+      path: '/utilities/companies',
+      element: <CompanyTable />,
+      auth: null,
     },
   
   ],

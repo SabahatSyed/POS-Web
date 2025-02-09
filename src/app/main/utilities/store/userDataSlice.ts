@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { RootStateType } from 'app/store/types';
 import createAppAsyncThunk from 'app/store/createAppAsyncThunk';
-import { User } from '../types/dataTypes';
+import { User } from '../../general-management/types/dataTypes';
 
 type AppRootStateType = RootStateType<dataSliceType>;
 
@@ -10,22 +10,22 @@ type DataType = {
 	[key: string]: unknown;
 };
 
-const storeName = 'users';
-const apiEndPoint = '/api/users';
+const storeName = 'user';
+const apiEndPoint = '/api/user';
 
-export const getRecords = createAppAsyncThunk(`generalManagement/${storeName}/getRecords`, async ({page, limit, id, search}: {page?: number, limit?: number, id?: string, search?: string}) => {
+export const getRecords = createAppAsyncThunk(`${storeName}/getRecords`, async ({page, limit, id, search}: {page?: number, limit?: number, id?: string, search?: string}) => {
 	
 	const response = await axios.get(`${apiEndPoint}?page=${page ? page : ''}&limit=${limit ? limit : ''}&id=${id ? id : ''}&text=${search ? search : ''}`);
 
 	const data = (await response.data) as DataType;
 
-	return data;
+	return data.data;
 });
 
 /**
  * The add user.
  */
-export const addRecord = createAppAsyncThunk(`generalManagement/${storeName}/addRecord`, async ({payload}: {payload: User}) => {
+export const addRecord = createAppAsyncThunk(`${storeName}/addRecord`, async ({payload}: {payload: User}) => {
 
 	const response = await axios.post(`${apiEndPoint}/add`, payload);
 
@@ -34,22 +34,31 @@ export const addRecord = createAppAsyncThunk(`generalManagement/${storeName}/add
 	return data;
 });
 
-export const updateRecord = createAppAsyncThunk(`generalManagement/${storeName}/updateRecord`, async ({payload , id}: {payload: User , id:string}) => {
+export const updateRecord = createAppAsyncThunk(`${storeName}/updateRecord`, async ({payload , id}: {payload: User , id:string}) => {
 
-	const response = await axios.put(`${apiEndPoint}/update?id=${id}`, payload);
+	const response = await axios.put(`${apiEndPoint}/${id}`, payload);
 
 	const data = (await response.data) as DataType;
 
 	return data;
 });
 
+
+export const deleteRecord = createAppAsyncThunk(`${storeName}/deleteRecord`, async ({ id}: { id:string}) => {
+
+	const response = await axios.delete(`${apiEndPoint}/${id}`);
+
+	const data = (await response.data) as DataType;
+
+	return data;
+});
 const initialState: DataType = {};
 
 /**
  * The finance dashboard widgets slice.
  */
 export const dataSlice = createSlice({
-	name: `generalManagement/${storeName}`,
+	name: `${storeName}`,
 	initialState,
 	reducers: {},
 	extraReducers: (builder) => {
@@ -57,7 +66,7 @@ export const dataSlice = createSlice({
 	}
 });
 
-export const selectRecords = (state: AppRootStateType) => state.generalManagement[storeName];
+export const selectRecords = (state: AppRootStateType) => state.users[storeName];
 
 export type dataSliceType = typeof dataSlice;
 

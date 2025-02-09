@@ -1,15 +1,14 @@
-import { combineReducers } from '@reduxjs/toolkit';
+import { combineReducers } from "@reduxjs/toolkit";
 
-import utilities from "./utilitiesGroupSlice"
-
+import company from "./utilitiesGroupSlice";
+import user from "./userDataSlice";
 
 /**
  * The Setting dashboard reducer.
  */
 const reducer = combineReducers({
-	
-	utilities,
-	
+  company,
+  user,
 });
 
 export default reducer;

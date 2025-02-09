@@ -608,8 +608,8 @@ const CompanyInfo = () => {
                     id: "utilities",
                     title: "Utilities",
                     children: [
-                      { id: "utilities-newuser", title: "Add New User" },
-                      { id: "utilities-userlist", title: "All Users" },
+                      { id: "utilities-users", title: "Add New User" },
+                      // { id: "utilities-userlist", title: "All Users" },
                       // { id: "utilities-formname", title: "Form Names" },
                       // { id: "utilities-permissions", title: "Permissions" },
                       {

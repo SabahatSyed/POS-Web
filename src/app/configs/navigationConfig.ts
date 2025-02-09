@@ -22,6 +22,22 @@ const navigationConfig: FuseNavigationType = [
   // 	auth: ['Admin', 'Customer']
   // },
   {
+    id: "dashboards.projects",
+    title: "Dashboard",
+    type: "item",
+    icon: "heroicons-outline:cash",
+    url: "/dashboard",
+    auth: ["Admin"],
+  },
+  {
+    id: "keypoints",
+    title: "Keypoints",
+    type: "item",
+    icon: "heroicons-outline:cash",
+    url: "/keypoints",
+    auth: ["Admin", "Employee"],
+  },
+  {
     id: "setup",
     title: "Setup",
     type: "collapse",
@@ -112,21 +128,21 @@ const navigationConfig: FuseNavigationType = [
     auth: ["Admin", "SuperAdmin", "Employee"],
     children: [
       {
-        id: "utilities-newuser",
+        id: "utilities-users",
         title: "Add New User",
-        type: "item",
-        url: "utilities/new-user",
-        end: true,
-        auth: ["Admin"],
-      },
-      {
-        id: "utilities-userlist",
-        title: "All Users",
         type: "item",
         url: "utilities/users",
         end: true,
         auth: ["Admin", "SuperAdmin"],
       },
+      // {
+      //   id: "utilities-userlist",
+      //   title: "All Users",
+      //   type: "item",
+      //   url: "utilities/users",
+      //   end: true,
+      //   auth: ["Admin", "SuperAdmin"],
+      // },
       // {
       //   id: 'utilities-formname',
       //   title: 'Form Names',
@@ -148,6 +164,14 @@ const navigationConfig: FuseNavigationType = [
         url: "utilities/company-info",
         end: true,
         auth: ["SuperAdmin", "Admin"],
+      },
+      {
+        id: "utilities-companies",
+        title: "Companies",
+        type: "item",
+        url: "utilities/companies",
+        end: true,
+        auth: ["SuperAdmin"],
       },
       {
         id: "utilities-opening-balances",
@@ -263,22 +287,7 @@ const navigationConfig: FuseNavigationType = [
       },
     ],
   },
-  {
-    id: "dashboards.projects",
-    title: "Dashboard",
-    type: "item",
-    icon: "heroicons-outline:cash",
-    url: "/dashboard",
-    auth: ["Admin"],
-  },
-  {
-    id: "keypoints",
-    title: "Keypoints",
-    type: "item",
-    icon: "heroicons-outline:cash",
-    url: "/keypoints",
-    auth: ["Admin", "Employee"],
-  },
+ 
 ];
 
 export default navigationConfig;

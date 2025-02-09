@@ -44,4 +44,5 @@ export type TableConfig = {
     onAction?(action: TableAction): void; // action received (in)
     perPage?: number,
     showAdd?: boolean
+    shouldFilter?: boolean
 }

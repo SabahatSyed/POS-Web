@@ -18,6 +18,7 @@ import setupConfigs from '../main/setup/setupConfig'
 import entryConfigs from '../main/entry/entryConfig';
 import utilitiesConfigs from '../main/utilities/utilitiesConfig';
 import reportsConfig from '../main/reports/reportsConfig';
+import keypointsConfig from '../main/keypoints/keyPointsConfig'
 
 const routeConfigs: FuseRouteConfigsType = [
   SignOutConfig,
@@ -35,7 +36,8 @@ const routeConfigs: FuseRouteConfigsType = [
   setupConfigs,
   entryConfigs,
   utilitiesConfigs,
-  reportsConfig
+  reportsConfig,
+  keypointsConfig,
 ];
 
 /**

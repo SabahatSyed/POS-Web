@@ -14,6 +14,8 @@ import {
   TableEvent,
 } from "app/shared-components/data-table-widget/types/dataTypes";
 import ConfirmationDialog from "./ConfirmationDialog";
+import { selectUser } from "app/store/user/userSlice";
+import { useLocation } from "react-router";
 
 /**
  * The TablePageWidget.
@@ -30,7 +32,16 @@ function TablePageWidget(props: TablePageWidgetProps) {
   const { title, tableConfig } = props;
 
   const data = props.tableConfig.dataSource;
+  console.log("daa6da",data)
+  const user = useAppSelector(selectUser);
+  const location = useLocation();
+  const currentPageId = location.pathname.split("/").pop().replace("-", "");
 
+  const canAdd = tableConfig.shouldFilter
+    ? true
+    : Object.entries(user?.pageAccess || {}).some(
+        ([key, page]) => key.includes(currentPageId) && page.add
+      );
   const getRecords = props.getRecords;
   const deleteRecord = props.deleteRecord;
 
@@ -143,12 +154,12 @@ function TablePageWidget(props: TablePageWidgetProps) {
               inputProps={{
                 "aria-label": "Search",
               }}
-            //   style={{ height: "100%" }}
+              //   style={{ height: "100%" }}
             />
           </Paper>
 
           {/* T/P/B Field */}
-          <TextField
+          {/* <TextField
             select
             label="T/P/B"
             variant="outlined"
@@ -165,10 +176,10 @@ function TablePageWidget(props: TablePageWidgetProps) {
             <MenuItem value="T">T</MenuItem>
             <MenuItem value="P">P</MenuItem>
             <MenuItem value="B">B</MenuItem>
-          </TextField>
+          </TextField> */}
 
           {/* Create Button */}
-          {tableConfig.showAdd && (
+          {canAdd && tableConfig.showAdd && (
             <Button
               className="inline-flex justify-center items-center min-w-max   whitespace-nowrap  bg-blue-gray-600 text-white hover:bg-blue-gray-700 hover:opacity-90"
               startIcon={
@@ -181,7 +192,7 @@ function TablePageWidget(props: TablePageWidgetProps) {
           )}
 
           {/* Refresh Button */}
-          <Button
+          {/* <Button
             className={`flex items-center justify-center whitespace-nowrap px-4 py-2 rounded-full h-auto ${
               loading
                 ? "pointer-events-none opacity-70 bg-gray-300"
@@ -197,7 +208,7 @@ function TablePageWidget(props: TablePageWidgetProps) {
             onClick={handleRefresh}
           >
             {loading ? "Refreshing..." : "Refresh"}
-          </Button>
+          </Button> */}
         </div>
       </div>
     </div>
