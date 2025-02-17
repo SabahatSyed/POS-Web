@@ -21,6 +21,7 @@
     "@mui/system": "5.14.3",
     "@mui/x-date-pickers": "6.10.2",
     "@popperjs/core": "2.10.2",
+    "@rc-component/color-picker": "^2.0.1",
     "@react-oauth/google": "^0.12.1",
     "@reduxjs/toolkit": "1.9.7",
     "apexcharts": "3.41.0",
