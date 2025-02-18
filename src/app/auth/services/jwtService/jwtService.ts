@@ -124,6 +124,67 @@ class JwtService extends FuseUtils.EventEmitter {
         );
     });
 
+
+    forgotPassword = (email: string) =>
+      new Promise((resolve, reject) => {
+        axios
+          .post(jwtServiceConfig.forgotPassword, {
+            email,
+          })
+          .then(
+            (
+              response: AxiosResponse<{
+                data: {
+                  user: UserType;
+                  access_token: string;
+                  error?: {
+                    type: "email" | `root.${string}` | "root";
+                    message: string;
+                  }[];
+                };
+              }>
+            ) => {
+              console.log("response", response);
+              if (response?.status === 200) {
+                resolve(response?.data?.data);
+              } else {
+                reject(response?.data?.data?.error);
+              }
+            }
+          );
+      });
+
+      resetPassword = (password: string,token:string) =>
+        new Promise((resolve, reject) => {
+          axios
+            .post(jwtServiceConfig.resetPassword, {
+              new_password:password,
+              confirm_password:password,
+              resetPasswordToken:token,
+            })
+            .then(
+              (
+                response: AxiosResponse<{
+                  data: {
+                    user: UserType;
+                    access_token: string;
+                    error?: {
+                      type: "email" | `root.${string}` | "root";
+                      message: string;
+                    }[];
+                  };
+                }>
+              ) => {
+                console.log("response", response);
+                if (response?.status === 200) {
+                  resolve(response?.data?.data);
+                } else {
+                  reject(response?.data?.data?.error);
+                }
+              }
+            );
+        });
+  
   /**
    * Validate phone number.
    */

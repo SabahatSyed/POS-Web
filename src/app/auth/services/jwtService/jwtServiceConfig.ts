@@ -8,6 +8,8 @@ const jwtServiceConfig = {
 	accessToken: 'api/auth/loginWithToken',
 	updateUser: 'api/auth/update',
 	signUp: 'api/auth/login',
+	forgotPassword: 'api/auth/forgot-password',
+	resetPassword: 'api/auth/reset-password',
 };
 
 export default jwtServiceConfig;

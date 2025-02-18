@@ -157,7 +157,7 @@ function SignInPage() {
 
 							<Link
 								className="text-md font-medium"
-								to="/pages/auth/forgot-password"
+								to="/forgot-password"
 							>
 								Forgot password?
 							</Link>
