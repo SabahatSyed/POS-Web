@@ -15,11 +15,12 @@ import AvatarGroup from '@mui/material/AvatarGroup';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { UserType } from 'app/store/user';
 import jwtService from '../../auth/services/jwtService';
 import { useAppDispatch } from 'app/store';
 import { setUser } from 'app/store/user/userSlice';
+import CircularProgress from '@mui/material/CircularProgress';
 
 /**
  * Form Validation Schema
@@ -45,14 +46,14 @@ const defaultValues = {
 function SignInPage() {
 	const navigate= useNavigate()
 	const dispatch = useAppDispatch();
-	const { control, formState, handleSubmit, setError, setValue } = useForm({
+	const { control, formState, handleSubmit, setError, setValue,  } = useForm({
 		mode: 'onChange',
 		defaultValues,
 		resolver: yupResolver(schema)
 	});
 
 	const { isValid, dirtyFields, errors } = formState;
-
+	const [loading, setLoading] = useState<boolean>(false);
 	useEffect(() => {
 		setValue('email', 'admin@email.com', { shouldDirty: true, shouldValidate: true });
 		setValue('password', '123456', { shouldDirty: true, shouldValidate: true });
@@ -60,11 +61,13 @@ function SignInPage() {
 
 	function onSubmit({ email, password }: InferType<typeof schema>) {
 		// navigate('/dashboards/project');
+		setLoading(true)
 		jwtService
 			.signInWithEmailAndPassword(email, password)
 			.then((user: UserType) => {
 				// eslint-disable-next-line no-console
 				console.log("user",user);
+				setLoading(false)
 				dispatch(setUser(user))
 
 				// No need to do anything, user data will be set at app/auth/AuthContext
@@ -75,6 +78,7 @@ function SignInPage() {
 						type: 'manual',
 						message: error.message
 					});
+					setLoading(false)
 				});
 			});
 	}
@@ -133,7 +137,7 @@ function SignInPage() {
 						/>
 
 						<div className="flex flex-col items-center justify-center sm:flex-row sm:justify-between">
-							<Controller
+							{/* <Controller
 								name="remember"
 								control={control}
 								render={({ field }) => (
@@ -149,7 +153,7 @@ function SignInPage() {
 										/>
 									</FormControl>
 								)}
-							/>
+							/> */}
 
 							<Link
 								className="text-md font-medium"
@@ -159,17 +163,20 @@ function SignInPage() {
 							</Link>
 						</div>
 
-						<Button
+						{loading ? 
+						<CircularProgress size={24} className="mt-16 mx-auto" />
+						: <Button
 							variant="contained"
 							color="secondary"
 							className=" mt-16 w-full"
 							aria-label="Sign in"
+							loading={loading}
 							disabled={_.isEmpty(dirtyFields) || !isValid}
 							type="submit"
 							size="large"
 						>
-							Sign in
-						</Button>
+							login
+						</Button>}
 
 						
 					</form>

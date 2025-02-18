@@ -35,8 +35,8 @@ function TablePageWidget(props: TablePageWidgetProps) {
   console.log("daa6da",data)
   const user = useAppSelector(selectUser);
   const location = useLocation();
-  const currentPageId = location.pathname.split("/").pop().replace("-", "");
-
+  const currentPageId = location.pathname.split("/").pop().replaceAll("-", "");
+  console.log("tableConfig",user,currentPageId);
   const canAdd = tableConfig.shouldFilter
     ? true
     : Object.entries(user?.pageAccess || {}).some(

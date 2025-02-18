@@ -65,6 +65,15 @@ export const updateRecord = createAppAsyncThunk(
   },
 );
 
+
+export const deleteRecord = createAppAsyncThunk(
+  `maingroup/${storeName}/deleteRecord`,
+  async ({ id }: { id: string }) => {
+    const response = await axios.delete(`${apiEndPoint}/${id}`);
+    return response.data;
+  },
+);
+
 const initialState: DataType = {};
 
 /**

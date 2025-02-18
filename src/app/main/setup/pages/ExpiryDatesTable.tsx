@@ -9,7 +9,7 @@ import {
 import { TableConfig, TableEvent } from 'app/shared-components/data-table-widget/types/dataTypes';
 import TablePageWidget from 'app/shared-components/TablePageWidget';
 import { User } from '../../general-management/types/dataTypes';
-
+import {useAppDispatch} from 'app/store';
 
 /**
  * The UsersTablePage.

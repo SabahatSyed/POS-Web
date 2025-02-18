@@ -34,7 +34,7 @@ function CompaniesTablePage() {
 		onSomeEvent: onTableEvent,
 		// actions: this.actions,
 		// events: this.events,
-		perPage: 30,
+		perPage: data.limit,
 		showAdd: true,
 	}
 

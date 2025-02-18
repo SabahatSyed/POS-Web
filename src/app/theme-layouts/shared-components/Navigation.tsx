@@ -48,6 +48,14 @@ function Navigation(props: Partial<FuseNavigationProps>) {
         return null; // Exclude this item
       }
 
+      if (item.id === 'utilities-company-info' && !['Admin', 'SuperAdmin'].includes(user.role)) {
+        return null; // Exclude if not Admin or SuperAdmin
+      }
+
+      if (item.id === 'utilities-companies' && user.role !== 'SuperAdmin') {
+        return null; // Exclude if not SuperAdmin
+      }
+
       // If the item has children, filter those based on user access
       if (item.children) {
         item.children = item.children.filter(child => hasReadAccess(child.id)); // Check if the user has read access for the child item

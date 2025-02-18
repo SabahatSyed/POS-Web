@@ -6,7 +6,11 @@ import {
   TableEvent,
 } from "app/shared-components/data-table-widget/types/dataTypes";
 import TablePageWidget from "app/shared-components/TablePageWidget";
-import { deleteRecord, getRecords, selectRecords } from "../store/keypointsSlice";
+import {
+  deleteRecord,
+  getRecords,
+  selectRecords,
+} from "../store/keypointsSlice";
 import { Keypoint } from "../types/keypoints";
 import { selectUser } from "app/store/user/userSlice";
 
@@ -16,7 +20,7 @@ import { selectUser } from "app/store/user/userSlice";
 function KeypointsTablePage() {
   const navigate = useNavigate();
   const data = useAppSelector(selectRecords);
-  const dispatch= useAppDispatch()
+  const dispatch = useAppDispatch();
 
   const user = useAppSelector(selectUser);
   // const data = {pages:1,count:1,records:[{code:1,description:"description"}]};
@@ -63,8 +67,8 @@ function KeypointsTablePage() {
       if (event.action == "onDelete") {
         const row = event.params.row as Keypoint;
         // navigate(`/setup/main-group/form/${row._id}`);
-		dispatch(deleteRecord({id:row._id}))
-		dispatch(getRecords({}))
+        dispatch(deleteRecord({ id: row._id }));
+        dispatch(getRecords({}));
       }
     }
   }

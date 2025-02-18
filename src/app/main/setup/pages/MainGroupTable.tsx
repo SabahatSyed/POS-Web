@@ -9,7 +9,8 @@ import {
 import { TableConfig, TableEvent } from 'app/shared-components/data-table-widget/types/dataTypes';
 import TablePageWidget from 'app/shared-components/TablePageWidget';
 import { MainGroup } from '../../general-management/types/dataTypes';
-
+import {useAppDispatch} from 'app/store';
+import {deleteRecord} from '../../setup/store/mainGroupSlice';
 
 /**
  * The MainGroupsTablePage.
@@ -17,7 +18,7 @@ import { MainGroup } from '../../general-management/types/dataTypes';
 function MainGroupsTablePage() {
 	const navigate = useNavigate();
 	const data = useAppSelector(selectRecords);
-
+	const dispatch = useAppDispatch()
 	// const data = {pages:1,count:1,records:[{code:1,description:"description"}]};
 
 	const title = 'Main Group';
@@ -55,6 +56,8 @@ function MainGroupsTablePage() {
 			}
 			if (event.action == 'onDelete') {
 				const row = event.params.row as MainGroup;
+				dispatch(deleteRecord({ id: row._id }));
+				dispatch(getRecords({}));
 				// navigate(`/setup/main-group/form/${row._id}`);
 
 			}

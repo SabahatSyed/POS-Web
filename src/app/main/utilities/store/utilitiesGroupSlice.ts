@@ -42,6 +42,8 @@ export const getRecords = createAppAsyncThunk(
     );
 
     const data = (await response.data) as DataType;
+    console.log("response", data);
+
     return data.data;
   }
 );
@@ -88,11 +90,13 @@ export const companySlice = createSlice({
         user: action.payload,
       };
     });
+    builder.addCase(getRecords.fulfilled, (state, action) => action.payload);
+
   },
 });
 
-export const selectCompany = (state: AppRootStateType) =>{
-  state.companyinfo[storeName];}
+export const selectCompany = (state: AppRootStateType) =>
+  state.companyinfo[storeName];
 
 export type dataSliceType = typeof companySlice;
 

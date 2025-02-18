@@ -9,21 +9,23 @@ import {
 import { TableConfig, TableEvent } from 'app/shared-components/data-table-widget/types/dataTypes';
 import TablePageWidget from 'app/shared-components/TablePageWidget';
 import { User } from '../../general-management/types/dataTypes';
-
+import {useAppDispatch} from 'app/store';
+import {deleteRecord} from '../../general-management/store/userDataSlice';	
 
 /**
  * The UsersTablePage.
  */
 function UsersTablePage() {
 	const navigate = useNavigate();
-
-	const data = {pages:1,count:1,records:[{code:1, name:"hina", phone:"0333-6438340" , fax: '543672527' , address: 'xyz' , email:'xyz@mail.com'}]};
+	const data = useAppSelector(selectRecords);
+	const dispatch = useAppDispatch()	
 
 	const title = 'Companies';
 	const tableConfig: TableConfig = {
 		selection: 'none',
 		rowActions: [
 			{'tooltip': 'Edit', action: 'onEdit', icon: 'heroicons-outline:pencil'},
+			{'tooltip': 'Delete', action: 'onDelete', icon: 'heroicons-outline:trash'},	
 		],
 		columns: [
 			{name: 'code', title: 'Code', type: 'text', sort: false},

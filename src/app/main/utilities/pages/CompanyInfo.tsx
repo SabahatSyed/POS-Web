@@ -195,7 +195,7 @@ const CompanyInfo = () => {
         console.log("Company Info Updated successfully");
       }
     } catch (error) {
-      console.error("Error creating company or user:", error);
+      console.log("Error creating company or user:", error);
       dispatch(showMessage({ message: error?.message, variant: "error" }));
       setLoading(false);
     }
@@ -644,7 +644,7 @@ const CompanyInfo = () => {
                     { id: "setup-salesmen", title: "Salesmen" },
                     { id: "setup-companynames", title: "Company Names" },
                     { id: "setup-batch", title: "Batch" },
-                    { id: "setup-opening-balances", title: "Opening Balances" },
+                    { id: "setup-openingbalances", title: "Opening Balances" },
                     { id: "setup-expiry-dates", title: "Expiry Dates" },
                   ],
                 },

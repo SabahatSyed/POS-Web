@@ -92,17 +92,17 @@ const MainGroupConfig = {
       auth: null,
     },
     {
-      path: "/setup/chart-accounts",
+      path: "/setup/chart-of-accounts",
       element: <ChartAccountsPage />,
       auth: null,
     },
     {
-      path: "/setup/chart-accounts/form",
+      path: "/setup/chart-of-accounts/form",
       element: <ChartAccountsForm />,
       auth: null,
     },
     {
-      path: "/setup/chart-accounts/form/:id",
+      path: "/setup/chart-of-accounts/form/:id",
       element: <ChartAccountsForm />,
       auth: null,
     },
@@ -122,17 +122,17 @@ const MainGroupConfig = {
       auth: null,
     },
     {
-      path: "/setup/inventory-information",
+      path: "/setup/inventory",
       element: <InventoryInformationTable />,
       auth: null,
     },
     {
-      path: "/setup/inventory-information/form",
+      path: "/setup/inventory/form",
       element: <InventoryInformationForm />,
       auth: null,
     },
     {
-      path: "/setup/inventory-information/form/:id",
+      path: "/setup/inventory/form/:id",
       element: <InventoryInformationForm />,
       auth: null,
     },
