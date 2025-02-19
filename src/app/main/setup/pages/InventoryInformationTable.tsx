@@ -50,13 +50,13 @@ function UsersTablePage() {
 		console.log('onTableEvent', event);
 		
 		if (event.action == 'create') {
-			navigate(`/setup/inventory-information/form`);
+			navigate(`/setup/inventory/form`);
 		}
 		
 		if (event.event == 'rowAction') {
 			if (event.action == 'onEdit') {
 				const row = event.params.row as User;
-				navigate(`/setup/inventory-information/form/${row._id}`);
+				navigate(`/setup/inventory/form/${row._id}`);
 
 
 			}

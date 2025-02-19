@@ -76,13 +76,13 @@ function UsersTablePage() {
     console.log("onTableEvent", event);
 
     if (event.action == "create") {
-      navigate(`/setup/chart-accounts/form`);
+      navigate(`/setup/chart-of-accounts/form`);
     }
 
     if (event.event == "rowAction") {
       if (event.action == "onEdit") {
         const row = event.params.row as User;
-        navigate(`/setup/chart-accounts/form/${row._id}`);
+        navigate(`/setup/chart-of-accounts/form/${row._id}`);
       }
       if (event.action == "onDelete") {
         const row = event.params.row as User;
