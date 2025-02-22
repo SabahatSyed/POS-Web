@@ -18,7 +18,7 @@ import {deleteRecord} from '../../setup/store/inventoryInformationSlice';
 function UsersTablePage() {
 	const navigate = useNavigate();
 	const data = useAppSelector(selectRecords);
-
+	const dispatch = useAppDispatch();
 
 	// const data = {pages:1,count:1,records:[{code:1, name:"saira",description:"description" , packsize: 20 , purchaseprice : 721 , tradeprice:1658  }]};
 

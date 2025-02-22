@@ -14,7 +14,7 @@ import * as yup from "yup";
 import CircularProgress from "@mui/material/CircularProgress";
 import { yupResolver } from "@hookform/resolvers/yup";
 import _ from "@lodash";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import clsx from "clsx";
 import FormControl from "@mui/material/FormControl";
 import FormLabel from "@mui/material/FormLabel";
@@ -36,13 +36,14 @@ import {
   addRecord,
   getRecords,
   updateRecord,
+  selectRecords
 } from "../../setup/store/batchWiseOpeningSlice";
 import { User } from "../../general-management/types/dataTypes";
 import { getRecords as getRolesRecords } from "../../general-management/store/roleDataSlice";
 import { getRecords as getBatchRecords } from "../store/batchSlice";
 import { getRecords as getInventoryInformationRecords } from "../../setup/store/inventoryInformationSlice";
 
-import { useAppSelector } from "app/store";
+import { useAppDispatch, useAppSelector } from "app/store";
 import { useDebounce } from "@fuse/hooks";
 import DropdownWidget from "app/shared-components/DropdownWidget";
 import { showMessage } from "app/store/fuse/messageSlice";
@@ -83,14 +84,37 @@ function UsersFormPage() {
 
   const { id } = useParams();
   const navigate = useNavigate();
-  const dispatch = useDispatch<any>();
   const [rowData, setRowData] = useState<User | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [inventoryInformationOptions, setInventoryInformationOptions] =
     useState([]);
   const [batchOptions, setBatchOptions] = useState([]);
   const { isValid, dirtyFields, errors, touchedFields } = formState;
-
+  const records = useAppSelector(selectRecords);
+	const dispatch = useAppDispatch();
+	// Find the highest existing code and increment it
+	const getNextCode = useCallback(() => {
+	  if (records) {
+		console.log(records);
+		if (records?.records?.length === 0) return "0001"; // Start from "0001" if no records exist
+		const lastCode = records.records
+		  ?.map((record) => parseInt(record.code, 10))
+		  ?.filter((num) => !isNaN(num))
+		  ?.sort((a, b) => b - a)[0]; // Get the highest existing code
+		return String(lastCode + 1).padStart(4, "0"); // Increment and pad to 4 digits
+	  }
+	}, [records]);
+  
+	useEffect(() => {
+	  const params = { page: 1, limit: 10, search: "" };
+	  dispatch(getRecords(params));
+	}, [dispatch, getRecords]);
+	
+	useEffect(() => {
+	  if (!id) {
+		setValue("code", getNextCode()); // Auto-set the code on form load
+	  }
+	}, [records, id]);
   const onSubmit = async (formData: User) => {
     try {
       setLoading(true);
@@ -262,6 +286,7 @@ function UsersFormPage() {
                     helperText={errors?.code?.message}
                     required
                     fullWidth
+                    disabled
                   />
                 </FormControl>
               )}

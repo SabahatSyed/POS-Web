@@ -32,11 +32,9 @@ function TablePageWidget(props: TablePageWidgetProps) {
   const { title, tableConfig } = props;
 
   const data = props.tableConfig.dataSource;
-  console.log("daa6da",data)
   const user = useAppSelector(selectUser);
   const location = useLocation();
   const currentPageId = location.pathname.split("/").pop().replaceAll("-", "");
-  console.log("tableConfig",user,currentPageId);
   const canAdd = tableConfig.shouldFilter
     ? true
     : Object.entries(user?.pageAccess || {}).some(
@@ -128,13 +126,13 @@ function TablePageWidget(props: TablePageWidgetProps) {
 
   const header = (
     <div className="flex w-full container">
-      <div className="flex flex-col w-full sm:flex-row sm:items-start justify-between p-24 md:p-32 pb-0 md:pb-0">
+      <div className="flex  w-full sm:flex-row items-center justify-between p-24 md:p-32 pb-0 md:pb-0">
         <div className="flex flex-col w-fit flex-auto p-3">
           <Typography className="text-3xl font-semibold tracking-tight whitespace-nowrap text-ellipsis leading-8">
             {title}
           </Typography>
         </div>
-        <div className="flex items-center justify-start gap-4 mt-24 sm:mt-0 sm:mx-8 flex-wrap ">
+        <div className="flex w-full items-center justify-end gap-4 mt-24 sm:mt-0 sm:mx-8 flex-wrap ">
           {/* Search Field */}
           <Paper
             component={motion.div}
@@ -181,7 +179,7 @@ function TablePageWidget(props: TablePageWidgetProps) {
           {/* Create Button */}
           {canAdd && tableConfig.showAdd && (
             <Button
-              className="inline-flex justify-center items-center min-w-max   whitespace-nowrap  bg-blue-gray-600 text-white hover:bg-blue-gray-700 hover:opacity-90"
+              className="inline-flex justify-start items-center min-w-max whitespace-nowrap bg-blue-gray-600 text-white hover:bg-blue-gray-700 hover:opacity-90"
               startIcon={
                 <FuseSvgIcon size={20}>heroicons-solid:plus</FuseSvgIcon>
               }
@@ -239,7 +237,7 @@ function TablePageWidget(props: TablePageWidgetProps) {
                 initial="hidden"
                 animate="show"
               >
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-32 w-full mt-32">
+                <div className="grid grid-cols-1  gap-32 w-full mt-32">
                   <motion.div
                     variants={item}
                     className="xl:col-span-2 flex flex-col flex-auto"
@@ -253,13 +251,13 @@ function TablePageWidget(props: TablePageWidgetProps) {
           );
         }, [data])}
       </div>
-      <ConfirmationDialog
+      {/* <ConfirmationDialog
         open={dialogOpen}
         onClose={handleCloseDialog}
         onConfirm={handleConfirmDialog}
         title="Confirmation"
         content="Are you sure you want to perform this action?"
-      />
+      /> */}
     </>
   );
 
