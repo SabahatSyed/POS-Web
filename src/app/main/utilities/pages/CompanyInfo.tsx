@@ -27,11 +27,14 @@ import {
 import { useAppSelector } from "app/store";
 import { selectUser } from "app/store/user/userSlice";
 import ColorPicker from "@rc-component/color-picker";
-import { FormHelperText } from "@mui/material";
+import { ChromePicker } from "react-color";
+
+import { Autocomplete, ClickAwayListener, FormHelperText } from "@mui/material";
 import "@rc-component/color-picker/assets/index.css";
 
 import { IconButton, Popover } from "@mui/material";
 import ColorLensIcon from "@mui/icons-material/ColorLens";
+const permissions = ["Read", "Add", "Update", "Delete"];
 
 interface FormData {
   logoURL: string;
@@ -108,7 +111,7 @@ const CompanyInfo = () => {
         contact: "",
         cnic: "",
         role: "Admin",
-        status: "Inactive",
+        status: "Active",
       },
       pagesAccess: {},
     },
@@ -259,27 +262,48 @@ const CompanyInfo = () => {
     }
   };
 
-  const handlePermissionChange = (field, value, readField) => {
-    setValue(field, value);
-    if (value) {
-      setValue(readField, true);
-    }
+  // const handlePermissionChange = (field, value, readField) => {
+  //   setValue(field, value);
+  //   if (value) {
+  //     setValue(readField, true);
+  //   }
 
-    if (field === readField && !value) {
-      const pageId = field.split(".")[1];
-      setValue(`pagesAccess.${pageId}.add`, false);
-      setValue(`pagesAccess.${pageId}.update`, false);
-      setValue(`pagesAccess.${pageId}.delete`, false);
-    }
-  };
+  //   if (field === readField && !value) {
+  //     const pageId = field.split(".")[1];
+  //     setValue(`pagesAccess.${pageId}.add`, false);
+  //     setValue(`pagesAccess.${pageId}.update`, false);
+  //     setValue(`pagesAccess.${pageId}.delete`, false);
+  //   }
+  // };
 
   const pagesAccess = watch("pagesAccess");
 
-  const handleSelectAll = (pageId: string, isChecked: boolean) => {
-    setValue(`pagesAccess.${pageId}.read`, isChecked);
-    setValue(`pagesAccess.${pageId}.add`, isChecked);
-    setValue(`pagesAccess.${pageId}.update`, isChecked);
-    setValue(`pagesAccess.${pageId}.delete`, isChecked);
+  // const handleSelectAll = (pageId: string, isChecked: boolean) => {
+  //   setValue(`pagesAccess.${pageId}.read`, isChecked);
+  //   setValue(`pagesAccess.${pageId}.add`, isChecked);
+  //   setValue(`pagesAccess.${pageId}.update`, isChecked);
+  //   setValue(`pagesAccess.${pageId}.delete`, isChecked);
+  // };
+
+  const handlePermissionChange = (pageId, selectedPermissions) => {
+    setValue(
+      `pagesAccess.${pageId}.read`,
+      selectedPermissions.includes("Read")
+    );
+    setValue(`pagesAccess.${pageId}.add`, selectedPermissions.includes("Add"));
+    setValue(
+      `pagesAccess.${pageId}.update`,
+      selectedPermissions.includes("Update")
+    );
+    setValue(
+      `pagesAccess.${pageId}.delete`,
+      selectedPermissions.includes("Delete")
+    );
+  };
+
+  const getSelectedPermissions = (pageId) => {
+    const page = pagesAccess[pageId] || {};
+    return permissions.filter((perm) => page[perm.toLowerCase()]);
   };
 
   const handleColorPickerOpen =
@@ -295,7 +319,6 @@ const CompanyInfo = () => {
     setSelectedColor({ ...selectedColor, [field]: color });
     setValue(`theme.${field}` as any, color);
     validateHexColor(color, field);
-    handleColorPickerClose(field);
   };
 
   const handleColorSelect = (field: string) => () => {
@@ -304,76 +327,111 @@ const CompanyInfo = () => {
     handleColorPickerClose(field);
   };
 
+  const [showPicker, setShowPicker] = useState<{ [key: string]: boolean }>({
+    primary: false,
+    secondary: false,
+    background: false,
+  });
+
+  const handlePickerOpen = (field: string) => {
+    setShowPicker((prev) => ({ ...prev, [field]: true }));
+  };
+
+  const handlePickerClose = (field: string) => {
+    setShowPicker((prev) => ({ ...prev, [field]: false }));
+  };
   // Modified Color Picker Field Component
   const ColorField = ({
     field,
   }: {
     field: "primary" | "secondary" | "background";
-  }) => (
-    <Controller
-      name={`theme.${field}`}
-      control={control}
-      render={({ field: { value, onChange } }) => (
-        <div>
-          <TextField
-            value={value}
-            onChange={(e) => {
-              onChange(e.target.value);
-              validateHexColor(e.target.value, field);
-            }}
-            error={!!inputErrors[field]}
-            fullWidth
-            variant="outlined"
-            placeholder="#FFFFFF"
-            inputProps={{ maxLength: 7 }}
-            InputProps={{
-              endAdornment: (
-                <IconButton
-                  onClick={handleColorPickerOpen(field)}
-                  size="small"
-                  sx={{ mr: -1 }}
+  }) => {
+    return (
+      <Controller
+        name={`theme.${field}`}
+        control={control}
+        render={({ field: { value, onChange } }) => (
+          <div style={{ position: "relative" }}>
+            <TextField
+              value={value}
+              onChange={(e) => {
+                onChange(e.target.value);
+                validateHexColor(e.target.value, field);
+              }}
+              error={!!inputErrors[field]}
+              fullWidth
+              variant="outlined"
+              placeholder="#FFFFFF"
+              inputProps={{ maxLength: 7 }}
+              InputProps={{
+                startAdornment: (
+                  <div
+                    style={{
+                      width: 24,
+                      height: 24,
+                      backgroundColor: value,
+                      borderRadius: "100%",
+                      marginRight: 8,
+                      border: "1px solid #ccc",
+                    }}
+                  />
+                ),
+                endAdornment: (
+                  <IconButton
+                    onClick={() => handlePickerOpen(field)}
+                    size="small"
+                  >
+                    <ColorLensIcon />
+                  </IconButton>
+                ),
+              }}
+            />
+
+            {showPicker[field] && (
+              <ClickAwayListener onClickAway={() => handlePickerClose(field)}>
+                <div
+                  style={{
+                    position: "absolute",
+                    zIndex: 9999,
+                    top: "100%",
+                    left: 0,
+                    backgroundColor: "white",
+                    padding: 16,
+                    borderRadius: 8,
+                    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+                  }}
                 >
-                  <ColorLensIcon />
-                </IconButton>
-              ),
-            }}
-          />
-          <Popover
-            open={Boolean(anchorEl[field])}
-            // anchorEl={anchorEl[field]}
-            onClose={() => handleColorPickerClose(field)}
-            // anchorOrigin={{
-            //   vertical: "bottom",
-            //   horizontal: "center",
-            // }}
-          >
-            <div style={{ padding: 16 }}>
-              <ColorPicker
-                color={selectedColor[field]}
-                onChange={(color) =>
-                  handleColorChange(field)(color.toHexString())
-                }
-              />
-              {/* <Button
-                variant="contained"
-                color="primary"
-                onClick={handleColorSelect(field)}
-                fullWidth
-                sx={{ mt: 2 }}
-              >
-                Choose Color
-              </Button> */}
-            </div>
-          </Popover>
-          {inputErrors[field] && (
-            <FormHelperText error style={{ marginLeft: "10px" }}>
-              {inputErrors[field]}
-            </FormHelperText>
-          )}
-        </div>
-      )}
-    />
-  );
+                  <ChromePicker
+                    color={value}
+                    onChange={(color) => {
+                      onChange(color.hex);
+                      validateHexColor(color.hex, field);
+                    }}
+                    disableAlpha
+                  />
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handlePickerClose(field)}
+                    fullWidth
+                    sx={{ mt: 2 }}
+                  >
+                    Choose Color
+                  </Button>
+                </div>
+              </ClickAwayListener>
+            )}
+
+            {inputErrors[field] && (
+              <FormHelperText error style={{ marginLeft: "10px" }}>
+                {inputErrors[field]}
+              </FormHelperText>
+            )}
+          </div>
+        )}
+      />
+    );
+  };
 
   const formContent = (
     <form onSubmit={handleSubmit(onSubmit)} className="w-full">
@@ -513,312 +571,263 @@ const CompanyInfo = () => {
 
         {/* Owner Information Section */}
         {user.role === "SuperAdmin" && (
-        <>
-          <Divider className="my-6 grid grid-cols-1 md:grid-cols-2" />
-          <div className="col-span-1 md:col-span-2">
-            <Typography variant="h6" gutterBottom>
-              Owner Information
-            </Typography>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
-              <Controller
-                name="owner.name"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Owner Name"
-                    variant="outlined"
-                    fullWidth
-                    error={!!errors.owner?.name}
-                    helperText={errors.owner?.name?.message}
-                    required
-                    style={{ backgroundColor: "white" }}
-                  />
-                )}
-              />
-              <Controller
-                name="owner.email"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Owner Email"
-                    variant="outlined"
-                    fullWidth
-                    error={!!errors.owner?.email}
-                    helperText={errors.owner?.email?.message}
-                    required
-                    style={{ backgroundColor: "white" }}
-                  />
-                )}
-              />
-              <Controller
-                name="owner.contact"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Owner Contact"
-                    variant="outlined"
-                    fullWidth
-                    error={!!errors.owner?.contact}
-                    helperText={errors.owner?.contact?.message}
-                    style={{ backgroundColor: "white" }}
-                  />
-                )}
-              />
-              <Controller
-                name="owner.cnic"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Owner CNIC"
-                    variant="outlined"
-                    fullWidth
-                    error={!!errors.owner?.cnic}
-                    helperText={errors.owner?.cnic?.message}
-                    style={{ backgroundColor: "white" }}
-                  />
-                )}
-              />
-              <Controller
-                name="owner.role"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    fullWidth
-                    variant="outlined"
-                    displayEmpty
-                    style={{ backgroundColor: "white" }}
-                    error={!!errors.owner?.role}
-                  >
-                    <MenuItem value="" disabled>
-                      Select Role
-                    </MenuItem>
-                    <MenuItem value="Admin">Admin</MenuItem>
-                  </Select>
-                )}
-              />
-              <Controller
-                name="owner.status"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    fullWidth
-                    variant="outlined"
-                    displayEmpty
-                    style={{ backgroundColor: "white" }}
-                    error={!!errors.owner?.status}
-                  >
-                    <MenuItem value="" disabled>
-                      Select Status
-                    </MenuItem>
-                    <MenuItem value="Active">Active</MenuItem>
-                    <MenuItem value="Inactive">Inactive</MenuItem>
-                  </Select>
-                )}
-              />
+          <>
+            <Divider className="my-6 grid grid-cols-1 md:grid-cols-2" />
+            <div className="col-span-1 md:col-span-2">
+              <Typography variant="h6" gutterBottom>
+                Owner Information
+              </Typography>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
+                <Controller
+                  name="owner.name"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Owner Name"
+                      variant="outlined"
+                      fullWidth
+                      error={!!errors.owner?.name}
+                      helperText={errors.owner?.name?.message}
+                      required
+                      style={{ backgroundColor: "white" }}
+                    />
+                  )}
+                />
+                <Controller
+                  name="owner.email"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Owner Email"
+                      variant="outlined"
+                      fullWidth
+                      error={!!errors.owner?.email}
+                      helperText={errors.owner?.email?.message}
+                      required
+                      style={{ backgroundColor: "white" }}
+                    />
+                  )}
+                />
+                <Controller
+                  name="owner.contact"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Owner Contact"
+                      variant="outlined"
+                      fullWidth
+                      required
+                      error={!!errors.owner?.contact}
+                      helperText={errors.owner?.contact?.message}
+                      style={{ backgroundColor: "white" }}
+                    />
+                  )}
+                />
+                <Controller
+                  name="owner.cnic"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Owner CNIC"
+                      variant="outlined"
+                      fullWidth
+                      required
+                      error={!!errors.owner?.cnic}
+                      helperText={errors.owner?.cnic?.message}
+                      style={{ backgroundColor: "white" }}
+                    />
+                  )}
+                />
+                <Controller
+                  name="owner.role"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      fullWidth
+                      variant="outlined"
+                      displayEmpty
+                      required
+                      style={{ backgroundColor: "white" }}
+                      error={!!errors.owner?.role}
+                    >
+                      <MenuItem value="" disabled>
+                        Select Role
+                      </MenuItem>
+                      <MenuItem value="Admin">Admin</MenuItem>
+                    </Select>
+                  )}
+                />
+                <Controller
+                  name="owner.status"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      fullWidth
+                      variant="outlined"
+                      displayEmpty
+                      required
+                      style={{ backgroundColor: "white" }}
+                      error={!!errors.owner?.status}
+                    >
+                      <MenuItem value="" disabled>
+                        Select Status
+                      </MenuItem>
+                      <MenuItem value="Active">Active</MenuItem>
+                      <MenuItem value="Inactive">Inactive</MenuItem>
+                    </Select>
+                  )}
+                />
+              </div>
             </div>
-          </div>
 
-          <Divider className="my-6 col-span-1 md:col-span-2" />
+            <Divider className="my-6 col-span-1 md:col-span-2" />
 
-          {/* Pages Access Section */}
-          <div className="col-span-1 md:col-span-2">
-            <Typography variant="h6" gutterBottom>
-              Pages Access
-            </Typography>
-            <div className="col-span-1 md:col-span-2 grid md:grid-cols-2 gap-10">
-              {[
-                {
-                  id: "setup",
-                  title: "Setup",
-                  children: [
-                    { id: "setup-maingroup", title: "Main Group" },
-                    { id: "setup-chartofaccounts", title: "Chart Of Accounts" },
-                    { id: "setup-inventorygroup", title: "Inventory Group" },
-                    { id: "setup-inventory", title: "Inventory Information" },
-                    { id: "setup-salesmen", title: "Salesmen" },
-                    { id: "setup-companynames", title: "Company Names" },
-                    { id: "setup-batch", title: "Batch" },
-                    { id: "setup-openingbalances", title: "Opening Balances" },
-                    { id: "setup-expiry-dates", title: "Expiry Dates" },
-                  ],
-                },
-                {
-                  id: "utilities",
-                  title: "Utilities",
-                  children: [
-                    { id: "utilities-users", title: "Add New User" },
-                    {
-                      id: "utilities-opening-balances",
-                      title: "Carry Opening Balances",
-                    },
-                  ],
-                },
-                {
-                  id: "entry",
-                  title: "Entry",
-                  children: [
-                    { id: "entry-salesbill", title: "Sales Bill" },
-                    { id: "entry-purchasebill", title: "Purchase Bill" },
-                    { id: "entry-paymentreceipt", title: "Payment Receipt" },
-                    { id: "entry-estimatebill", title: "Estimate Bill" },
-                    { id: "entry-generalbill", title: "General Bill" },
-                  ],
-                },
-                {
-                  id: "reports",
-                  title: "Reports",
-                  children: [
-                    { id: "one-a/c-head-ledger", title: "One A/C Head Ledger" },
-                    { id: "day-book-for-date", title: "Day Book For Date" },
-                    { id: "one-item-ledger", title: "One Item Ledger" },
-                    { id: "accounts-reports", title: "Accounts Report" },
-                  ],
-                },
-              ].map((section) => (
-                <div key={section.id} className="border border-b p-10">
-                  <Typography
-                    variant="subtitle1"
-                    className="my-4 font-800 underline"
-                  >
-                    {section.title}
-                  </Typography>
-                  {section.children.map((page) => (
-                    <div key={page.id} className="flex flex-col">
-                      <Typography
-                        variant="body2"
-                        className="mr-4 font-600 my-4"
-                      >
-                        {page.title}:
-                      </Typography>
+            {/* Pages Access Section */}
+            <div className="col-span-1 md:col-span-2">
+              <Typography variant="h6" gutterBottom>
+                Pages Access
+              </Typography>
+              <div className="col-span-1 md:col-span-2 grid md:grid-cols-2 gap-10">
+                {[
+                  {
+                    id: "setup",
+                    title: "Setup",
+                    children: [
+                      { id: "setup-maingroup", title: "Main Group" },
+                      {
+                        id: "setup-chartofaccounts",
+                        title: "Chart Of Accounts",
+                      },
+                      { id: "setup-inventorygroup", title: "Inventory Group" },
+                      { id: "setup-inventory", title: "Inventory Information" },
+                      { id: "setup-salesmen", title: "Salesmen" },
+                      { id: "setup-companynames", title: "Company Names" },
+                      { id: "setup-batch", title: "Batch" },
+                      {
+                        id: "setup-openingbalances",
+                        title: "Opening Balances",
+                      },
+                      { id: "setup-expiry-dates", title: "Expiry Dates" },
+                    ],
+                  },
+                  {
+                    id: "utilities",
+                    title: "Utilities",
+                    children: [
+                      { id: "utilities-users", title: "Add New User" },
+                      {
+                        id: "utilities-openingbalances",
+                        title: "Carry Opening Balances",
+                      },
+                    ],
+                  },
+                  {
+                    id: "entry",
+                    title: "Entry",
+                    children: [
+                      { id: "entry-salesbill", title: "Sales Bill" },
+                      { id: "entry-purchasebill", title: "Purchase Bill" },
+                      { id: "entry-paymentreceipt", title: "Payment Receipt" },
+                      { id: "entry-estimatebill", title: "Estimate Bill" },
+                      { id: "entry-generalbill", title: "General Bill" },
+                    ],
+                  },
+                  {
+                    id: "reports",
+                    title: "Reports",
+                    children: [
+                      {
+                        id: "one-a/c-head-ledger",
+                        title: "One A/C Head Ledger",
+                      },
+                      { id: "day-book-for-date", title: "Day Book For Date" },
+                      { id: "one-item-ledger", title: "One Item Ledger" },
+                      { id: "accounts-reports", title: "Accounts Report" },
+                    ],
+                  },
+                ].map((section) => (
+                  <div key={section.id} className="border border-b p-10">
+                    <Typography
+                      variant="subtitle1"
+                      className="my-4 font-800 underline"
+                    >
+                      {section.title}
+                    </Typography>
 
-                      {/* Select All Checkbox */}
-                      <div className="flex items-center">
+                    {section.children.map((page) => (
+                      <div key={page.id} className="flex flex-col">
+                        <Typography
+                          variant="body2"
+                          className="mr-4 font-600 my-4 mb-8"
+                        >
+                          {page.title}:
+                        </Typography>
+
+                        {/* Multi-Select Dropdown */}
+                        <Controller
+                          name={`pagesAccess.${page.id}`}
+                          control={control}
+                          render={({ field }) => (
+                            <Autocomplete
+                              multiple
+                              options={permissions}
+                              disableCloseOnSelect
+                              value={getSelectedPermissions(page.id)}
+                              onChange={(_, newValue) =>
+                                handlePermissionChange(page.id, newValue)
+                              }
+                              renderInput={(params) => (
+                                <TextField
+                                  {...params}
+                                  label="Select Permissions"
+                                  variant="outlined"
+                                  fullWidth
+                                />
+                              )}
+                              renderOption={(props, option, { selected }) => (
+                                <li {...props}>
+                                  <Checkbox
+                                    style={{ marginRight: 8 }}
+                                    checked={selected}
+                                  />
+                                  {option}
+                                </li>
+                              )}
+                            />
+                          )}
+                        />
+
+                        {/* Select All Checkbox */}
                         <FormControlLabel
                           control={
                             <Checkbox
                               checked={
-                                pagesAccess[page.id]?.read &&
-                                pagesAccess[page.id]?.add &&
-                                pagesAccess[page.id]?.update &&
-                                pagesAccess[page.id]?.delete
+                                getSelectedPermissions(page.id).length ===
+                                permissions.length
                               }
                               onChange={(e) =>
-                                handleSelectAll(page.id, e.target.checked)
+                                handlePermissionChange(
+                                  page.id,
+                                  e.target.checked ? permissions : []
+                                )
                               }
                             />
                           }
                           label="Select All"
                         />
                       </div>
-
-                      {/* Individual Permission Checkboxes */}
-                      <div className="flex items-center">
-                        <Controller
-                          name={`pagesAccess.${page.id}.read`}
-                          control={control}
-                          render={({ field }) => (
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  {...field}
-                                  checked={pagesAccess[page.id]?.read || false}
-                                  onChange={(e) =>
-                                    handlePermissionChange(
-                                      field.name,
-                                      e.target.checked,
-                                      `pagesAccess.${page.id}.read`
-                                    )
-                                  }
-                                />
-                              }
-                              label="Read"
-                            />
-                          )}
-                        />
-                        <Controller
-                          name={`pagesAccess.${page.id}.add`}
-                          control={control}
-                          render={({ field }) => (
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  {...field}
-                                  checked={pagesAccess[page.id]?.add || false}
-                                  onChange={(e) =>
-                                    handlePermissionChange(
-                                      field.name,
-                                      e.target.checked,
-                                      `pagesAccess.${page.id}.read`
-                                    )
-                                  }
-                                />
-                              }
-                              label="Add"
-                            />
-                          )}
-                        />
-                        <Controller
-                          name={`pagesAccess.${page.id}.update`}
-                          control={control}
-                          render={({ field }) => (
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  {...field}
-                                  checked={
-                                    pagesAccess[page.id]?.update || false
-                                  }
-                                  onChange={(e) =>
-                                    handlePermissionChange(
-                                      field.name,
-                                      e.target.checked,
-                                      `pagesAccess.${page.id}.read`
-                                    )
-                                  }
-                                />
-                              }
-                              label="Update"
-                            />
-                          )}
-                        />
-                        <Controller
-                          name={`pagesAccess.${page.id}.delete`}
-                          control={control}
-                          render={({ field }) => (
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  {...field}
-                                  checked={
-                                    pagesAccess[page.id]?.delete || false
-                                  }
-                                  onChange={(e) =>
-                                    handlePermissionChange(
-                                      field.name,
-                                      e.target.checked,
-                                      `pagesAccess.${page.id}.read`
-                                    )
-                                  }
-                                />
-                              }
-                              label="Delete"
-                            />
-                          )}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ))}
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        </>
+          </>
         )}
       </div>
 

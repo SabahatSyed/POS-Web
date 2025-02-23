@@ -67,7 +67,7 @@ export const updateRecord = createAppAsyncThunk(
 export const deleteRecord = createAppAsyncThunk(
   `generalManagement/${storeName}/deleteRecord`,
   async ({ id }: { id: string }) => {
-    const response = await axios.delete(`${apiEndPoint}/delete?id=${id}`);
+    const response = await axios.delete(`${apiEndPoint}/${id}`);
 
     const data = (await response.data) as DataType;
 

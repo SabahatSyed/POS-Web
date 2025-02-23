@@ -37,8 +37,7 @@ function DataTableWidget(props: TableConfig) {
   const { columns, onSomeEvent } = props;
   const user = useAppSelector(selectUser);
   const location = useLocation();
-  const currentPageId = location.pathname.split("/").pop().replace("-", "");
-  console.log("columns", columns);
+  const currentPageId = location.pathname.split("/").pop().replaceAll("-", "");
   const canEdit = Object.entries(user?.pageAccess || {}).some(
     ([key, page]) => key.includes(currentPageId) && page?.update
   );
@@ -46,6 +45,9 @@ function DataTableWidget(props: TableConfig) {
   const canDelete = Object.entries(user?.pageAccess || {}).some(
     ([key, page]) => key.includes(currentPageId) && page?.delete
   );
+
+  console.log("can delete", canDelete, canEdit, currentPageId);
+
 
   const filteredButtons = props.shouldFilter
     ? props.rowActions

@@ -75,7 +75,7 @@ const MainGroupConfig = {
     {
       path: '/utilities/company-info',
       element: <CompanyInfo />,
-      auth: null,
+      auth: ['SuperAdmin', 'Admin'],
     },
   
     {

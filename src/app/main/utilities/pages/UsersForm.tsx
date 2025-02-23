@@ -72,7 +72,7 @@ function UsersFormPage() {
     cnic: yup.string(),
     photoURL: yup.string(),
     role: yup.string().required("Select a role"),
-    status: yup.string().required("Select a status"),
+    // status: yup.string().required("Select a status"),
     pagesAccess: yup.object(),
   });
 
@@ -120,6 +120,7 @@ function UsersFormPage() {
         });
       }
       setLoading(false);
+      navigate(-1);
     } catch (error) {
       console.error("Error handling form submission:", error);
       dispatch(showMessage({ message: error?.message, variant: "error" }));
@@ -174,18 +175,27 @@ function UsersFormPage() {
 
   const data = watch();
 
-  const handlePermissionChange = (field, value, readField) => {
-    setValue(field, value);
-    if (value) {
-      setValue(readField, true);
-    }
+  const permissions = ["Read", "Add", "Update", "Delete"];
 
-    if (field === readField && !value) {
-      const pageId = field.split(".")[1]; // Extract the page ID from the field name
-      setValue(`pagesAccess.${pageId}.add`, false);
-      setValue(`pagesAccess.${pageId}.update`, false);
-      setValue(`pagesAccess.${pageId}.delete`, false);
-    }
+  const handlePermissionChange = (pageId, selectedPermissions) => {
+    setValue(
+      `pagesAccess.${pageId}.read`,
+      selectedPermissions.includes("Read")
+    );
+    setValue(`pagesAccess.${pageId}.add`, selectedPermissions.includes("Add"));
+    setValue(
+      `pagesAccess.${pageId}.update`,
+      selectedPermissions.includes("Update")
+    );
+    setValue(
+      `pagesAccess.${pageId}.delete`,
+      selectedPermissions.includes("Delete")
+    );
+  };
+
+  const getSelectedPermissions = (pageId) => {
+    const page = watch(`pagesAccess.${pageId}`) || {};
+    return permissions.filter((perm) => page[perm.toLowerCase()]);
   };
 
   const [companies, setCompanies] = useState([]);
@@ -195,7 +205,7 @@ function UsersFormPage() {
     async function fetchCompanies() {
       try {
         const response = await dispatch(getCompanies({})); // Assume getCompanies() fetches the company list
-        console.log("response",response)
+        console.log("response", response);
         setCompanies(response?.payload?.records);
       } catch (error) {
         console.error("Error fetching companies:", error);
@@ -204,6 +214,7 @@ function UsersFormPage() {
 
     fetchCompanies();
   }, [dispatch]);
+  console.log("companies", errors,isValid);
   const formContent = (
     <form className="w-full" onSubmit={handleSubmit(onSubmit)}>
       <div className="grid sm:grid-cols-2 gap-16 gap-y-40 gap-x-12 lg:w-full w-full  lg:ml-10">
@@ -337,36 +348,63 @@ function UsersFormPage() {
               <div key={page.id} className="border border-b p-10">
                 <Typography
                   variant="subtitle1"
-                  className="my-4 font-800 underline"
+                  className="my-4 font-800 capitalize"
                 >
-                  {page.id.replace("-", " ")}
+                  {page.id.replaceAll("-", " ")}
                 </Typography>
-                <div className="flex flex-wrap gap-4">
-                  {Object.keys(page).map(
-                    (perm) =>
-                      perm !== "_id" &&
-                      perm !== "id" && (
-                        <Controller
-                          key={perm}
-                          name={`pagesAccess.${page.id}.${perm}`}
-                          control={control}
-                          render={({ field }) => (
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  {...field}
-                                  checked={field.value || false}
-                                />
-                              }
-                              label={
-                                perm.charAt(0).toUpperCase() + perm.slice(1)
-                              }
-                            />
-                          )}
+
+                {/* Multi-Select Dropdown */}
+                <Controller
+                  name={`pagesAccess.${page.id}`}
+                  control={control}
+                  render={({ field }) => (
+                    <Autocomplete
+                      multiple
+                      options={permissions}
+                      disableCloseOnSelect
+                      value={getSelectedPermissions(page.id)}
+                      onChange={(_, newValue) =>
+                        handlePermissionChange(page.id, newValue)
+                      }
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Select Permissions"
+                          variant="outlined"
+                          fullWidth
                         />
-                      )
+                      )}
+                      renderOption={(props, option, { selected }) => (
+                        <li {...props}>
+                          <Checkbox
+                            style={{ marginRight: 8 }}
+                            checked={selected}
+                          />
+                          {option}
+                        </li>
+                      )}
+                    />
                   )}
-                </div>
+                />
+
+                {/* Select All Checkbox */}
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={
+                        getSelectedPermissions(page.id).length ===
+                        permissions.length
+                      }
+                      onChange={(e) =>
+                        handlePermissionChange(
+                          page.id,
+                          e.target.checked ? permissions : []
+                        )
+                      }
+                    />
+                  }
+                  label="Select All"
+                />
               </div>
             ))}
           </div>
@@ -386,7 +424,7 @@ function UsersFormPage() {
           variant="contained"
           color="secondary"
           type="submit"
-          disabled={!isValid || loading}
+          disabled={ Object.entries(errors).length > 0 || loading}
         >
           <div className="flex items-center">
             Save
