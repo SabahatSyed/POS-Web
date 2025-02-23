@@ -21,6 +21,7 @@ import {
   TableHead,
   TableRow,
   Collapse,
+  InputLabel,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import Autocomplete from "@mui/material/Autocomplete";
@@ -105,7 +106,15 @@ const schema = yup.object().shape({
 });
 
 function SalesBillFormPage() {
-  const { handleSubmit, reset, control, watch, formState, setValue,getValues } = useForm({
+  const {
+    handleSubmit,
+    reset,
+    control,
+    watch,
+    formState,
+    setValue,
+    getValues,
+  } = useForm({
     defaultValues,
     resolver: yupResolver(schema),
   });
@@ -114,20 +123,21 @@ function SalesBillFormPage() {
     name: "products",
   });
 
-  
   const { id } = useParams();
   const dispatch = useDispatch<any>();
   const [loading, setLoading] = useState(false);
   const { isValid, errors } = formState;
+  console.log(errors);
   const [salesMenOptions, setSalesMenOptions] = useState([]);
   const [chartOfAccounts, setChartOfAccounts] = useState([]);
-  const [inventoryInformationOptions, setInventoryInformationOptions] = useState([]);
+  const [inventoryInformationOptions, setInventoryInformationOptions] =
+    useState([]);
   const [batchOptions, setBatchOptions] = useState([]);
   const [fetchingBill, setFetchingBill] = useState(false);
-  const [billFlag,setBillFlag]=useState(true)
+  const [billFlag, setBillFlag] = useState(true);
   const formData = watch();
-  console.log(formData)
-  
+  console.log(formData);
+
   useEffect(() => {
     if (formData.saleBill) {
       fetchExistingBill(formData.saleBill);
@@ -137,29 +147,34 @@ function SalesBillFormPage() {
   const fetchExistingBill = async (billId: string) => {
     try {
       setFetchingBill(true);
-      const params = { id:billId }
+      const params = { id: billId };
       const response = await dispatch(getRecordById(params));
-      if (response?.payload?.records.length > 0) {
-        const billData = response.payload.records[0];
+      if (response?.payload) {
+        const billData = response.payload
         reset({
           ...billData,
+          saleBill:billId,
+          date: moment(billData.date).toDate(), // Convert to valid Date object
           products: billData.products,
-          return: false,
         });
-      }else{
+        dispatch(showMessage({ message: "Bill attached successfully", variant: "success" }));
+      } else {
         dispatch(showMessage({ message: "Bill not found", variant: "error" }));
       }
     } catch (error) {
-      dispatch(showMessage({ message: "Error fetching bill", variant: "error" }));
+      dispatch(
+        showMessage({ message: "Error fetching bill", variant: "error" })
+      );
     } finally {
       setFetchingBill(false);
     }
   };
 
   const onSubmit = async (data: any) => {
+
     const payload = {
       ...data,
-      products: data?.products?.map(product => ({
+      products: data?.products?.map((product) => ({
         ...product,
         quantity: Number(product.quantity),
         tradeRate: Number(product.tradeRate),
@@ -196,35 +211,43 @@ function SalesBillFormPage() {
         chartResponse,
       ] = await Promise.all([
         dispatch(getInventoryInformationRecords({ limit: 100 })),
-        dispatch(getBatchRecords({ limit: 100})),
-        dispatch(getSalesmenRecords({ limit: 100})),
-        dispatch(getChartOfAccountsRecords({ limit: 100})),
+        dispatch(getBatchRecords({ limit: 100 })),
+        dispatch(getSalesmenRecords({ limit: 100 })),
+        dispatch(getChartOfAccountsRecords({ limit: 100 })),
       ]);
 
-      setInventoryInformationOptions(inventoryResponse.payload.records.map(item => ({
-        value: item._id,
-        name: `${item.code}: ${item.name}`,
-      })));
-      setBatchOptions(batchesResponse.payload.records.map(item => ({
-        value: item._id,
-        name: `${item.code}: ${item.description}`,
-      })));
-      setSalesMenOptions(salesmenResponse.payload.records.map(item => ({
-        value: item._id,
-        name: `${item.code}: ${item.name}`,
-      })));
-      setChartOfAccounts(chartResponse.payload.records.map(item => ({
-        value: item._id,
-        name: `${item.code}: ${item.description}`,
-      })));
+      setInventoryInformationOptions(
+        inventoryResponse.payload.records.map((item) => ({
+          value: item._id,
+          name: `${item.code}: ${item.name}`,
+        }))
+      );
+      setBatchOptions(
+        batchesResponse.payload.records.map((item) => ({
+          value: item._id,
+          name: `${item.code}: ${item.description}`,
+        }))
+      );
+      setSalesMenOptions(
+        salesmenResponse.payload.records.map((item) => ({
+          value: item._id,
+          name: `${item.code}: ${item.name}`,
+        }))
+      );
+      setChartOfAccounts(
+        chartResponse.payload.records.map((item) => ({
+          value: item._id,
+          name: `${item.code}: ${item.description}`,
+        }))
+      );
     };
     loadOptions();
   }, []);
 
   useEffect(() => {
     // Add any custom logic here
-    setBillFlag(prev=> !prev);
-    setValue("saleBill","")
+    setBillFlag((prev) => !prev);
+    setValue("saleBill", "");
   }, [getValues("return")]); // Still watch the value change
 
   const calculateProductFields = (index: number) => {
@@ -232,7 +255,7 @@ function SalesBillFormPage() {
     const tradeRate = Number(product.tradeRate) || 0;
     const quantity = Number(product.quantity) || 0;
     const discount = Number(product.discount) || 0;
-    
+
     const discountValue = (tradeRate * discount) / 100;
     const netRate = tradeRate - discountValue;
     const amount = netRate * quantity;
@@ -242,271 +265,429 @@ function SalesBillFormPage() {
     setValue(`products.${index}.amount`, amount);
   };
 
-  return (
-    <FusePageSimple
-      header={
-        <Box className="flex flex-col container p-24">
-          <Typography variant="h4">Sales Bill</Typography>
-          <Box className="flex gap-16 mt-16">
-            <Controller
-              name="return"
-              control={control}
-              render={({ field }) => (
-                <RadioGroup row {...field}>
-                  <FormControlLabel
-                    value={true}
-                    control={<Radio />}
-                    label="New Bill"
-                  />
-                  <FormControlLabel
-                    value={false}
-                    control={<Radio />}
-                    label="Old Bill"
-                  />
-                </RadioGroup>
-              )}
-            />
-            {!billFlag && (
+  const data = watch();
+
+  const formContent = (
+    <form onSubmit={handleSubmit(onSubmit)} className="p-24 w-full">
+      <Box className="grid gap-24 mb-24">
+        <Box className="grid grid-cols-3 gap-16">
+          {/* Date Picker */}
+          <Controller
+            name="date"
+            control={control}
+            render={({ field }) => (
+              <DatePicker
+                label="Date"
+                value={field.value}
+                onChange={field.onChange}
+                renderInput={(params) => <TextField {...params} fullWidth />}
+              />
+            )}
+          />
+
+          {/* Customer Select */}
+          <Controller
+            name="chartOfAccount"
+            control={control}
+            render={({ field }) => (
+              <FormControl fullWidth>
+                {/* <InputLabel>Customer</InputLabel> */}
+                <Select
+                  {...field}
+                  // label="Customer"
+                  displayEmpty
+                  // renderValue={(value) => value || "Select Customer..."}
+                >
+                  <MenuItem disabled value="">
+                    <em>Select Customer...</em>
+                  </MenuItem>
+                  {chartOfAccounts.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+          />
+
+          {/* Salesman Select */}
+          <Controller
+            name="salesmen"
+            control={control}
+            render={({ field }) => (
+              <FormControl fullWidth>
+                {/* <InputLabel>Salesman</InputLabel> */}
+                <Select
+                  {...field}
+                  // label="Salesman"
+                  displayEmpty
+                  // renderValue={(value) => value || "Select Salesman..."}
+                >
+                  <MenuItem disabled value="">
+                    <em>Select Salesman...</em>
+                  </MenuItem>
+                  {salesMenOptions.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+          />
+        </Box>
+
+        {/* Product Fields */}
+        {fields.map((field, index) => (
+          <Box key={field.id} className="border p-16 rounded-8">
+            <Box className="flex justify-between mb-16">
+              <Typography variant="h6">Product {index + 1}</Typography>
+              <IconButton onClick={() => remove(index)}>
+                <RemoveIcon />
+              </IconButton>
+            </Box>
+
+            <Box className="grid grid-cols-4 gap-16">
+              {/* Product Select */}
               <Controller
-                name="saleBill"
+                name={`products.${index}.inventoryInformation`}
+                control={control}
+                render={({ field }) => (
+                  <FormControl fullWidth>
+                    {/* <InputLabel>Product</InputLabel> */}
+                    <Select
+                      {...field}
+                      // label="Product"
+                      displayEmpty
+                      // renderValue={(value) => value || "Select Product..."}
+                    >
+                      <MenuItem disabled value="">
+                        <em>Select Product...</em>
+                      </MenuItem>
+                      {inventoryInformationOptions.map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                          {option.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
+              />
+
+              {/* Batch Select */}
+              <Controller
+                name={`products.${index}.batch`}
+                control={control}
+                render={({ field }) => (
+                  <FormControl fullWidth>
+                    {/* <InputLabel>Batch</InputLabel> */}
+                    <Select
+                      {...field}
+                      // label="Batch"
+                      displayEmpty
+                      // renderValue={(value) => value || "Select Batch..."}
+                    >
+                      <MenuItem disabled value="">
+                        <em>Select Batch...</em>
+                      </MenuItem>
+                      {batchOptions.map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                          {option.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
+              />
+              {/* Description Input */}
+
+
+              <Controller
+                name={`products.${index}.description`}
                 control={control}
                 render={({ field }) => (
                   <TextField
                     {...field}
-                    label="Bill ID"
-                    disabled={fetchingBill}
-                    InputProps={{
-                      endAdornment: fetchingBill && (
-                        <CircularProgress size={20} />
-                      ),
+                    label="Description"
+                    type="text"
+                    fullWidth
+                    onChange={(e) => {
+                      field.onChange(e);
+                      calculateProductFields(index);
                     }}
                   />
                 )}
               />
+
+              {/* Quantity Input */}
+              <Controller
+                name={`products.${index}.quantity`}
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Quantity"
+                    type="number"
+                    fullWidth
+                    onChange={(e) => {
+                      field.onChange(e);
+                      calculateProductFields(index);
+                    }}
+                  />
+                )}
+              />
+
+              {/* Trade Rate Input */}
+              <Controller
+                name={`products.${index}.tradeRate`}
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Trade Rate"
+                    type="number"
+                    fullWidth
+                    onChange={(e) => {
+                      field.onChange(e);
+                      calculateProductFields(index);
+                    }}
+                  />
+                )}
+              />
+
+              {/* Discount Input */}
+              <Controller
+                name={`products.${index}.discount`}
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Discount %"
+                    type="number"
+                    fullWidth
+                    onChange={(e) => {
+                      field.onChange(e);
+                      calculateProductFields(index);
+                    }}
+                  />
+                )}
+              />
+
+              {/* Discount Value Input */}
+              <Controller
+                name={`products.${index}.discountValue`}
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Discount Value"
+                    disabled
+                    type="number"
+                    fullWidth
+                  />
+                )}
+              />
+
+              {/* Net Rate Input */}
+              <Controller
+                name={`products.${index}.netRate`}
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Net Rate"
+                    disabled
+                    type="number"
+                    fullWidth
+                  />
+                )}
+              />
+
+              {/* Amount Input */}
+              <Controller
+                name={`products.${index}.amount`}
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Amount"
+                    disabled
+                    type="number"
+                    fullWidth
+                  />
+                )}
+              />
+            </Box>
+          </Box>
+        ))}
+
+        {/* Add Product Button */}
+        <Button
+          variant="outlined"
+          startIcon={<AddIcon />}
+          onClick={() => append(defaultProduct)}
+        >
+          Add Product
+        </Button>
+
+        {/* Payment Section */}
+        <Box className="grid grid-cols-3 gap-16">
+          {/* Payment Type Select */}
+          <Controller
+            name="paymentType"
+            control={control}
+            render={({ field }) => (
+              <FormControl fullWidth>
+                <InputLabel>Payment Type</InputLabel>
+                <Select
+                  {...field}
+                  label="Payment Type"
+                  displayEmpty
+                  // renderValue={(value) => value || "Select Payment Type..."}
+                >
+                  <MenuItem disabled value="">
+                    <em>Select Payment Type...</em>
+                  </MenuItem>
+                  <MenuItem value="cash">Cash</MenuItem>
+                  <MenuItem value="credit">Credit</MenuItem>
+                </Select>
+              </FormControl>
             )}
-          </Box>
+          />
+
+          {/* Balance Input */}
+          <Controller
+            name="balance"
+            control={control}
+            render={({ field }) => (
+              <TextField {...field} label="Balance" type="number" fullWidth />
+            )}
+          />
+
+          {/* Remarks Input */}
+          <Controller
+            name="remarks"
+            control={control}
+            render={({ field }) => (
+              <TextField {...field} label="Remarks" fullWidth />
+            )}
+          />
         </Box>
-      }
-      content={
-        <form onSubmit={handleSubmit(onSubmit)} className="p-24">
-          <Box className="grid gap-24 mb-24">
-            <Box className="grid grid-cols-3 gap-16">
-              <Controller
-                name="date"
-                control={control}
-                render={({ field }) => (
-                  <DatePicker
-                    label="Date"
-                    value={field.value}
-                    onChange={field.onChange}
-                    renderInput={(params) => <TextField {...params} />}
-                  />
-                )}
-              />
-              <Controller
-                name="chartOfAccount"
-                control={control}
-                render={({ field }) => (
-                  <Select {...field} label="Customer">
-                    {chartOfAccounts.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                )}
-              />
-              <Controller
-                name="salesmen"
-                control={control}
-                render={({ field }) => (
-                  <Select {...field} label="Salesman">
-                    {salesMenOptions.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                )}
-              />
-            </Box>
+      </Box>
 
-            {fields.map((field, index) => (
-              <Box key={field.id} className="border p-16 rounded-8">
-                <Box className="flex justify-between mb-16">
-                  <Typography variant="h6">Product {index + 1}</Typography>
-                  <IconButton onClick={() => remove(index)}>
-                    <RemoveIcon />
-                  </IconButton>
-                </Box>
-                
-                <Box className="grid grid-cols-4 gap-16">
-                  <Controller
-                    name={`products.${index}.inventoryInformation`}
-                    control={control}
-                    render={({ field }) => (
-                      <Select {...field} label="Product">
-                        {inventoryInformationOptions.map((option) => (
-                          <MenuItem key={option.value} value={option.value}>
-                            {option.name}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    )}
-                  />
-                  <Controller
-                    name={`products.${index}.batch`}
-                    control={control}
-                    render={({ field }) => (
-                      <Select {...field} label="Batch">
-                        {batchOptions.map((option) => (
-                          <MenuItem key={option.value} value={option.value}>
-                            {option.name}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    )}
-                  />
-                  <Controller
-                    name={`products.${index}.quantity`}
-                    control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Quantity"
-                        type="number"
-                        onChange={(e) => {
-                          field.onChange(e);
-                          calculateProductFields(index);
-                        }}
-                      />
-                    )}
-                  />
-                  <Controller
-                    name={`products.${index}.tradeRate`}
-                    control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Trade Rate"
-                        type="number"
-                        onChange={(e) => {
-                          field.onChange(e);
-                          calculateProductFields(index);
-                        }}
-                      />
-                    )}
-                  />
-                  <Controller
-                    name={`products.${index}.discount`}
-                    control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Discount %"
-                        type="number"
-                        onChange={(e) => {
-                          field.onChange(e);
-                          calculateProductFields(index);
-                        }}
-                      />
-                    )}
-                  />
-                  <Controller
-                    name={`products.${index}.discountValue`}
-                    control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Discount Value"
-                        disabled
-                        type="number"
-                      />
-                    )}
-                  />
-                  <Controller
-                    name={`products.${index}.netRate`}
-                    control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Net Rate"
-                        disabled
-                        type="number"
-                      />
-                    )}
-                  />
-                  <Controller
-                    name={`products.${index}.amount`}
-                    control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Amount"
-                        disabled
-                        type="number"
-                      />
-                    )}
-                  />
-                </Box>
-              </Box>
-            ))}
-
-            <Button
-              variant="outlined"
-              startIcon={<AddIcon />}
-              onClick={() => append(defaultProduct)}
-            >
-              Add Product
-            </Button>
-
-            <Box className="grid grid-cols-3 gap-16">
-              <Controller
-                name="paymentType"
-                control={control}
-                render={({ field }) => (
-                  <Select {...field} label="Payment Type">
-                    <MenuItem value="cash">Cash</MenuItem>
-                    <MenuItem value="credit">Credit</MenuItem>
-                  </Select>
-                )}
-              />
-              <Controller
-                name="balance"
-                control={control}
-                render={({ field }) => (
-                  <TextField {...field} label="Balance" type="number" />
-                )}
-              />
-              <Controller
-                name="remarks"
-                control={control}
-                render={({ field }) => <TextField {...field} label="Remarks" />}
-              />
-            </Box>
-          </Box>
-
-          <Box className="flex gap-16">
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={loading }
-            >
-              {loading ? <CircularProgress size={24} /> : !billFlag ? "Return Bill" :"Close Bill" }
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={() => reset(defaultValues)}
-              color="secondary"
-            >
-              Reset
-            </Button>
-          </Box>
-        </form>
-      }
-    />
+      {/* Action Buttons */}
+      {/* Action Buttons */}
+      <Box className="flex gap-16">
+        <Button
+          variant="contained"
+          className="rounded-md"
+          type="submit"
+          disabled={loading}
+        >
+          {loading ? (
+            <CircularProgress size={24} />
+          ) : !billFlag ? (
+            "Return Bill"
+          ) : (
+            "Close Bill"
+          )}
+        </Button>
+        <Button
+          variant="outlined"
+          onClick={() => reset(defaultValues)}
+          color="secondary"
+        >
+          Reset
+        </Button>
+      </Box>
+    </form>
   );
+
+  const header = (
+    <Box className="flex flex-col container p-24">
+      <Typography variant="h4">Sales Bill</Typography>
+      <Box className="flex gap-16 mt-16">
+        <Controller
+          name="return"
+          control={control}
+          render={({ field }) => (
+            <RadioGroup row {...field}>
+              <FormControlLabel
+                value={true}
+                control={<Radio />}
+                label="New Bill"
+              />
+              <FormControlLabel
+                value={false}
+                control={<Radio />}
+                label="Old Bill"
+              />
+            </RadioGroup>
+          )}
+        />
+        {!billFlag && (
+          <Controller
+            name="saleBill"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Bill ID"
+                disabled={fetchingBill}
+                InputProps={{
+                  endAdornment: fetchingBill && <CircularProgress size={20} />,
+                }}
+              />
+            )}
+          />
+        )}
+      </Box>
+    </Box>
+  );
+
+  const content = (
+    <div className="w-full px-24 md:px-32 pb-24">
+      {useMemo(() => {
+        const container = {
+          show: {
+            transition: {
+              staggerChildren: 0.06,
+            },
+          },
+        };
+
+        const item = {
+          hidden: { opacity: 0, y: 20 },
+          show: { opacity: 1, y: 0 },
+        };
+
+        return (
+          !_.isEmpty(data) && (
+            <motion.div
+              className="w-full"
+              variants={container}
+              initial="hidden"
+              animate="show"
+            >
+              <div className="grid grid-cols-1  gap-32 w-full mt-32">
+                <motion.div
+                  variants={item}
+                  className="xl:col-span-2 flex flex-col flex-auto"
+                >
+                  {/* form content here */}
+
+                  {formContent}
+                </motion.div>
+              </div>
+            </motion.div>
+          )
+        );
+      }, [data])}
+    </div>
+  );
+
+  return <FusePageSimple header={header} content={content} />;
 }
 
 export default SalesBillFormPage;

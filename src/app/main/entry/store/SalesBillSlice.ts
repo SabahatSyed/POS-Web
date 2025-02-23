@@ -47,7 +47,7 @@ export const getRecordById = createAppAsyncThunk(
     id?: string;
   }) => {
     const response = await axios.get(
-      `${apiEndPoint}?id=${id ? id : ''}`,
+      `${apiEndPoint}/record?id=${id ? id : ''}`,
     );
     const data = (await response.data.data) as DataType;
 
