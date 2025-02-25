@@ -77,7 +77,7 @@ const defaultValues = {
   paymentType: "cash",
   balance: 0,
   remarks: "",
-  return: false,
+  return: true,
   products: [defaultProduct],
 };
 
@@ -614,12 +614,12 @@ function SalesBillFormPage() {
           render={({ field }) => (
             <RadioGroup row {...field}>
               <FormControlLabel
-                value={true}
+                value={false}
                 control={<Radio />}
                 label="New Bill"
               />
               <FormControlLabel
-                value={false}
+                value={true}
                 control={<Radio />}
                 label="Old Bill"
               />

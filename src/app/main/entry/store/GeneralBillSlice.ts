@@ -39,6 +39,22 @@ export const getRecords = createAppAsyncThunk(
   },
 );
 
+export const getRecordById = createAppAsyncThunk(
+  `generalbill/${storeName}/getRecordById`,
+  async ({
+    id,
+  }: {
+    id?: string;
+  }) => {
+    const response = await axios.get(
+      `${apiEndPoint}/record?id=${id ? id : ''}`,
+    );
+    const data = (await response.data.data) as DataType;
+
+    return data;
+  },
+);
+
 /**
  * The add user.
  */
