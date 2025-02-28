@@ -50,7 +50,7 @@ const routes: FuseRoutesType = [
   ),
   {
     path: "/",
-    element: <Navigate to="/utilities/company-info" />,
+    element: <Navigate to="/profile" />,
   },
   {
     path: "loading",

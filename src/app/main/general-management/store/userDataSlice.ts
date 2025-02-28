@@ -36,7 +36,7 @@ export const addRecord = createAppAsyncThunk(`generalManagement/${storeName}/add
 
 export const updateRecord = createAppAsyncThunk(`generalManagement/${storeName}/updateRecord`, async ({payload , id}: {payload: User , id:string}) => {
 
-	const response = await axios.put(`${apiEndPoint}/update?id=${id}`, payload);
+	const response = await axios.put(`${apiEndPoint}/${id}`, payload);
 
 	const data = (await response.data) as DataType;
 

@@ -21,14 +21,14 @@ const navigationConfig: FuseNavigationType = [
   // 	url: 'example',
   // 	auth: ['Admin', 'Customer']
   // },
-  {
-    id: "dashboards.projects",
-    title: "Dashboard",
-    type: "item",
-    icon: "heroicons-outline:cash",
-    url: "/dashboard",
-    auth: ["Admin"],
-  },
+  // {
+  //   id: "dashboards.projects",
+  //   title: "Dashboard",
+  //   type: "item",
+  //   icon: "heroicons-outline:cash",
+  //   url: "/dashboard",
+  //   auth: ["Admin", "SuperAdmin", "Employee"],
+  // },
   {
     id: "keypoints",
     title: "Keypoints",

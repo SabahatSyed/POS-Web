@@ -48,7 +48,6 @@ function Navigation(props: Partial<FuseNavigationProps>) {
         return null; // Exclude this item
       }
 
-      console.log("item",item, user.role,navigation)
 
       if (item.id === 'utilities-company-info' && !['Admin', 'SuperAdmin'].includes(user.role)) {
         return null; // Exclude if not Admin or SuperAdmin

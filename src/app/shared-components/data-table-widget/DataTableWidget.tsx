@@ -26,6 +26,7 @@ import { RowAction, TableConfig, TableDataResponse } from "./types/dataTypes";
 import { useAppSelector } from "app/store";
 import { selectUser } from "app/store/user/userSlice";
 import { get } from "lodash";
+import { selectMainThemeLight } from "app/store/fuse/settingsSlice";
 
 /**
  * The DataTableWidget widget.
@@ -33,7 +34,8 @@ import { get } from "lodash";
 function DataTableWidget(props: TableConfig) {
   const { records } = props.dataSource as TableDataResponse;
   // console.log(records)  // why rendering too much
-
+  const theme = useAppSelector(selectMainThemeLight)
+  console.log("thems",theme)
   const { columns, onSomeEvent } = props;
   const user = useAppSelector(selectUser);
   const location = useLocation();
@@ -140,7 +142,7 @@ function DataTableWidget(props: TableConfig) {
 
       <div className="table-responsive ">
         <Table className="simple w-full min-w-full">
-          <TableHead className="bg-blue-gray-600 ">
+          <TableHead sx={{background: theme.palette.secondary.main, color:theme.palette.secondary.contrastText}} >
             <TableRow>
               {columns.map((column, index) => (
                 <TableCell
@@ -171,7 +173,7 @@ function DataTableWidget(props: TableConfig) {
             </TableRow>
           </TableHead>
 
-          <TableBody>
+          <TableBody sx={{background:"white"}}>
             {records.map((row, index) => (
               <TableRow
                 key={index}
@@ -299,7 +301,7 @@ function DataTableWidget(props: TableConfig) {
           </TableBody>
         </Table>
         <TablePagination
-          className="shrink-0 border-t-1"
+          className="shrink-0 border-t-1 bg-white"
           component="div"
           count={records.length}
           rowsPerPage={rowsPerPage}

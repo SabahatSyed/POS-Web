@@ -253,9 +253,16 @@ const CompanyInfo = () => {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files[0];
     if (file) {
+      const formData = new FormData();
+      formData.append("file", file);
+
       try {
-        const uploadedUrl = await uploadImageToCloudinary(file);
-        setValue("logoURL", uploadedUrl);
+        const response = await axios.post(
+          `${process.env.REACT_APP_BASE_URL}/upload-image`,
+          formData
+        );
+        const uploadedUrl = response.data.imageUrl;
+        setValue("logoURL", uploadedUrl); // Set the URL in the field
       } catch (error) {
         console.error("Error uploading image:", error);
       }

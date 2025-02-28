@@ -118,10 +118,15 @@ class JwtService extends FuseUtils.EventEmitter {
               this.emit("onLogin", response?.data?.data?.user);
               resolve(response?.data?.data?.user);
             } else {
-              reject(response?.data?.data?.error);
+              console.log("erfe",response)
+              resolve(response?.data?.data?.error);
             }
           }
-        );
+        ).catch((err)=>{
+          console.log("erfe",err.response.data.message)
+          resolve(err.response.data);
+
+        })
     });
 
 

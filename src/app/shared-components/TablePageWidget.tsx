@@ -16,6 +16,7 @@ import {
 import ConfirmationDialog from "./ConfirmationDialog";
 import { selectUser } from "app/store/user/userSlice";
 import { useLocation } from "react-router";
+import { selectMainThemeLight } from "app/store/fuse/settingsSlice";
 
 /**
  * The TablePageWidget.
@@ -30,7 +31,7 @@ type TablePageWidgetProps = {
 
 function TablePageWidget(props: TablePageWidgetProps) {
   const { title, tableConfig } = props;
-
+  const theme = useAppSelector(selectMainThemeLight)
   const data = props.tableConfig.dataSource;
   const user = useAppSelector(selectUser);
   const location = useLocation();
@@ -179,7 +180,8 @@ function TablePageWidget(props: TablePageWidgetProps) {
           {/* Create Button */}
           {canAdd && tableConfig.showAdd && (
             <Button
-              className="inline-flex justify-start items-center min-w-max whitespace-nowrap bg-blue-gray-600 text-white hover:bg-blue-gray-700 hover:opacity-90"
+            sx={{background: theme.palette.secondary.main, color:theme.palette.secondary.contrastText }}
+              className={`inline-flex justify-start items-center min-w-max whitespace-nowrap  hover:opacity-90 text-${theme.palette.primary.contrastText}`}
               startIcon={
                 <FuseSvgIcon size={20}>heroicons-solid:plus</FuseSvgIcon>
               }

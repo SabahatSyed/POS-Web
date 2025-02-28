@@ -11,22 +11,23 @@ import { PartialDeep } from 'type-fest';
 import { AxiosError } from 'axios/index';
 import jwtService from '../../auth/services/jwtService';
 import createAppAsyncThunk from '../createAppAsyncThunk';
+import { changeFuseTheme } from 'app/store/fuse/settingsSlice';
 
 type AppRootStateType = RootStateType<userSliceType>;
 
 /**
  * Sets the user data in the Redux store and updates the login redirect URL if provided.
  */
-export const setUser = createAsyncThunk('user/setUser', (user: UserType) => {
+export const setUser = createAsyncThunk('user/setUser', (user: UserType, {dispatch}) => {
 	/*
     You can redirect the logged-in user to a specific route depending on his role
     */
 	if (user.loginRedirectUrl) {
 		settingsConfig.loginRedirectUrl = user.loginRedirectUrl; // for example 'apps/academy'
 	}
+	console.log("user",user)
 	// dispatch(updateUserThemeSettings(user.theme));
-
-
+	
 	return Promise.resolve(user);
 });
 
@@ -37,9 +38,9 @@ export const updateUserSettings = createAppAsyncThunk(
 	'user/updateSettings',
 	async (settings: FuseSettingsConfigType, { dispatch, rejectWithValue, getState }) => {
 		const AppState = getState() as AppRootStateType;
-		const { user } = AppState;
+		const user  = AppState;
 
-		
+		console.log("settings",settings, user)
 		const userRequestData = { data: { ...user.data, settings, displayName:user.data.name } } as UserType;
 		try {
 			const response = await jwtService.updateUserData(userRequestData);

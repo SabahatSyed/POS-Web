@@ -21,4 +21,7 @@ export type UserType = {
   };
   permissions: string[];
   loginRedirectUrl?: string;
+  success?: boolean;
+  theme?: any;
+  message?: string;
 };

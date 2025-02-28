@@ -51,17 +51,23 @@ function UserMenu() {
             className="text-11 font-medium capitalize"
             color="text.secondary"
           >
-            {user.role==null ? " " : user.role.toString()}
+            {user.role == null ? " " : user.role.toString()}
             {(!user.role ||
               (Array.isArray(user.role) && user.role.length === 0)) &&
               "guest"}
           </Typography>
         </div>
 
-         { user?.data && user?.data?.photoURL ? (
-          <Avatar className="md:mx-4" alt="user photo" src={user?.data?.photoURL} />
+        {user?.data && user?.data?.photoURL ? (
+          <Avatar
+            className="md:mx-4"
+            alt="user photo"
+            src={user?.data?.photoURL}
+          />
         ) : (
-          <Avatar className="md:mx-4">{user?.data?.name ? user?.data?.name[0] : "U"}</Avatar>
+          <Avatar className="md:mx-4">
+            {user?.data?.name ? user?.data?.name[0] : "U"}
+          </Avatar>
         )}
       </Button>
 
@@ -81,7 +87,7 @@ function UserMenu() {
           paper: "py-8",
         }}
       >
-        {!user.role || user.role.length === 0 || user.role=='guest' ? (
+        {!user.role || user.role.length === 0 || user.role == "guest" ? (
           <>
             <MenuItem component={Link} to="/sign-in" role="button">
               <ListItemIcon className="min-w-40">
@@ -104,10 +110,25 @@ function UserMenu() {
           <>
             <MenuItem
               component={NavLink}
+              to="/profile"
+              onClick={() => {
+                userMenuClose();
+              }}
+            >
+              <div className="flex ">
+                <ListItemIcon className="min-w-40">
+                  <FuseSvgIcon>heroicons-outline:user-circle</FuseSvgIcon>
+                </ListItemIcon>
+
+                <ListItemText primary="Profile" />
+              </div>
+            </MenuItem>
+            <MenuItem
+              component={NavLink}
               to="/sign-in"
               onClick={() => {
                 userMenuClose();
-                JwtService.logout()
+                JwtService.logout();
               }}
             >
               <div className="flex">
@@ -117,21 +138,7 @@ function UserMenu() {
                 <ListItemText primary="Sign out" />
               </div>
             </MenuItem>
-            <MenuItem
-              component={NavLink}
-              to="/profile"
-              onClick={() => {
-                userMenuClose();
-              }}
-            >
-              <div className="flex mt-10">
-                <ListItemIcon className="min-w-40">
-                  <FuseSvgIcon>heroicons-outline:user-circle</FuseSvgIcon>
-                </ListItemIcon>
 
-                <ListItemText primary="Profile" />
-              </div>
-            </MenuItem>
             {hasSettingsPermission && (
               <MenuItem
                 component={NavLink}

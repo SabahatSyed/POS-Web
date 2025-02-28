@@ -21,7 +21,7 @@ const ProfileConfig = {
 		{
 			path: '/profile',
 			element: <ProfilePage />,
-			auth: ['Admin', 'Agent', 'Customer'],
+			auth: ['Admin', 'SuperAdmin', 'Employee'],
 		}
 	]
 };

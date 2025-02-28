@@ -19,22 +19,108 @@ import { ThemeOptions } from '@mui/material/styles/createTheme';
 import { PartialDeep } from 'type-fest';
 
 type AppRootStateType = RootStateType<settingsSliceType>;
+const defaultColors = {
+	warning: {
+	  light: '#ffb74d',
+	  main: '#ff9800',
+	  dark: '#f57c00',
+	  contrastText: '#000',
+	},
+	error: {
+	  light: '#e57373',
+	  main: '#f44336',
+	  dark: '#d32f2f',
+	  contrastText: '#fff',
+	},
+	info: {
+	  light: '#64b5f6',
+	  main: '#2196f3',
+	  dark: '#1976d2',
+	  contrastText: '#fff',
+	},
+	success: {
+	  light: '#81c784',
+	  main: '#4caf50',
+	  dark: '#388e3c',
+	  contrastText: '#fff',
+	},
+  };
 
+
+  const generateCustomTheme = (
+	primary: string,
+	secondary: string,
+	background: string,
+	mode: 'light' | 'dark' = 'light' // Default to dark mode
+  ): FuseThemeType => {
+	// Define text colors based on the mode
+	const textColors = {
+	  primary: mode === 'dark' ? 'rgb(255,255,255)' : 'rgb(17, 24, 39)',
+	  secondary: mode === 'dark' ? 'rgb(148, 163, 184)' : 'rgb(107, 114, 128)',
+	  disabled: mode === 'dark' ? 'rgb(156, 163, 175)' : 'rgb(149, 156, 169)',
+	};
+  
+	// Define common colors
+	const commonColors = {
+	  black: 'rgb(17, 24, 39)',
+	  white: 'rgb(255, 255, 255)',
+	};
+  
+	// Define error colors
+	const errorColors = {
+	  light: '#ffcdd2',
+	  main: '#f44336',
+	  dark: '#b71c1c',
+	};
+  
+	// Define divider color based on the mode
+	const dividerColor = mode === 'dark' ? 'rgba(241,245,249,.12)' : '#e2e8f0';
+  
+	// Generate the theme object
+	return {
+	  palette: {
+		mode,
+		text: textColors,
+		common: commonColors,
+		primary: {
+		  light: background, // Use the provided primary color for light
+		  main: background, // Use the provided primary color for main
+		  dark: background, // Use the provided primary color for dark
+		  contrastDefaultColor: 'light', // Default contrast color
+		  contrastText: textColors.primary, // Use text color for contrast
+		},
+		secondary: {
+		  light: secondary, // Use the provided secondary color for light
+		  main: secondary, // Use the provided secondary color for main
+		  dark: secondary, // Use the provided secondary color for dark
+		  contrastText: textColors.primary, // Use text color for contrast
+		},
+		background: {
+		  paper: primary, // Use the provided background color for paper
+		  default: primary, // Use the provided background color for default
+		},
+		error: errorColors,
+		divider: dividerColor,
+	  },
+	};
+  };
 export const changeFuseTheme =
 	(theme: FuseThemeType): AppThunkType<void> =>
 	(dispatch, getState) => {
 		const AppState = getState() as AppRootStateType;
 		const { settings } = AppState.fuse;
-
+		const customTheme = generateCustomTheme(theme?.primary, theme?.secondary, theme?.background);
+		console.log("customTheme",customTheme)
 		const newSettings: FuseSettingsConfigType = {
 			...settings.current,
 			theme: {
-				main: theme,
-				navbar: theme,
-				toolbar: theme,
-				footer: theme
+				main: customTheme,
+				navbar: customTheme,
+				toolbar: customTheme,
+				footer: customTheme
 			}
 		};
+
 
 		return dispatch(setDefaultSettings(newSettings));
 	};
@@ -103,10 +189,12 @@ export const setDefaultSettings = createAppAsyncThunk(
 		const AppState = getState() as AppRootStateType;
 
 		const { settings } = AppState.fuse;
+		// const user = AppState.user;
+		// console.log("user",user)
 
 		const defaults = generateSettings(settings.defaults, val as FuseSettingsConfigType);
-
 		await dispatch(updateUserSettings(defaults));
+
 
 		return {
 			...settings,
