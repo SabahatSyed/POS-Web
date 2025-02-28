@@ -40,7 +40,7 @@ import {
 } from '../store/chartOfAccountSlice';
 import { User } from '../../general-management/types/dataTypes';
 import { getRecords as getRolesRecords } from '../../general-management/store/roleDataSlice'; 
-
+import { getRecords as getMainGroupRecords } from '../store/mainGroupSlice';
 
 import { useAppDispatch, useAppSelector } from 'app/store';
 import { useDebounce } from '@fuse/hooks';
@@ -159,6 +159,7 @@ function UsersFormPage() {
 					});
 			}
 			setLoading(false);
+      navigate(-1)
 
 		} catch (error) {
 			console.error('Error handling form submission:', error);

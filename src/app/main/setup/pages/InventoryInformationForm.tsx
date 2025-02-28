@@ -149,6 +149,7 @@ function UsersFormPage() {
 					});
 			}
 			setLoading(false);
+			navigate(-1)
 
 		} catch (error) {
 			console.error('Error handling form submission:', error);
