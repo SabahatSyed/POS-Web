@@ -11,7 +11,7 @@ type DataType = {
   [key: string]: unknown;
 };
 
-const storeName = 'settings';
+const storeName = 'salesbill';
 const apiEndPoint = '/api/salesBill';
 
 export const getRecords = createAppAsyncThunk(

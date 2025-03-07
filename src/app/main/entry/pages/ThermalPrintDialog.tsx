@@ -15,10 +15,23 @@ import {
   TableRow,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { useAppDispatch, useAppSelector } from "app/store";
+import { selectUser } from "app/store/user/userSlice";
 
-const ThermalPrintDialog = ({ openThermal, handleCloseThermal, handleOpenThermal, handleOpen }) => {
+const ThermalPrintDialog = ({ openThermal, handleCloseThermal, handleOpenThermal, handleOpen ,discount,
+  discountAmount,
+  netAmount,
+  totalAmount,
+  balance,
+  products,
+  invoice,
+  customer,
+  salesman,
+  date,
+  remarks,}) => {
+    const printContentRef = useRef();
+  const user = useAppSelector(selectUser);
   // Ref to capture the printable content
-  const printContentRef = useRef();
 
   // Print functionality
   const handlePrint = () => {
@@ -95,7 +108,7 @@ const ThermalPrintDialog = ({ openThermal, handleCloseThermal, handleOpenThermal
       {/* Company Logo */}
       <Box sx={{ position: "absolute", left: 10 }}>
         <img
-          src="logo.webp"
+          src={user.logoURL}
           alt="Company Logo"
           style={{ height: "40px" }}
         />
@@ -128,7 +141,7 @@ const ThermalPrintDialog = ({ openThermal, handleCloseThermal, handleOpenThermal
         }}
       >
         <Box>
-          <Typography
+          {/* <Typography
             sx={{
               whiteSpace: "nowrap",
               overflow: "hidden",
@@ -136,8 +149,8 @@ const ThermalPrintDialog = ({ openThermal, handleCloseThermal, handleOpenThermal
             }}
           >
             Phone :
-          </Typography>
-          <Typography
+          </Typography> */}
+          {/* <Typography
             sx={{
               whiteSpace: "nowrap",
               overflow: "hidden",
@@ -145,8 +158,8 @@ const ThermalPrintDialog = ({ openThermal, handleCloseThermal, handleOpenThermal
             }}
           >
             ADDRESS:
-          </Typography>
-          <Typography
+          </Typography> */}
+          {/* <Typography
             sx={{
               whiteSpace: "nowrap",
               overflow: "hidden",
@@ -154,6 +167,25 @@ const ThermalPrintDialog = ({ openThermal, handleCloseThermal, handleOpenThermal
             }}
           >
             DATE:
+          </Typography> */}
+          <Typography
+            sx={{
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            Invoice: {invoice}
+          </Typography>
+
+          <Typography
+            sx={{
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+           Bill To : {customer}
           </Typography>
           <Typography
             sx={{
@@ -162,9 +194,8 @@ const ThermalPrintDialog = ({ openThermal, handleCloseThermal, handleOpenThermal
               textOverflow: "ellipsis",
             }}
           >
-            BILL NO:
+            remarks: {remarks}
           </Typography>
-
           {/* <Typography sx={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
       REMARKS: 
     </Typography> */}
@@ -181,7 +212,7 @@ const ThermalPrintDialog = ({ openThermal, handleCloseThermal, handleOpenThermal
             textOverflow: "ellipsis",
           }}
         >
-          RETAIL INVOICE
+           INVOICE
         </Typography>
         {/* </Box> */}
       </Box>
@@ -239,80 +270,80 @@ const ThermalPrintDialog = ({ openThermal, handleCloseThermal, handleOpenThermal
         </TableHead>
         <TableBody>
           {/* Subtotal Row */}
-          <TableRow>
-            <TableCell
-              style={{ padding: "8px", border: "none" }}
-            ></TableCell>
-            <TableCell
-              style={{ padding: "8px", border: "none" }}
-            ></TableCell>
-            <TableCell
-              style={{ padding: "8px", border: "none" }}
-            ></TableCell>
-            {/* <TableCell style={{ border: "none" }}></TableCell>
-      <TableCell style={{ border: "none" }}></TableCell>
-      <TableCell style={{ border: "none" }}></TableCell> */}
-          </TableRow>
+          {products.map((product, index) => (
+              <TableRow key={index}>
+                <TableCell style={{ border: "1px solid black" }}>
+                  {product.description}
+                </TableCell>
+                <TableCell style={{ border: "1px solid black" }}>
+                  {product.quantity}
+                </TableCell>
+                <TableCell style={{ border: "1px solid black" }}>
+                  {product.amount}
+                </TableCell>
+              </TableRow>
+            ))}
 
-          <TableRow>
-            <TableCell
-              style={{
-                padding: "8px",
-                height: "40px",
-                textAlign: "center",
-              }}
-            ></TableCell>
-            <TableCell
-              style={{
-                padding: "8px",
-                height: "40px",
-                textAlign: "center",
-              }}
-            ></TableCell>
-            <TableCell
-              style={{
-                padding: "8px",
-                height: "40px",
-                textAlign: "center",
-              }}
-            ></TableCell>
-            {/* <TableCell style={{ height: "40px", textAlign: "center" }}></TableCell>
-      <TableCell style={{ height: "40px", textAlign: "center" }}></TableCell>
-      <TableCell style={{ height: "40px", textAlign: "center" }}></TableCell>
-      <TableCell style={{ height: "40px", textAlign: "center" }}></TableCell> */}
-          </TableRow>
-          <TableRow>
-            <TableCell
-              style={{
-                padding: "8px",
-                borderBottom: "1px solid black",
-                height: "40px",
-                textAlign: "center",
-              }}
-            ></TableCell>
-            <TableCell
-              style={{
-                padding: "8px",
-                borderBottom: "1px solid black",
-                height: "40px",
-                textAlign: "center",
-              }}
-            ></TableCell>
-            <TableCell
-              style={{
-                padding: "8px",
-                borderBottom: "1px solid black",
-                height: "40px",
-                textAlign: "center",
-              }}
-            ></TableCell>
-            {/* <TableCell style={{ height: "40px", textAlign: "center" }}></TableCell>
-      <TableCell style={{ height: "40px", textAlign: "center" }}></TableCell>
-      <TableCell style={{ height: "40px", textAlign: "center" }}></TableCell>
-      <TableCell style={{ height: "40px", textAlign: "center" }}></TableCell> */}
-          </TableRow>
+<TableRow>
+              <TableCell style={{ padding: "8px" }}>SUBTOTAL</TableCell>
+              <TableCell style={{ padding: "8px", textAlign: "center" }}>
+                
+              </TableCell>
+              <TableCell style={{ padding: "8px", textAlign: "center" }}>
+                {totalAmount}
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell style={{ padding: "8px" }}>Discount</TableCell>
+              <TableCell style={{ padding: "8px", textAlign: "center" }}>
+                {discount}
+              </TableCell>
+              <TableCell style={{ padding: "8px", textAlign: "center" }}>
+                {discountAmount}
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell style={{ padding: "8px" }}>Balance</TableCell>
+              <TableCell style={{ padding: "8px", textAlign: "center" }}>
+              
+              </TableCell>
+              <TableCell style={{ padding: "8px", textAlign: "center" }}>
+                {balance}
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell
+                style={{
+                  padding: "8px",
+                  borderTop: "1px solid black",
+                  borderBottom: "1px solid black",
+                }}
+              >
+                TOTAL
+              </TableCell>
+              <TableCell
+                style={{
+                  padding: "8px",
+                  borderTop: "1px solid black",
+                  borderBottom: "1px solid black",
+                  textAlign: "center",
+                }}
+              >
+              
+              </TableCell>
+              <TableCell
+                style={{
+                  padding: "8px",
+                  borderTop: "1px solid black",
+                  borderBottom: "1px solid black",
+                  textAlign: "center",
+                }}
+              >
+                {netAmount.toFixed(2)}
+              </TableCell>
+            </TableRow>
 
-          <TableRow>
+          {/* <TableRow>
             <TableCell style={{ padding: "8px" }}>SUBTOTAL</TableCell>
             <TableCell
               style={{ padding: "8px", textAlign: "center" }}
@@ -390,7 +421,7 @@ const ThermalPrintDialog = ({ openThermal, handleCloseThermal, handleOpenThermal
                 textAlign: "center",
               }}
             ></TableCell>
-          </TableRow>
+          </TableRow> */}
         </TableBody>
       </Table>
 

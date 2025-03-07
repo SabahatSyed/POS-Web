@@ -14,18 +14,43 @@ import {
   TableRow,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-
 import React, { useRef } from "react";
-
+import { useAppDispatch, useAppSelector } from "app/store";
+import { selectUser } from "app/store/user/userSlice";
 const A4Print = ({
   discount,
+  discountAmount,
+  netAmount,
+  totalAmount,
+  balance,
+  products,
   open,
   handleClose,
   handleOpenThermal,
   handleCloseThermal,
+  invoice,
+  customer,
+  salesman,
+  date,
+  remarks,
 }) => {
   const printContentRef = useRef();
-
+  const user = useAppSelector(selectUser);
+  console.log("user", user,discount,
+    discountAmount,
+    netAmount,
+    totalAmount,
+    balance,
+    products,
+    open,
+    handleClose,
+    handleOpenThermal,
+    handleCloseThermal,
+    invoice,
+    customer,
+    salesman,
+    date,
+    remarks);
   const handlePrint = () => {
     const printContents = printContentRef.current.innerHTML;
     const printWindow = window.open("", "_blank");
@@ -66,26 +91,30 @@ const A4Print = ({
     printWindow.print();
     printWindow.close();
   };
+
   return (
-    <Dialog discount={discount} fullScreen open={open} onClose={handleClose}>
+    <Dialog fullScreen open={open} onClose={handleClose}>
       <DialogTitle
         sx={{
           textAlign: "center",
-          fontFamily: "'Courier New', monospace", // Monospaced font
-          fontSize: "16px", // Slightly smaller font size for thermal look
+          fontFamily: "'Courier New', monospace",
+          fontSize: "16px",
           fontWeight: "bold",
-          borderBottom: "1px solid black", // Light border for separation
+          borderBottom: "1px solid black",
           paddingBottom: "10px",
           display: "flex",
-          justifyContent: "center", // Center the title text
-          alignItems: "center", // Align the logo and text vertically
+          justifyContent: "center",
+          alignItems: "center",
         }}
       >
-        {/* Company Logo */}
         <Box sx={{ position: "absolute", left: 10 }}>
-          <img src="logo.webp" alt="Company Logo" style={{ height: "40px" }} />
+          <img
+            src={user.logoURL}
+            alt="Company Logo"
+            style={{ height: "40px" }}
+          />
         </Box>
-        Estimate Invoice
+        Invoice
         <IconButton
           aria-label="close"
           onClick={handleCloseThermal}
@@ -101,59 +130,51 @@ const A4Print = ({
       </DialogTitle>
 
       <DialogContent ref={printContentRef}>
-        {/* Header Section */}
         <Box
           sx={{
             display: "flex",
-            flexDirection: "column", // Stack children vertically
-            alignItems: "center", // Center horizontally
-            justifyContent: "center", // Center vertically
-            minHeight: "100vh", // Full height for centering
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "100vh",
           }}
         >
           <Box
             sx={{
               mb: 4,
               display: "grid",
-              gridTemplateColumns: "repeat(6, 1fr)", // 6 equal-width columns
-              // Add space between columns
+              gridTemplateColumns: "repeat(6, 1fr)",
             }}
           >
-            {/* First and Second Columns (Shared Content) */}
             <Box sx={{ gridColumn: "1 / 3" }}>
               <Typography sx={{ marginY: 1 }}>
-                BILL TO: ________________________________________
+                BILL TO:  {customer}
               </Typography>
-              <Typography sx={{ marginY: 1 }}>
+              {/* <Typography sx={{ marginY: 1 }}>
                 ADDRESS: ________________________________________
-              </Typography>
-              <Typography sx={{ marginY: 1 }}>
+              </Typography> */}
+              {/* <Typography sx={{ marginY: 1 }}>
                 CONTACT: ________________________________________
-              </Typography>
+              </Typography> */}
               <Typography sx={{ marginY: 1 }}>
-                REMARKS: ________________________________________
+                REMARKS: {remarks}
               </Typography>
             </Box>
 
-            {/* Third Column (Empty) */}
             <Box sx={{ gridColumn: "3 / 4" }}></Box>
 
-            {/* Fourth Column */}
             <Box sx={{ gridColumn: "4 / 6" }}>
               <Typography sx={{ marginY: 1 }}>
-                DATE: ____________________
+                {/* DATE: {new Date(date)} */}
               </Typography>
               <Typography sx={{ marginY: 1 }}>
-                INVOICE: ____________________
+                INVOICE: {invoice}
               </Typography>
             </Box>
 
-            {/* Fifth and Sixth Columns (Empty) */}
-            {/* <Box sx={{ gridColumn: "5 / 6" }}></Box> */}
             <Box sx={{ gridColumn: "6 / 7" }}></Box>
           </Box>
 
-          {/* Table Section */}
           <Table sx={{ mb: 4, width: "70%" }}>
             <TableHead>
               <TableRow>
@@ -179,85 +200,105 @@ const A4Print = ({
               </TableRow>
             </TableHead>
             <TableBody>
-              {/* Subtotal Row */}
+              {products.map((product, index) => (
+                <TableRow key={index}>
+                  <TableCell style={{ border: "1px solid black" }}>
+                    {index + 1}
+                  </TableCell>
+                  <TableCell style={{ border: "1px solid black" }}>
+                    {product.description}
+                  </TableCell>
+                  <TableCell style={{ border: "1px solid black" }}>
+                    {product.quantity}
+                  </TableCell>
+                  <TableCell style={{ border: "1px solid black" }}>
+                    {product.tradeRate}
+                  </TableCell>
+                  {discount && (
+                    <TableCell style={{ border: "1px solid black" }}>
+                      {product.discount}
+                    </TableCell>
+                  )}
+                  <TableCell style={{ border: "1px solid black" }}>
+                    {product.netRate}
+                  </TableCell>
+                  <TableCell style={{ border: "1px solid black" }}>
+                    {product.amount}
+                  </TableCell>
+                </TableRow>
+              ))}
               <TableRow>
-                <TableCell colSpan={2} style={{ border: "none" }}></TableCell>{" "}
-                {/* Empty space */}
+                <TableCell colSpan={2} style={{ border: "none" }}></TableCell>
                 <TableCell style={{ border: "1px solid black" }}>
                   <Typography>SUBTOTAL:</Typography>
                 </TableCell>
-                {/* <TableCell style={{ border: "1px solid black" }}></TableCell>{" "} */}
-                {/* Empty */}
-                <TableCell
-                  style={{ border: "1px solid black" }}
-                ></TableCell>{" "}
-                {/* Spacer cell */}
-                <TableCell style={{ border: "1px solid black" }}></TableCell>
-                <TableCell
-                  style={{ border: "1px solid black" }}
-                ></TableCell>{" "}
-                {/* Empty */}
+                <TableCell style={{ border: "1px solid black" }}>
+              
+                </TableCell>
+                <TableCell style={{ border: "1px solid black" }}>
+              
+                </TableCell>
+                <TableCell style={{ border: "1px solid black" }}>
+                
+                </TableCell>
+                <TableCell style={{ border: "1px solid black" }}>
+                  {totalAmount}
+                </TableCell>
               </TableRow>
-
               <TableRow>
-                <TableCell
-                  style={{ borderBottom: "none", height: "40px" }}
-                ></TableCell>
-                <TableCell
-                  style={{ borderBottom: "none", height: "40px" }}
-                ></TableCell>
-                {/* <TableCell
-                style={{ border: "1px solid black", height: "40px" }}
-              ></TableCell> */}
-                <TableCell
-                  style={{ border: "1px solid black", height: "40px" }}
-                ></TableCell>
-                <TableCell
-                  style={{ border: "1px solid black", height: "40px" }}
-                ></TableCell>
-                <TableCell
-                  style={{ border: "1px solid black", height: "40px" }}
-                ></TableCell>
-                <TableCell
-                  style={{ border: "1px solid black", height: "40px" }}
-                ></TableCell>
+                <TableCell colSpan={2} style={{ border: "none" }}></TableCell>
+                <TableCell style={{ border: "1px solid black" }}>
+                  <Typography>Balance:</Typography>
+                </TableCell>
+                <TableCell style={{ border: "1px solid black" }}>
+              
+                </TableCell>
+                <TableCell style={{ border: "1px solid black" }}>
+              
+                </TableCell>
+                <TableCell style={{ border: "1px solid black" }}>
+                
+                </TableCell>
+                <TableCell style={{ border: "1px solid black" }}>
+                  {balance}
+                </TableCell>
               </TableRow>
-
               <TableRow>
-                <TableCell colSpan={2} style={{ border: "none" }}></TableCell>{" "}
-                {/* Empty space */}
+                <TableCell colSpan={2} style={{ border: "none" }}></TableCell>
+                <TableCell style={{ border: "1px solid black" }}>
+                  <Typography>Discount:</Typography>
+                </TableCell>
+                <TableCell style={{ border: "1px solid black" }}>
+              
+                </TableCell>
+                <TableCell style={{ border: "1px solid black" }}>
+              
+                </TableCell>
+                <TableCell style={{ border: "1px solid black" }}>
+                  {discount}
+                </TableCell>
+                <TableCell style={{ border: "1px solid black" }}>
+                  {discountAmount}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell colSpan={2} style={{ border: "none" }}></TableCell>
                 <TableCell style={{ border: "1px solid black" }}>
                   <Typography>TOTAL:</Typography>
                 </TableCell>
-                <TableCell style={{ border: "1px solid black" }}></TableCell>{" "}
-                {/* Empty */}
-                {/* <TableCell
-                style={{ border: "1px solid black" }}
-              ></TableCell>{" "} */}
-                {/* Spacer cell */}
-                <TableCell style={{ border: "1px solid black" }}></TableCell>
-                <TableCell
-                  style={{ border: "1px solid black" }}
-                ></TableCell>{" "}
-                {/* Empty */}
+                <TableCell style={{ border: "1px solid black" }}>
+                </TableCell>
+                <TableCell style={{ border: "1px solid black" }}>
+                </TableCell>
+                <TableCell style={{ border: "1px solid black" }}>
+                </TableCell>
+                <TableCell style={{ border: "1px solid black" }}>
+                  {netAmount}
+                </TableCell>
               </TableRow>
             </TableBody>
           </Table>
 
-          {/* Footer Section */}
-          {/* <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                gap: 4,
-                marginTop: 4,
-                width: "70%",
-              }}
-            >
-              <Typography>Created By: ____________________</Typography>
-              <Typography>Checked By: ____________________</Typography>
-              <Typography>Approved By: ____________________</Typography>
-            </Box> */}
           <Box
             sx={{
               marginY: 6,
@@ -302,13 +343,6 @@ const A4Print = ({
             >
               Thermal Print
             </Button>
-            {/* <Button
-              variant="contained"
-              className="rounded-md"
-              color="secondary"
-            >
-              A4 Print
-            </Button> */}
           </Box>
         </Box>
       </DialogContent>
