@@ -262,14 +262,13 @@ function SalesBillFormPage() {
     try {
       setLoading(true);
       if (data.return) {
-        const data=await dispatch(updateRecord({ id: payload.saleBill, payload })).unwrap();
+        const data = await dispatch(
+          updateRecord({ id: payload.saleBill, payload })
+        ).unwrap();
         dispatch(showMessage({ message: "Success", variant: "success" }));
-
       } else {
-        const data= await dispatch(addRecord({ payload })).unwrap();
-        console.log("data",data)
+        const data = await dispatch(addRecord({ payload })).unwrap();
         dispatch(showMessage({ message: "Success", variant: "success" }));
-
       }
       reset();
     } catch (error) {
@@ -312,14 +311,14 @@ function SalesBillFormPage() {
         salesmenResponse.payload.records.map((item) => ({
           value: item._id,
           name: `${item.code}: ${item.name}`,
-          saleman: item.name
+          saleman: item.name,
         }))
       );
       setChartOfAccounts(
         chartResponse.payload.records.map((item) => ({
           value: item._id,
           name: `${item.code}: ${item.description}`,
-          customer: item.description
+          customer: item.description,
         }))
       );
     };
@@ -414,12 +413,13 @@ function SalesBillFormPage() {
           totalAmount={totalAmount}
           products={formData.products}
           invoice={formData.saleBill}
-          customer={chartOfAccounts.find(
-            (c) => c.value === formData.chartOfAccount
-          )?.customer}
-          salesman={salesMenOptions.find(
-            (s) => s.value === formData.salesmen
-          )?.saleman}
+          customer={
+            chartOfAccounts.find((c) => c.value === formData.chartOfAccount)
+              ?.customer
+          }
+          salesman={
+            salesMenOptions.find((s) => s.value === formData.salesmen)?.saleman
+          }
           date={formData.date}
           remarks={formData.remarks}
           balance={formData.balance}
@@ -442,12 +442,13 @@ function SalesBillFormPage() {
           handleCloseThermal={handleCloseThermal}
           handleOpenThermal={handleOpenThermal}
           handleOpen={handleOpen}
-          customer={chartOfAccounts.find(
-            (c) => c.value === formData.chartOfAccount
-          )?.customer}
-          salesman={salesMenOptions.find(
-            (s) => s.value === formData.salesmen
-          )?.saleman}
+          customer={
+            chartOfAccounts.find((c) => c.value === formData.chartOfAccount)
+              ?.customer
+          }
+          salesman={
+            salesMenOptions.find((s) => s.value === formData.salesmen)?.saleman
+          }
           date={formData.date}
           remarks={formData.remarks}
           balance={formData.balance}
@@ -792,18 +793,15 @@ function SalesBillFormPage() {
             type="submit"
             disabled={loading}
           >
-            {loading ? <CircularProgress size={24} /> : "Close Bill"}
+            {loading ? (
+              <CircularProgress size={24} />
+            ) : getValues("return") ? (
+              "Return Bill"
+            ) : (
+              "Close Bill"
+            )}
           </Button>
-          {getValues("return") && (
-            <Button
-              variant="contained"
-              className="rounded-md"
-              type="submit"
-              disabled={loading}
-            >
-              {loading ? <CircularProgress size={24} /> : "Return Bill"}
-            </Button>
-          )}
+
           <Button
             variant="outlined"
             onClick={() => reset(defaultValues)}
@@ -871,7 +869,17 @@ function SalesBillFormPage() {
               name="return"
               control={control}
               render={({ field }) => (
-                <RadioGroup row {...field}>
+                <RadioGroup
+                  row
+                  {...field}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    if (e.target.value === "false") {
+                      reset(defaultValues); // Reset the form to default values
+                      setValue("saleBill", getNextCode()); // Auto-set the code on form load
+                    }
+                  }}
+                >
                   <FormControlLabel
                     value={false}
                     control={<Radio />}
