@@ -140,13 +140,16 @@ function UsersFormPage() {
             dispatch(
 				showMessage({ message: resp.error.message, variant: "error" })
             );
+
 		} else {
 			dispatch(showMessage({ message: "Success", variant: "success" }));
 			reset()
           }
         });
       }
+      navigate(-1);
       setLoading(false);
+
     } catch (error) {
       console.error("Error handling form submission:", error);
       dispatch(showMessage({ message: error?.message, variant: "error" }));

@@ -11,7 +11,7 @@ type DataType = {
   [key: string]: unknown;
 };
 
-const storeName = 'settings';
+const storeName = 'generalBill';
 const apiEndPoint = '/api/generalBill';
 
 export const getRecords = createAppAsyncThunk(
@@ -32,8 +32,7 @@ export const getRecords = createAppAsyncThunk(
         id ? id : ''
       }&text=${search ? search : ''}`,
     );
-    console.log('re', response);
-    const data = (await response.data.records) as DataType;
+    const data = (await response.data.data) as DataType;
 
     return data;
   },
@@ -62,9 +61,7 @@ export const addRecord = createAppAsyncThunk(
   `generalbill/${storeName}/addRecord`,
   async ({ payload }: { payload: SettingType }) => {
     const response = await axios.post(`${apiEndPoint}/`, payload);
-    console.log('r', response);
     const data = (await response.data._doc) as DataType;
-    console.log('data', data);
     return data;
   },
 );

@@ -64,7 +64,7 @@ const defaultProduct = {
   inventoryInformation: "",
   batch: "",
   description: "",
-  quantity: 0,
+  revisedQuantity: 0,
   tradeRate: 0,
   discount: 0,
   discountValue: 0,
@@ -100,7 +100,7 @@ const schema = yup.object().shape({
       inventoryInformation: yup.string().required("Product is required"),
       batch: yup.string().required("Batch is required"),
       description: yup.string(),
-      quantity: yup.number().required("Quantity is required").min(1),
+      revisedQuantity: yup.number().required("Quantity is required").min(1),
       tradeRate: yup.number().required("Trade Rate is required").min(0),
       discount: yup.number().min(0),
       discountValue: yup.number().min(0),
@@ -178,25 +178,25 @@ function SalesBillFormPage() {
 
   const getNextCode = useCallback(() => {
     if (records) {
-      if (records?.records?.length === 0) return "0001"; // Start from "0001" if no records exist
+      if (!records?.records || records?.records?.length == 0) return "0001"; // Start from "0001" if no records exist
       const lastCode = records.records
-        ?.map((record) => parseInt(record.code, 10))
+        ?.map((record) => parseInt(record.bill, 10))
         ?.filter((num) => !isNaN(num))
         ?.sort((a, b) => b - a)[0]; // Get the highest existing code
-      return String(lastCode + 1); // Increment and pad to 4 digits
+      return String(lastCode + 1).padStart(4, "0"); // Increment and pad to 4 digits
     }
   }, [records]);
 
   const getLastCode = useCallback(() => {
     if (records) {
-      if (records?.records?.length === 0) return ""; // Start from "0001" if no records exist
+      if (!records?.records || records?.records?.length === 0) return ""; // Start from "0001" if no records exist
       const lastCode = records.records
-        ?.map((record) => parseInt(record.code, 10))
+        ?.map((record) => parseInt(record.bill))
         ?.filter((num) => !isNaN(num))
         ?.sort((a, b) => b - a)[0]; // Get the highest existing code
-      return String(lastCode); // Increment and pad to 4 digits
+      return String(lastCode).padStart(4, "0"); // Increment and pad to 4 digits
     }
-  }, [records]);
+  }, [records?.records]);
 
   useEffect(() => {
     if (!getValues("return")) {
@@ -244,18 +244,19 @@ function SalesBillFormPage() {
   };
 
   const onSubmit = async (data: any) => {
-    console.log("data", data);
     const payload = {
       ...data,
-      bill: data.saleBill,
       products: data?.products?.map((product) => ({
         ...product,
-        quantity: Number(product.quantity),
+        quantity: data.return
+          ? Number(product.quantity)
+          : Number(product.revisedQuantity),
         tradeRate: Number(product.tradeRate),
         discount: Number(product.discount),
         discountValue: Number(product.discountValue),
         netRate: Number(product.netRate),
         amount: Number(product.amount),
+        revisedQuantity: Number(product.revisedQuantity),
       })),
     };
 
@@ -266,11 +267,15 @@ function SalesBillFormPage() {
           updateRecord({ id: payload.saleBill, payload })
         ).unwrap();
         dispatch(showMessage({ message: "Success", variant: "success" }));
+        dispatch(getRecords({}));
       } else {
-        const data = await dispatch(addRecord({ payload })).unwrap();
+        const data = await dispatch(
+          addRecord({ payload: { ...payload, bill: getNextCode() } })
+        ).unwrap();
         dispatch(showMessage({ message: "Success", variant: "success" }));
       }
       reset();
+      setValue("lastBill", getLastCode());
     } catch (error) {
       dispatch(showMessage({ message: error.message, variant: "error" }));
     } finally {
@@ -334,9 +339,8 @@ function SalesBillFormPage() {
   const calculateProductFields = (index: number) => {
     const product = formData.products[index];
     const tradeRate = Number(product.tradeRate) || 0;
-    const quantity = Number(product.quantity) || 0;
+    const quantity = Number(product.revisedQuantity) || 0;
     const discount = Number(product.discount) || 0;
-    console.log("batch", batchOptions, product.batch);
     const batch = batchOptions.find((batch) => batch.value === product.batch);
     const existingBillProduct = formData.products.find(
       (p) =>
@@ -345,7 +349,7 @@ function SalesBillFormPage() {
     );
 
     if (batch && quantity > batch.quantity) {
-      setValue(`products.${index}.quantity`, batch.amount);
+      setValue(`products.${index}.revisedQuantity`, batch.quantity);
       dispatch(
         showMessage({
           message: "Quantity exceeds batch amount",
@@ -354,13 +358,15 @@ function SalesBillFormPage() {
       );
       return;
     }
-
     if (
       formData.return &&
       existingBillProduct &&
-      quantity > existingBillProduct.quantity
+      quantity > Number(existingBillProduct.quantity)
     ) {
-      setValue(`products.${index}.quantity`, existingBillProduct.quantity);
+      setValue(
+        `products.${index}.revisedQuantity`,
+        existingBillProduct.quantity
+      );
       dispatch(
         showMessage({
           message: "Quantity exceeds existing bill quantity",
@@ -402,7 +408,6 @@ function SalesBillFormPage() {
   }, [formData.products, formData.balance, discount]);
 
   const data = watch();
-  console.log("errors", errors);
   const formContent = (
     <>
       {open && (
@@ -450,6 +455,7 @@ function SalesBillFormPage() {
             salesMenOptions.find((s) => s.value === formData.salesmen)?.saleman
           }
           date={formData.date}
+          invoice={formData.saleBill}
           remarks={formData.remarks}
           balance={formData.balance}
         />
@@ -624,7 +630,7 @@ function SalesBillFormPage() {
 
                 {/* Quantity Input */}
                 <Controller
-                  name={`products.${index}.quantity`}
+                  name={`products.${index}.revisedQuantity`}
                   control={control}
                   render={({ field }) => (
                     <TextField

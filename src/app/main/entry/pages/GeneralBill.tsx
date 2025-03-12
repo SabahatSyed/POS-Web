@@ -48,24 +48,24 @@ import {
   updateRecord,
   getRecordById,
   selectRecords,
-} from "../../entry/store/SalesBillSlice";
+} from "../../entry/store/GeneralBillSlice";
 import { getRecords as getInventoryInformationRecords } from "../../setup/store/inventoryInformationSlice";
+import { getRecords as getKeypointsRecords } from "../../keypoints/store/keypointsSlice";
+
 import { getRecords as getBatchRecords } from "../../setup/store/batchSlice";
 import { getRecords as getSalesmenRecords } from "../../setup/store/salesmenSlice";
-import { getRecords as getChartOfAccountsRecords } from "../../setup/store/chartOfAccountSlice";
 import { useAppDispatch, useAppSelector } from "app/store";
 import { showMessage } from "app/store/fuse/messageSlice";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import ThermalPrintDialog from "./ThermalPrintDialog";
 import A4Print from "./A4PrintDialog";
-import {getRecords as getKeypointsRecords} from '../../keypoints/store/keypointsSlice';
 
 const defaultProduct = {
   inventoryInformation: "",
   batch: "",
   description: "",
-  quantity: 0,
+  revisedQuantity: 0,
   tradeRate: 0,
   discount: 0,
   discountValue: 0,
@@ -75,7 +75,7 @@ const defaultProduct = {
 
 const defaultValues = {
   saleBill: "",
-  chartOfAccount: "",
+  keyPoints: "",
   salesmen: "",
   date: new Date(),
   paymentType: "cash",
@@ -89,7 +89,7 @@ const defaultValues = {
 const schema = yup.object().shape({
   saleBill: yup.string(),
   lastBill: yup.string(),
-  chartOfAccount: yup.string().required("Chart of Account is required"),
+  keyPoints: yup.string().required("Customer is required"),
   salesmen: yup.string().required("Salesman is required"),
   date: yup.date().required("Date is required"),
   paymentType: yup.string().required("Payment Type is required"),
@@ -101,7 +101,7 @@ const schema = yup.object().shape({
       inventoryInformation: yup.string().required("Product is required"),
       batch: yup.string().required("Batch is required"),
       description: yup.string(),
-      quantity: yup.number().required("Quantity is required").min(1),
+      revisedQuantity: yup.number().required("Quantity is required").min(1),
       tradeRate: yup.number().required("Trade Rate is required").min(0),
       discount: yup.number().min(0),
       discountValue: yup.number().min(0),
@@ -111,7 +111,7 @@ const schema = yup.object().shape({
   ),
 });
 
-function GeneralFormPage() {
+function SalesBillFormPage() {
   const {
     handleSubmit,
     reset,
@@ -177,27 +177,30 @@ function GeneralFormPage() {
     if (!records?.records) dispatch(getRecords({}));
   }, [dispatch, getRecords]);
 
+  console.log("records",records)
   const getNextCode = useCallback(() => {
     if (records) {
-      if (records?.records?.length === 0) return "0001"; // Start from "0001" if no records exist
+      console.log("records", records);
+      if (!records?.records || records?.records?.length == 0) return "0001"; // Start from "0001" if no records exist
       const lastCode = records.records
-        ?.map((record) => parseInt(record.code, 10))
+        ?.map((record) => parseInt(record.bill, 10))
         ?.filter((num) => !isNaN(num))
         ?.sort((a, b) => b - a)[0]; // Get the highest existing code
-      return String(lastCode + 1); // Increment and pad to 4 digits
+      return String(lastCode + 1).padStart(4, "0"); // Increment and pad to 4 digits
     }
+    return "0001";
   }, [records]);
 
   const getLastCode = useCallback(() => {
     if (records) {
-      if (records?.records?.length === 0) return ""; // Start from "0001" if no records exist
+      if (!records?.records || records?.records?.length === 0) return ""; // Start from "0001" if no records exist
       const lastCode = records.records
-        ?.map((record) => parseInt(record.code, 10))
+        ?.map((record) => parseInt(record.bill))
         ?.filter((num) => !isNaN(num))
         ?.sort((a, b) => b - a)[0]; // Get the highest existing code
-      return String(lastCode); // Increment and pad to 4 digits
+      return String(lastCode).padStart(4, "0"); // Increment and pad to 4 digits
     }
-  }, [records]);
+  }, [records?.records]);
 
   useEffect(() => {
     if (!getValues("return")) {
@@ -222,7 +225,7 @@ function GeneralFormPage() {
           products: billData.products,
           return: true,
           salesmen: billData.salesmen?._id,
-          chartOfAccount: billData.chartOfAccount?._id,
+          keyPoints: billData.keyPoints?._id || "Customer",
           saleBill: billId,
         });
 
@@ -245,34 +248,40 @@ function GeneralFormPage() {
   };
 
   const onSubmit = async (data: any) => {
-    console.log("data", data);
+    const { keyPoints, ...formdata } = data;
     const payload = {
-      ...data,
-      bill: data.saleBill,
-      products: data?.products?.map((product) => ({
+      ...(keyPoints !== "Customer" ? { keyPoints } : {}),
+      ...formdata,
+      products: formdata?.products?.map((product) => ({
         ...product,
-        quantity: Number(product.quantity),
+        quantity: formdata.return
+          ? Number(product.quantity)
+          : Number(product.revisedQuantity),
         tradeRate: Number(product.tradeRate),
         discount: Number(product.discount),
         discountValue: Number(product.discountValue),
         netRate: Number(product.netRate),
         amount: Number(product.amount),
+        revisedQuantity: Number(product.revisedQuantity),
       })),
     };
 
     try {
       setLoading(true);
       if (data.return) {
-        const data=await dispatch(updateRecord({ id: payload.saleBill, payload })).unwrap();
+        const data = await dispatch(
+          updateRecord({ id: payload.saleBill, payload })
+        ).unwrap();
         dispatch(showMessage({ message: "Success", variant: "success" }));
-
+        dispatch(getRecords({}));
       } else {
-        const data= await dispatch(addRecord({ payload })).unwrap();
-        console.log("data",data)
+        const data = await dispatch(
+          addRecord({ payload: { ...payload, bill: getNextCode() } })
+        ).unwrap();
         dispatch(showMessage({ message: "Success", variant: "success" }));
-
       }
       reset();
+      setValue("lastBill", getLastCode());
     } catch (error) {
       dispatch(showMessage({ message: error.message, variant: "error" }));
     } finally {
@@ -284,22 +293,21 @@ function GeneralFormPage() {
   useEffect(() => {
     const loadOptions = async () => {
       const [
-        keypointsResponse,
+        inventoryResponse,
         batchesResponse,
         salesmenResponse,
         chartResponse,
       ] = await Promise.all([
-        dispatch(getKeypointsRecords({ limit: 100 })),
+        dispatch(getInventoryInformationRecords({ limit: 100 })),
         dispatch(getBatchRecords({ limit: 100 })),
         dispatch(getSalesmenRecords({ limit: 100 })),
-        dispatch(getChartOfAccountsRecords({ limit: 100 })),
+        dispatch(getKeypointsRecords({ limit: 100 })),
       ]);
 
       setInventoryInformationOptions(
-        keypointsResponse.payload.records.map((item) => ({
+        inventoryResponse.payload.records.map((item) => ({
           value: item._id,
-          name: `${item.keypoints.name}`,
-          company: item.company
+          name: `${item.code}: ${item.name}`,
         }))
       );
       setBatchOptions(
@@ -314,16 +322,21 @@ function GeneralFormPage() {
         salesmenResponse.payload.records.map((item) => ({
           value: item._id,
           name: `${item.code}: ${item.name}`,
-          saleman: item.name
+          saleman: item.name,
         }))
       );
-      setChartOfAccounts(
-        chartResponse.payload.records.map((item) => ({
+      setChartOfAccounts([
+        ...chartResponse.payload.records.map((item) => ({
           value: item._id,
-          name: `${item.code}: ${item.description}`,
-          customer: item.description
-        }))
-      );
+          name: `${item.keypoints.name}`,
+          customer: item.keypoints.name,
+        })),
+        {
+          value: "Customer", // You can adjust the value if needed
+          name: "Customer",
+          customer: "Customer",
+        },
+      ]);
     };
     loadOptions();
   }, []);
@@ -337,9 +350,8 @@ function GeneralFormPage() {
   const calculateProductFields = (index: number) => {
     const product = formData.products[index];
     const tradeRate = Number(product.tradeRate) || 0;
-    const quantity = Number(product.quantity) || 0;
+    const quantity = Number(product.revisedQuantity) || 0;
     const discount = Number(product.discount) || 0;
-    console.log("batch", batchOptions, product.batch);
     const batch = batchOptions.find((batch) => batch.value === product.batch);
     const existingBillProduct = formData.products.find(
       (p) =>
@@ -348,7 +360,7 @@ function GeneralFormPage() {
     );
 
     if (batch && quantity > batch.quantity) {
-      setValue(`products.${index}.quantity`, batch.amount);
+      setValue(`products.${index}.revisedQuantity`, batch.quantity);
       dispatch(
         showMessage({
           message: "Quantity exceeds batch amount",
@@ -357,13 +369,15 @@ function GeneralFormPage() {
       );
       return;
     }
-
     if (
       formData.return &&
       existingBillProduct &&
-      quantity > existingBillProduct.quantity
+      quantity > Number(existingBillProduct.quantity)
     ) {
-      setValue(`products.${index}.quantity`, existingBillProduct.quantity);
+      setValue(
+        `products.${index}.revisedQuantity`,
+        existingBillProduct.quantity
+      );
       dispatch(
         showMessage({
           message: "Quantity exceeds existing bill quantity",
@@ -405,7 +419,6 @@ function GeneralFormPage() {
   }, [formData.products, formData.balance, discount]);
 
   const data = watch();
-  console.log("errors", errors);
   const formContent = (
     <>
       {open && (
@@ -416,12 +429,13 @@ function GeneralFormPage() {
           totalAmount={totalAmount}
           products={formData.products}
           invoice={formData.saleBill}
-          customer={chartOfAccounts.find(
-            (c) => c.value === formData.chartOfAccount
-          )?.customer}
-          salesman={salesMenOptions.find(
-            (s) => s.value === formData.salesmen
-          )?.saleman}
+          customer={
+            chartOfAccounts.find((c) => c.value === formData?.keyPoints)
+              ?.customer
+          }
+          salesman={
+            salesMenOptions.find((s) => s.value === formData.salesmen)?.saleman
+          }
           date={formData.date}
           remarks={formData.remarks}
           balance={formData.balance}
@@ -444,13 +458,15 @@ function GeneralFormPage() {
           handleCloseThermal={handleCloseThermal}
           handleOpenThermal={handleOpenThermal}
           handleOpen={handleOpen}
-          customer={chartOfAccounts.find(
-            (c) => c.value === formData.chartOfAccount
-          )?.customer}
-          salesman={salesMenOptions.find(
-            (s) => s.value === formData.salesmen
-          )?.saleman}
+          customer={
+            chartOfAccounts.find((c) => c.value === formData?.keyPoints)
+              ?.customer
+          }
+          salesman={
+            salesMenOptions.find((s) => s.value === formData.salesmen)?.saleman
+          }
           date={formData.date}
+          invoice={formData.saleBill}
           remarks={formData.remarks}
           balance={formData.balance}
         />
@@ -475,7 +491,7 @@ function GeneralFormPage() {
 
             {/* Customer Select */}
             <Controller
-              name="chartOfAccount"
+              name="keyPoints"
               control={control}
               render={({ field }) => (
                 <FormControl fullWidth>
@@ -625,7 +641,7 @@ function GeneralFormPage() {
 
                 {/* Quantity Input */}
                 <Controller
-                  name={`products.${index}.quantity`}
+                  name={`products.${index}.revisedQuantity`}
                   control={control}
                   render={({ field }) => (
                     <TextField
@@ -794,18 +810,15 @@ function GeneralFormPage() {
             type="submit"
             disabled={loading}
           >
-            {loading ? <CircularProgress size={24} /> : "Close Bill"}
+            {loading ? (
+              <CircularProgress size={24} />
+            ) : getValues("return") ? (
+              "Return Bill"
+            ) : (
+              "Close Bill"
+            )}
           </Button>
-          {getValues("return") && (
-            <Button
-              variant="contained"
-              className="rounded-md"
-              type="submit"
-              disabled={loading}
-            >
-              {loading ? <CircularProgress size={24} /> : "Return Bill"}
-            </Button>
-          )}
+
           <Button
             variant="outlined"
             onClick={() => reset(defaultValues)}
@@ -873,7 +886,17 @@ function GeneralFormPage() {
               name="return"
               control={control}
               render={({ field }) => (
-                <RadioGroup row {...field}>
+                <RadioGroup
+                  row
+                  {...field}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    if (e.target.value === "false") {
+                      reset(defaultValues); // Reset the form to default values
+                      setValue("saleBill", getNextCode()); // Auto-set the code on form load
+                    }
+                  }}
+                >
                   <FormControlLabel
                     value={false}
                     control={<Radio />}
@@ -958,4 +981,4 @@ function GeneralFormPage() {
   return <FusePageSimple header={header} content={content} />;
 }
 
-export default GeneralFormPage;
+export default SalesBillFormPage;

@@ -28,7 +28,7 @@ export const getRecords = createAppAsyncThunk(
     search?: string;
   }) => {
     const response = await axios.get(
-      `${apiEndPoint}?page=${page ? page : ''}&limit=${limit ? limit : ''}&id=${
+      `${apiEndPoint}?page=${page ? page : '1'}&limit=${limit ? limit : ''}&id=${
         id ? id : ''
       }&text=${search ? search : ''}`,
     );
@@ -60,6 +60,7 @@ export const getRecordById = createAppAsyncThunk(
 export const addRecord = createAppAsyncThunk(
   `salesbill/${storeName}/addRecord`,
   async ({ payload }: { payload: SettingType }) => {
+    console.log('payload', payload);
     const response = await axios.post(`${apiEndPoint}/`, payload);
     console.log('r', response);
     const data = (await response.data._doc) as DataType;

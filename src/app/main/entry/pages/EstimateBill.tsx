@@ -1,6 +1,4 @@
-import { Controller, useForm } from "react-hook-form";
-// import Button from '@mui/material/Button';
-// import TextField from '@mui/material/TextField';
+import { Controller, useForm, useFieldArray } from "react-hook-form";
 import Checkbox from "@mui/material/Checkbox";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
@@ -8,7 +6,6 @@ import Switch from "@mui/material/Switch";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Radio from "@mui/material/Radio";
-// import Typography from '@mui/material/Typography';
 import {
   Button,
   Dialog,
@@ -23,28 +20,23 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  Collapse,
+  InputLabel,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-// import CloseIcon from "@mui/icons-material/Close";
-
 import Autocomplete from "@mui/material/Autocomplete";
 import * as yup from "yup";
 import CircularProgress from "@mui/material/CircularProgress";
 import { yupResolver } from "@hookform/resolvers/yup";
 import _ from "@lodash";
-import React, { useEffect, useState } from "react";
-import clsx from "clsx";
+import React, { useCallback, useEffect, useState } from "react";
 import FormControl from "@mui/material/FormControl";
 import FormLabel from "@mui/material/FormLabel";
 import FormHelperText from "@mui/material/FormHelperText";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import { DatePicker } from "@mui/x-date-pickers";
-import FuseSvgIcon from "@fuse/core/FuseSvgIcon";
-import InputLabel from "@mui/material/InputLabel";
 import { useDispatch } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
-// import { addRole } from '../store/dataSlice';
-// import { PermissionData } from '../Permissions'
 import { useAuth } from "../../../auth/AuthContext";
 import FusePageSimple from "@fuse/core/FusePageSimple";
 import { useMemo } from "react";
@@ -54,56 +46,109 @@ import {
   addRecord,
   getRecords,
   updateRecord,
-} from "../../general-management/store/userDataSlice";
-import { User } from "../../general-management/types/dataTypes";
-import { getRecords as getRolesRecords } from "../../general-management/store/roleDataSlice";
-
-import { useAppSelector } from "app/store";
-import { useDebounce } from "@fuse/hooks";
-import DropdownWidget from "app/shared-components/DropdownWidget";
+  getRecordById,
+  selectRecords,
+} from "../../entry/store/SalesBillSlice";
+import { getRecords as getInventoryInformationRecords } from "../../setup/store/inventoryInformationSlice";
+import { getRecords as getBatchRecords } from "../../setup/store/batchSlice";
+import { getRecords as getSalesmenRecords } from "../../setup/store/salesmenSlice";
+import { getRecords as getChartOfAccountsRecords } from "../../setup/store/chartOfAccountSlice";
+import { useAppDispatch, useAppSelector } from "app/store";
 import { showMessage } from "app/store/fuse/messageSlice";
-import A4Print from "./A4PrintDialog";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
 import ThermalPrintDialog from "./ThermalPrintDialog";
+import A4Print from "./A4PrintDialog";
 
-/**
- * UsersFormPage
- */
-function EstimateBill() {
-  /**
-   * Form Validation Schema
-   */
+const defaultProduct = {
+  inventoryInformation: "",
+  batch: "",
+  description: "",
+  revisedQuantity: 0,
+  tradeRate: 0,
+  discount: 0,
+  discountValue: 0,
+  netRate: 0,
+  amount: 0,
+};
 
-  const title = "Estimate Bill";
+const defaultValues = {
+  saleBill: "",
+  chartOfAccount: "",
+  salesmen: "",
+  date: new Date(),
+  paymentType: "cash",
+  balance: 0,
+  remarks: "",
+  return: false,
+  products: [defaultProduct],
+  lastBill: "",
+};
 
-  const defaultValues = {
-    code: "",
-    description: "",
-  };
+const schema = yup.object().shape({
+  saleBill: yup.string(),
+  lastBill: yup.string(),
+  chartOfAccount: yup.string().required("Chart of Account is required"),
+  salesmen: yup.string().required("Salesman is required"),
+  date: yup.date().required("Date is required"),
+  paymentType: yup.string().required("Payment Type is required"),
+  balance: yup.number().required("Balance is required").min(0),
+  remarks: yup.string(),
+  return: yup.boolean(),
+  products: yup.array().of(
+    yup.object().shape({
+      inventoryInformation: yup.string().required("Product is required"),
+      batch: yup.string().required("Batch is required"),
+      description: yup.string(),
+      revisedQuantity: yup.number().required("Quantity is required").min(1),
+      tradeRate: yup.number().required("Trade Rate is required").min(0),
+      discount: yup.number().min(0),
+      discountValue: yup.number().min(0),
+      netRate: yup.number().required("Net Rate is required").min(0),
+      amount: yup.number().required("Amount is required").min(0),
+    })
+  ),
+});
 
-  const schema = yup.object().shape({
-    code: yup.string().required("You must enter a value"),
-    description: yup.string().email().required("You must enter a value"),
+function SalesBillFormPage() {
+  const {
+    handleSubmit,
+    reset,
+    control,
+    watch,
+    formState,
+    setValue,
+    getValues,
+  } = useForm({
+    defaultValues,
+    resolver: yupResolver(schema),
+  });
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "products",
   });
 
-  const { handleSubmit, register, reset, control, watch, formState, setValue } =
-    useForm({
-      defaultValues,
-      mode: "all",
-      resolver: yupResolver(schema),
-    });
-
   const { id } = useParams();
-  const navigate = useNavigate();
-  const dispatch = useDispatch<any>();
-  const [rowData, setRowData] = useState<User | undefined>(undefined);
   const [loading, setLoading] = useState(false);
-  const { isValid, dirtyFields, errors, touchedFields } = formState;
+  const { isValid, errors } = formState;
+  const [salesMenOptions, setSalesMenOptions] = useState([]);
+  const [chartOfAccounts, setChartOfAccounts] = useState([]);
+  const [inventoryInformationOptions, setInventoryInformationOptions] =
+    useState([]);
+  const [batchOptions, setBatchOptions] = useState([]);
+  const [fetchingBill, setFetchingBill] = useState(false);
+  const [billFlag, setBillFlag] = useState(true);
+  const formData = watch();
   const [open, setOpen] = useState(false);
   const [openThermal, setOpenThermal] = useState(false);
-  const [discount, setDiscount] = useState("");
+  const records = useAppSelector(selectRecords);
+  const dispatch = useAppDispatch();
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [discount, setDiscount] = useState(0);
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [netAmount, setNetAmount] = useState(0);
 
   const handleOpen = () => {
-    console.log("dshjhskjsds");
     setOpen(true);
     setOpenThermal(false);
   };
@@ -121,308 +166,703 @@ function EstimateBill() {
     setOpenThermal(false);
   };
 
-  const onSubmit = async (formData: User) => {
+  useEffect(() => {
+    if (formData.saleBill) {
+      fetchExistingBill(formData.saleBill);
+    }
+  }, [formData.saleBill]);
+
+  useEffect(() => {
+    if (!records?.records) dispatch(getRecords({}));
+  }, [dispatch, getRecords]);
+
+  const getNextCode = useCallback(() => {
+    if (records) {
+      console.log("records", records);
+      if (!records?.records || records?.records?.length == 0) return "0001"; // Start from "0001" if no records exist
+      const lastCode = records.records
+        ?.map((record) => parseInt(record.bill, 10))
+        ?.filter((num) => !isNaN(num))
+        ?.sort((a, b) => b - a)[0]; // Get the highest existing code
+      console.log("las", lastCode);
+      return String(lastCode + 1).padStart(4, "0"); // Increment and pad to 4 digits
+    }
+  }, [records]);
+
+  const getLastCode = useCallback(() => {
+    console.log("rec", records);
+    if (records) {
+      if (records?.records?.length === 0) return ""; // Start from "0001" if no records exist
+      const lastCode = records.records
+        ?.map((record) => parseInt(record.bill))
+        ?.filter((num) => !isNaN(num))
+        ?.sort((a, b) => b - a)[0]; // Get the highest existing code
+      return String(lastCode).padStart(4, "0"); // Increment and pad to 4 digits
+    }
+  }, [records?.records]);
+
+  useEffect(() => {
+    if (!getValues("return")) {
+      console.log("resetting", getNextCode());
+      setValue("saleBill", getNextCode()); // Auto-set the code on form load
+    }
+  }, [getValues("return")]);
+
+  useEffect(() => {
+    console.log("last", getLastCode());
+    setValue("lastBill", getLastCode()); // Auto-set the code on form load
+  }, [records]);
+
+  const fetchExistingBill = async (billId: string) => {
     try {
-      setLoading(true);
-      if (id) {
-        await dispatch(updateRecord({ id, payload: formData })).then(
-          (resp: any) => {
-            console.log(resp);
-            if (resp.error) {
-              dispatch(
-                showMessage({ message: resp.error.message, variant: "error" })
-              );
-            } else {
-              dispatch(showMessage({ message: "Success", variant: "success" }));
-            }
-          }
+      setFetchingBill(true);
+      const params = { id: billId };
+      const response = await dispatch(getRecordById(params));
+      if (response?.payload) {
+        const billData = response.payload;
+        console.log("billId",billId)
+        reset({
+          ...billData,
+          date: moment(billData.date).toDate(), // Convert to valid Date object
+          products: billData.products,
+          return: true,
+          salesmen: billData.salesmen?._id,
+          chartOfAccount: billData.chartOfAccount?._id,
+          saleBill: billId,
+        });
+
+        dispatch(
+          showMessage({
+            message: "Bill attached successfully",
+            variant: "success",
+          })
         );
       } else {
-        await dispatch(addRecord({ payload: formData })).then((resp: any) => {
-          console.log(resp);
-          if (resp.error) {
-            dispatch(
-              showMessage({ message: resp.error.message, variant: "error" })
-            );
-          } else {
-            dispatch(showMessage({ message: "Success", variant: "success" }));
-          }
-        });
+        dispatch(showMessage({ message: "Bill not found", variant: "error" }));
       }
-      setLoading(false);
     } catch (error) {
-      console.error("Error handling form submission:", error);
-      dispatch(showMessage({ message: error?.message, variant: "error" }));
+      dispatch(
+        showMessage({ message: "Error fetching bill", variant: "error" })
+      );
+    } finally {
+      setFetchingBill(false);
+    }
+  };
+
+  const onSubmit = async (data: any) => {
+    console.log("data", data, getValues());
+    const payload = {
+      ...data,
+      products: data?.products?.map((product) => ({
+        ...product,
+        quantity: data.return
+          ? Number(product.quantity)
+          : Number(product.revisedQuantity),
+        tradeRate: Number(product.tradeRate),
+        discount: Number(product.discount),
+        discountValue: Number(product.discountValue),
+        netRate: Number(product.netRate),
+        amount: Number(product.amount),
+        revisedQuantity: Number(product.revisedQuantity),
+      })),
+    };
+
+    try {
+      setLoading(true);
+      if (data.return) {
+        const data = await dispatch(
+          updateRecord({ id: payload.saleBill, payload })
+        ).unwrap();
+        dispatch(showMessage({ message: "Success", variant: "success" }));
+        dispatch(getRecords({}));
+      } else {
+        const data = await dispatch(
+          addRecord({ payload: { ...payload, bill: getNextCode() } })
+        ).unwrap();
+        dispatch(showMessage({ message: "Success", variant: "success" }));
+      }
+      reset();
+      setValue("lastBill", getLastCode());
+    } catch (error) {
+      dispatch(showMessage({ message: error.message, variant: "error" }));
+    } finally {
       setLoading(false);
     }
   };
 
-  // const handleCancel = () => {
-  //   navigate(-1);
-  // };
+  // Load initial data for dropdowns
+  useEffect(() => {
+    const loadOptions = async () => {
+      const [
+        inventoryResponse,
+        batchesResponse,
+        salesmenResponse,
+        chartResponse,
+      ] = await Promise.all([
+        dispatch(getInventoryInformationRecords({ limit: 100 })),
+        dispatch(getBatchRecords({ limit: 100 })),
+        dispatch(getSalesmenRecords({ limit: 100 })),
+        dispatch(getChartOfAccountsRecords({ limit: 100 })),
+      ]);
+
+      setInventoryInformationOptions(
+        inventoryResponse.payload.records.map((item) => ({
+          value: item._id,
+          name: `${item.code}: ${item.name}`,
+        }))
+      );
+      setBatchOptions(
+        batchesResponse.payload.records.map((item) => ({
+          value: item._id,
+          name: `${item.code}: ${item.description}`,
+          quantity: parseInt(item.quantity),
+          inventoryInformation: item.inventoryInformation,
+        }))
+      );
+      setSalesMenOptions(
+        salesmenResponse.payload.records.map((item) => ({
+          value: item._id,
+          name: `${item.code}: ${item.name}`,
+          saleman: item.name,
+        }))
+      );
+      setChartOfAccounts(
+        chartResponse.payload.records.map((item) => ({
+          value: item._id,
+          name: `${item.code}: ${item.description}`,
+          customer: item.description,
+        }))
+      );
+    };
+    loadOptions();
+  }, []);
 
   useEffect(() => {
-    if (id) {
-      const fetchData = async () => {
-        try {
-          const response = await dispatch(getRecords({ id }));
-          if (response.payload.records.length > 0) {
-            const data = response.payload.records[0];
-            setRowData(data);
+    // Add any custom logic here
+    setBillFlag((prev) => !prev);
+    setValue("saleBill", "");
+  }, [getValues("return")]); // Still watch the value change
 
-            for (const field in schema.fields) {
-              const fieldName: any = field;
-              setValue(fieldName, data[fieldName]);
-            }
-          }
-        } catch (error) {
-          console.error("Error fetching role data:", error);
-        }
-      };
+  const calculateProductFields = (index: number) => {
+    const product = formData.products[index];
+    const tradeRate = Number(product.tradeRate) || 0;
+    const quantity = Number(product.revisedQuantity) || 0;
+    const discount = Number(product.discount) || 0;
+    console.log("batch", batchOptions, product.batch);
+    const batch = batchOptions.find((batch) => batch.value === product.batch);
+    const existingBillProduct = formData.products.find(
+      (p) =>
+        p.inventoryInformation === product.inventoryInformation &&
+        p.batch === product.batch
+    );
 
-      fetchData();
+    if (batch && quantity > batch.quantity) {
+      setValue(`products.${index}.revisedQuantity`, batch.quantity);
+      dispatch(
+        showMessage({
+          message: "Quantity exceeds batch amount",
+          variant: "error",
+        })
+      );
+      return;
     }
-  }, [dispatch, id]);
+    console.log(
+      "sdfs",
+      formData.return,
+      existingBillProduct,
+      quantity > existingBillProduct?.quantity
+    );
+    if (
+      formData.return &&
+      existingBillProduct &&
+      quantity > Number(existingBillProduct.quantity)
+    ) {
+      setValue(
+        `products.${index}.revisedQuantity`,
+        existingBillProduct.quantity
+      );
+      dispatch(
+        showMessage({
+          message: "Quantity exceeds existing bill quantity",
+          variant: "error",
+        })
+      );
+      return;
+    }
+
+    const discountValue = (tradeRate * discount) / 100;
+    const netRate = tradeRate - discountValue;
+    const amount = netRate * quantity;
+
+    setValue(`products.${index}.discountValue`, discountValue);
+    setValue(`products.${index}.netRate`, netRate);
+    setValue(`products.${index}.amount`, amount);
+    calculateTotals();
+  };
+
+  const calculateTotals = () => {
+    const products = getValues("products");
+    const balance = Number(getValues("balance")) || 0;
+    const discountPercentage = Number(discount) || 0;
+
+    const totalAmount = products.reduce(
+      (sum, product) => sum + Number(product.amount),
+      0
+    );
+    const discountAmount = (totalAmount * discountPercentage) / 100;
+    const netAmount = totalAmount - discountAmount - balance;
+
+    setTotalAmount(totalAmount);
+    setDiscountAmount(discountAmount);
+    setNetAmount(netAmount);
+  };
+
+  useEffect(() => {
+    calculateTotals();
+  }, [formData.products, formData.balance, discount]);
 
   const data = watch();
-
+  console.log("errors", errors);
   const formContent = (
     <>
-      {/* Full-screen dialog */}
-      {/* <div className="flex flex-col justify-center items-start"> */}
-     {open && <A4Print discount={discount} open={open} handleClose={handleClose} handleOpenThermal={handleOpenThermal} handleCloseThermal={handleCloseThermal} /> }
+      {open && (
+        <A4Print
+          discount={discount}
+          discountAmount={discountAmount}
+          netAmount={netAmount}
+          totalAmount={totalAmount}
+          products={formData.products}
+          invoice={formData.saleBill}
+          customer={
+            chartOfAccounts.find((c) => c.value === formData.chartOfAccount)
+              ?.customer
+          }
+          salesman={
+            salesMenOptions.find((s) => s.value === formData.salesmen)?.saleman
+          }
+          date={formData.date}
+          remarks={formData.remarks}
+          balance={formData.balance}
+          open={open}
+          handleClose={handleClose}
+          handleOpenThermal={handleOpenThermal}
+          handleCloseThermal={handleCloseThermal}
+        />
+      )}
       {/* </div> */}
 
-      {openThermal && <ThermalPrintDialog openThermal={openThermal} handleCloseThermal={handleCloseThermal} handleOpenThermal={handleOpenThermal} handleOpen={handleOpen} />}
+      {openThermal && (
+        <ThermalPrintDialog
+          discount={discount}
+          discountAmount={discountAmount}
+          netAmount={netAmount}
+          totalAmount={totalAmount}
+          products={formData.products}
+          openThermal={openThermal}
+          handleCloseThermal={handleCloseThermal}
+          handleOpenThermal={handleOpenThermal}
+          handleOpen={handleOpen}
+          customer={
+            chartOfAccounts.find((c) => c.value === formData.chartOfAccount)
+              ?.customer
+          }
+          salesman={
+            salesMenOptions.find((s) => s.value === formData.salesmen)?.saleman
+          }
+          date={formData.date}
+          invoice={formData.saleBill}
+          remarks={formData.remarks}
+          balance={formData.balance}
+        />
+      )}
 
-      <form className="w-full" onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex flex-col gap-16 gap-y-40 gap-x-12 lg:w-full w-full  lg:ml-10">
-          {/* First row */}
-         
-
-          {/* Top Fields */}
-           
-
-          {/* Purchase and Balance Information */}
-          {/* <div className="flex gap-24 my-10 w-full justify-between  border border-t-1 border-b-1 border-l-0 border-r-0 py-40">
-            <TextField
-              label="Purchase Rate"
-              variant="outlined"
-              size="small"
-              className="bg-white w-full"
+      <form onSubmit={handleSubmit(onSubmit)} className="p-24 w-full">
+        <Box className="grid gap-24 mb-10">
+          <Box className="grid grid-cols-3 gap-16 ">
+            {/* Date Picker */}
+            <Controller
+              name="date"
+              control={control}
+              render={({ field }) => (
+                <DatePicker
+                  label="Date"
+                  value={field.value}
+                  onChange={field.onChange}
+                  renderInput={(params) => <TextField {...params} fullWidth />}
+                />
+              )}
             />
-            <TextField
-              label="O/A Balance"
-              variant="outlined"
-              size="small"
-              className="bg-white w-full"
+
+            {/* Customer Select */}
+            <Controller
+              name="chartOfAccount"
+              control={control}
+              render={({ field }) => (
+                <FormControl fullWidth>
+                  {/* <InputLabel>Customer</InputLabel> */}
+                  <Select
+                    {...field}
+                    // label="Customer"
+                    displayEmpty
+                    // renderValue={(value) => value || "Select Customer..."}
+                  >
+                    <MenuItem disabled value="">
+                      <em>Select Customer...</em>
+                    </MenuItem>
+                    {chartOfAccounts.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
             />
-            <TextField
-              label="Batch Balance"
-              variant="outlined"
-              size="small"
-              className="bg-white w-full"
+
+            {/* Salesman Select */}
+            <Controller
+              name="salesmen"
+              control={control}
+              render={({ field }) => (
+                <FormControl fullWidth>
+                  {/* <InputLabel>Salesman</InputLabel> */}
+                  <Select
+                    {...field}
+                    // label="Salesman"
+                    displayEmpty
+                    // renderValue={(value) => value || "Select Salesman..."}
+                  >
+                    <MenuItem disabled value="">
+                      <em>Select Salesman...</em>
+                    </MenuItem>
+                    {salesMenOptions.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
             />
-          </div> */}
+          </Box>
+          <hr className="my-4 border border-gray-300" />
 
-          {/* <FormControl component="fieldset">
-              <RadioGroup row>
-                <div className="flex justify-center items-center gap-6">
-                <Typography className="text-lg  mr-2">Payment Type:</Typography>
-                <FormControlLabel value="Cash" control={<Radio />} label="Cash" />
-                <FormControlLabel value="Credit" control={<Radio />} label="Credit" />
-                </div>
-              </RadioGroup>
-            </FormControl> */}
+          {/* Product Fields */}
+          {fields.map((field, index) => (
+            <Box key={field.id} className="border  rounded-8">
+              <Box className="grid grid-cols-4 space-y-4 md:flex md:items-center md:justify-between mb-16 gap-4">
+                <Box>
+                  <Typography variant="h6" className="mr-10">
+                    {index + 1}
+                  </Typography>
+                </Box>
 
-          {/* Product Details */}
-          <div className="w-full overflow-auto">
-  <div className="min-w-[1200px]">
-    <div className="grid grid-cols-12 gap-4 mb-4  pb-2">
-      <Typography>Product Code</Typography>
-      <Typography className="col-span-2">Product Name</Typography>
-      <Typography>Batch Code</Typography>
-      <Typography className="col-span-2">Batch Description</Typography>
-      <Typography>Qty</Typography>
-      <Typography>Trade Rate</Typography>
-      <Typography>Disc. (%)</Typography>
-      <Typography>Disc. Value</Typography>
-      <Typography>Net Rate</Typography>
-      <Typography>Amount</Typography>
-    </div>
+                {/* <Box className="grid grid-cols-4 gap-16"> */}
+                {/* Product Select */}
+                <Controller
+                  name={`products.${index}.inventoryInformation`}
+                  control={control}
+                  render={({ field }) => (
+                    <FormControl fullWidth>
+                      {/* <InputLabel>Product</InputLabel> */}
+                      <Select
+                        {...field}
+                        // label="Product"
+                        displayEmpty
 
-    <div className="grid grid-cols-12 gap-4 mb-6">
-      {/* Product Code */}
-      <Controller
-        name="productCode"
-        control={control}
-        render={({ field }) => (
-          <FormControl variant="outlined" size="small" className="bg-white">
-            <Select {...field} defaultValue="01001">
-              <MenuItem value="01001">ACTIVE VIT</MenuItem>
-            </Select>
-          </FormControl>
-        )}
-      />
+                        // renderValue={(value) => value || "Select Product..."}
+                      >
+                        <MenuItem disabled value="">
+                          <em>Select Product...</em>
+                        </MenuItem>
+                        {inventoryInformationOptions.map((option) => (
+                          <MenuItem key={option.value} value={option.value}>
+                            {option.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  )}
+                />
 
-      {/* Product Name */}
-      <Controller
-        name="productName"
-        control={control}
-        render={({ field }) => (
-          <FormControl
+                {/* Batch Select */}
+                <Controller
+                  name={`products.${index}.batch`}
+                  control={control}
+                  render={({ field }) => (
+                    <FormControl fullWidth>
+                      {/* <InputLabel>Batch</InputLabel> */}
+                      <Select
+                        {...field}
+                        // label="Batch"
+                        displayEmpty
+                        // renderValue={(value) => value || "Select Batch..."}
+                      >
+                        <MenuItem disabled value="">
+                          <em>Select Batch...</em>
+                        </MenuItem>
+                        {batchOptions
+                          .filter(
+                            (batch) =>
+                              batch.inventoryInformation ===
+                              getValues(
+                                `products.${index}.inventoryInformation`
+                              )
+                          )
+                          .filter(
+                            (batch) =>
+                              !formData.products.some(
+                                (p, i) => i !== index && p.batch === batch.value
+                              )
+                          )
+                          .map((option) => (
+                            <MenuItem key={option.value} value={option.value}>
+                              {option.name}
+                            </MenuItem>
+                          ))}
+                      </Select>
+                    </FormControl>
+                  )}
+                />
+                {/* Description Input */}
+
+                <Controller
+                  name={`products.${index}.description`}
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Description"
+                      type="text"
+                      fullWidth
+                      onChange={(e) => {
+                        field.onChange(e);
+                        calculateProductFields(index);
+                      }}
+                    />
+                  )}
+                />
+
+                {/* Quantity Input */}
+                <Controller
+                  name={`products.${index}.revisedQuantity`}
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Quantity"
+                      type="number"
+                      fullWidth
+                      onChange={(e) => {
+                        field.onChange(e);
+                        calculateProductFields(index);
+                      }}
+                    />
+                  )}
+                />
+
+                {/* Trade Rate Input */}
+                <Controller
+                  name={`products.${index}.tradeRate`}
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Trade Rate"
+                      type="number"
+                      fullWidth
+                      onChange={(e) => {
+                        field.onChange(e);
+                        calculateProductFields(index);
+                      }}
+                    />
+                  )}
+                />
+
+                {/* Discount Input */}
+                <Controller
+                  name={`products.${index}.discount`}
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Discount %"
+                      type="number"
+                      fullWidth
+                      onChange={(e) => {
+                        field.onChange(e);
+                        calculateProductFields(index);
+                      }}
+                    />
+                  )}
+                />
+
+                {/* Discount Value Input */}
+                <Controller
+                  name={`products.${index}.discountValue`}
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Discount Value"
+                      disabled
+                      type="number"
+                      fullWidth
+                    />
+                  )}
+                />
+
+                {/* Net Rate Input */}
+                <Controller
+                  name={`products.${index}.netRate`}
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Net Rate"
+                      disabled
+                      type="number"
+                      fullWidth
+                    />
+                  )}
+                />
+
+                {/* Amount Input */}
+                <Controller
+                  name={`products.${index}.amount`}
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Amount"
+                      disabled
+                      type="number"
+                      fullWidth
+                    />
+                  )}
+                />
+                {/* </Box> */}
+                <IconButton onClick={() => remove(index)}>
+                  <RemoveIcon />
+                </IconButton>
+              </Box>
+            </Box>
+          ))}
+
+          {/* Add Product Button */}
+          <Button
+            variant="outlined"
+            startIcon={<AddIcon />}
+            onClick={() => append(defaultProduct)}
+          >
+            Add Product
+          </Button>
+
+          {/* Payment Section */}
+          <Box className="grid grid-cols-3 gap-16">
+            {/* Payment Type Select */}
+            <Controller
+              name="paymentType"
+              control={control}
+              render={({ field }) => (
+                <FormControl fullWidth>
+                  <InputLabel>Payment Type</InputLabel>
+                  <Select
+                    {...field}
+                    label="Payment Type"
+                    displayEmpty
+                    // renderValue={(value) => value || "Select Payment Type..."}
+                  >
+                    <MenuItem disabled value="">
+                      <em>Select Payment Type...</em>
+                    </MenuItem>
+                    <MenuItem value="cash">Cash</MenuItem>
+                    <MenuItem value="credit">Credit</MenuItem>
+                  </Select>
+                </FormControl>
+              )}
+            />
+
+            {/* Balance Input */}
+            <Controller
+              name="balance"
+              control={control}
+              render={({ field }) => (
+                <TextField {...field} label="Balance" type="number" fullWidth />
+              )}
+            />
+
+            {/* Remarks Input */}
+            <Controller
+              name="remarks"
+              control={control}
+              render={({ field }) => (
+                <TextField {...field} label="Remarks" fullWidth />
+              )}
+            />
+          </Box>
+        </Box>
+
+
+        {/* Action Buttons */}
+        {/* Action Buttons */}
+       
+        <hr className=" border border-gray-300 my-20" />
+
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6 justify-center mt-10">
+          <TextField
+            label="Total Amount"
             variant="outlined"
             size="small"
-            className="bg-white col-span-2"
+            value={totalAmount}
+            onChange={(e) => setTotalAmount(e.target.value)}
+            className=" col-span-1"
+          />
+          <TextField
+            label="Disc (%)"
+            variant="outlined"
+            size="small"
+            onChange={(e) => setDiscount(e.target.value)}
+            value={discount}
+            className=" col-span-1"
+          />
+          <TextField
+            label="Disc Amount"
+            variant="outlined"
+            size="small"
+            value={discountAmount}
+            onChange={(e) => setDiscountAmount(e.target.value)}
+            className="col-span-1"
+          />
+          <TextField
+            label="Net Amount"
+            variant="outlined"
+            size="small"
+            value={netAmount}
+            onChange={(e) => setNetAmount(e.target.value)}
+            className="col-span-1"
+          />
+
+          <Button
+            // size={small}
+            variant="contained"
+            className="rounded-md col-span-1"
+            onClick={handleOpen}
           >
-            <Select {...field} defaultValue="ACTIVE VIT">
-              <MenuItem value="ACTIVE VIT">ACTIVE VIT</MenuItem>
-            </Select>
-          </FormControl>
-        )}
-      />
-
-      {/* Batch Code */}
-      <Controller
-        name="batchCode"
-        control={control}
-        render={({ field }) => (
-          <FormControl variant="outlined" size="small" className="bg-white">
-            <Select {...field} defaultValue="001">
-              <MenuItem value="001">001</MenuItem>
-            </Select>
-          </FormControl>
-        )}
-      />
-
-      {/* Batch Description */}
-      <TextField
-      label="Batch Description"
-        variant="outlined"
-        size="small"
-        className="bg-white col-span-2"
-      />
-      {/* Qty */}
-      <TextField variant="outlined" size="small" label="Qty" className="bg-white" />
-      {/* Trade Rate */}
-      <TextField variant="outlined" size="small" label="Trade Rate" className="bg-white" />
-      {/* Disc (%) */}
-      <TextField variant="outlined" size="small" label="Disc. (%)" className="bg-white" />
-      {/* Disc Value */}
-      <TextField variant="outlined" size="small" label="Disc. Value" className="bg-white" />
-      {/* Net Rate */}
-      <TextField variant="outlined" size="small" label="Net Rate" className="bg-white" />
-      {/* Amount */}
-      <TextField variant="outlined" size="small" label="Amount" className="bg-white" />
-    </div>
-  </div>
-</div>
-
-
-          {/* Footer Fields */}
-
-          <div className="flex gap-4 flex-wrap my-12 items-center justify-center">
-            <Button variant="contained" className="rounded-md" color="primary">
-              Edit
-            </Button>
-            <Button
-              variant="contained"
-              className="rounded-md"
-              color="secondary"
-            >
-              Delete
-            </Button>
-            <Button variant="contained" className="rounded-md">
-              Update
-            </Button>
-            <Button variant="outlined" className="rounded-md">
-              Add
-            </Button>
-            <Button variant="outlined" className="rounded-md" color="primary">
-              Cancel
-            </Button>
-            {/* <Button variant="contained" className="rounded-md" color="success">
-              Close Bill
-            </Button>
-            <Button variant="contained" className="rounded-md">
-              Return
-            </Button> */}
-            <Button variant="outlined" className="rounded-md">
-              Back
-            </Button>
-          </div>
-          {/* Buttons */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6 justify-center">
-                      <TextField
-                        label="Total Amount"
-                        variant="outlined"
-                        size="small"
-                        className="bg-white col-span-1"
-                      />
-                      <TextField
-                        label="Disc (%)"
-                        variant="outlined"
-                        size="small"
-                        className="bg-white col-span-1"
-                      />
-                      <TextField
-                        label="Disc Amount"
-                        variant="outlined"
-                        size="small"
-                        className="bg-white col-span-1"
-                      />
-                      <TextField
-                        label="Net Amount"
-                        variant="outlined"
-                        size="small"
-                        className="bg-white col-span-1"
-                      />
-                      {/* <TextField
-                      label="From"
-                      variant="outlined"
-                      size="small"
-                      className="bg-white"
-                    />
-                    <TextField
-                      label="To"
-                      variant="outlined"
-                      size="small"
-                      className="bg-white"
-                    /> */}
-                      <Button
-                        // size={small}
-                        variant="contained"
-                        className="rounded-md col-span-1"
-                        onClick={handleOpen}
-                      >
-                        Report
-                      </Button>
-                    </div>
+            Report
+          </Button>
         </div>
       </form>
     </>
   );
 
   const header = (
-    <div className="flex w-full container">
-      <div className="flex flex-col sm:flex-row flex-auto sm:items-center min-w-0 p-24 md:p-32 pb-0 md:pb-0">
-        <div className="flex flex-col flex-auto">
-          <Typography className="text-3xl font-semibold tracking-tight leading-8">
-            {title}
-          </Typography>
-        </div>
-        {/* <div className="flex items-center mt-24 sm:mt-0 sm:mx-8 space-x-12">
-          <Button
-            className="whitespace-nowrap"
-            color="secondary"
-            // startIcon={<FuseSvgIcon size={20}>heroicons-solid:cross</FuseSvgIcon>}
-            onClick={handleCancel}
-          >
-            Close
-          </Button>
-        </div> */}
-      </div>
-    </div>
+    <Box className="flex items-center justify-between w-full">
+      <Box className="flex flex-col container p-24">
+        <Typography variant="h4">Estimate Bill</Typography>
+        
+      </Box>
+    </Box>
   );
 
   const content = (
@@ -469,4 +909,4 @@ function EstimateBill() {
   return <FusePageSimple header={header} content={content} />;
 }
 
-export default EstimateBill;
+export default SalesBillFormPage;

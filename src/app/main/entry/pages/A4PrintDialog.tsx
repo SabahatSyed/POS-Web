@@ -36,7 +36,10 @@ const A4Print = ({
 }) => {
   const printContentRef = useRef();
   const user = useAppSelector(selectUser);
-  console.log("user", user,discount,
+  console.log(
+    "user",
+    user,
+    discount,
     discountAmount,
     netAmount,
     totalAmount,
@@ -50,7 +53,8 @@ const A4Print = ({
     customer,
     salesman,
     date,
-    remarks);
+    remarks
+  );
   const handlePrint = () => {
     const printContents = printContentRef.current.innerHTML;
     const printWindow = window.open("", "_blank");
@@ -129,7 +133,7 @@ const A4Print = ({
         </IconButton>
       </DialogTitle>
 
-      <DialogContent ref={printContentRef}>
+      <DialogContent>
         <Box
           sx={{
             display: "flex",
@@ -139,166 +143,150 @@ const A4Print = ({
             minHeight: "100vh",
           }}
         >
-          <Box
-            sx={{
-              mb: 4,
-              display: "grid",
-              gridTemplateColumns: "repeat(6, 1fr)",
-            }}
-          >
-            <Box sx={{ gridColumn: "1 / 3" }}>
-              <Typography sx={{ marginY: 1 }}>
-                BILL TO:  {customer}
-              </Typography>
-              {/* <Typography sx={{ marginY: 1 }}>
+          <Box ref={printContentRef}>
+            <Box sx={{marginBottom:10}}>
+              <img
+                src={user.logoURL}
+                alt="Company Logo"
+                style={{ height: "80px",  margin: "auto" }}
+              />
+            </Box>
+            <Box
+              sx={{
+                mb: 4,
+                display: "grid",
+                gridTemplateColumns: "repeat(6, 1fr)",
+              }}
+            >
+              <Box sx={{ gridColumn: "1 / 3" }}>
+                <Typography sx={{ marginY: 1 }}>BILL TO: {customer}</Typography>
+                {/* <Typography sx={{ marginY: 1 }}>
                 ADDRESS: ________________________________________
               </Typography> */}
-              {/* <Typography sx={{ marginY: 1 }}>
+                {/* <Typography sx={{ marginY: 1 }}>
                 CONTACT: ________________________________________
               </Typography> */}
-              <Typography sx={{ marginY: 1 }}>
-                REMARKS: {remarks}
-              </Typography>
+                <Typography sx={{ marginY: 1 }}>REMARKS: {remarks}</Typography>
+              </Box>
+
+              <Box sx={{ gridColumn: "3 / 4" }}></Box>
+
+              <Box sx={{ gridColumn: "4 / 6" }}>
+                <Typography sx={{ marginY: 1 }}>
+                  {/* DATE: {new Date(date)} */}
+                </Typography>
+                <Typography sx={{ marginY: 1 }}>INVOICE: {invoice}</Typography>
+              </Box>
+
+              <Box sx={{ gridColumn: "6 / 7" }}></Box>
             </Box>
 
-            <Box sx={{ gridColumn: "3 / 4" }}></Box>
-
-            <Box sx={{ gridColumn: "4 / 6" }}>
-              <Typography sx={{ marginY: 1 }}>
-                {/* DATE: {new Date(date)} */}
-              </Typography>
-              <Typography sx={{ marginY: 1 }}>
-                INVOICE: {invoice}
-              </Typography>
-            </Box>
-
-            <Box sx={{ gridColumn: "6 / 7" }}></Box>
-          </Box>
-
-          <Table sx={{ mb: 4, width: "70%" }}>
-            <TableHead>
-              <TableRow>
-                <TableCell style={{ border: "1px solid black" }}>Sr.</TableCell>
-                <TableCell style={{ border: "1px solid black" }}>
-                  Description
-                </TableCell>
-                <TableCell style={{ border: "1px solid black" }}>Qty</TableCell>
-                <TableCell style={{ border: "1px solid black" }}>
-                  Rate
-                </TableCell>
-                {discount && (
+            <Table sx={{ mb: 4, width: "70%" }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell style={{ border: "1px solid black" }}>
+                    Sr.
+                  </TableCell>
+                  <TableCell style={{ border: "1px solid black" }}>
+                    Description
+                  </TableCell>
+                  <TableCell style={{ border: "1px solid black" }}>
+                    Qty
+                  </TableCell>
+                  <TableCell style={{ border: "1px solid black" }}>
+                    Rate
+                  </TableCell>
                   <TableCell style={{ border: "1px solid black" }}>
                     Discount
                   </TableCell>
-                )}
-                <TableCell style={{ border: "1px solid black" }}>
-                  Net Rate
-                </TableCell>
-                <TableCell style={{ border: "1px solid black" }}>
-                  Total Value
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {products.map((product, index) => (
-                <TableRow key={index}>
                   <TableCell style={{ border: "1px solid black" }}>
-                    {index + 1}
+                    Net Rate
                   </TableCell>
                   <TableCell style={{ border: "1px solid black" }}>
-                    {product.description}
-                  </TableCell>
-                  <TableCell style={{ border: "1px solid black" }}>
-                    {product.quantity}
-                  </TableCell>
-                  <TableCell style={{ border: "1px solid black" }}>
-                    {product.tradeRate}
-                  </TableCell>
-                  {discount && (
-                    <TableCell style={{ border: "1px solid black" }}>
-                      {product.discount}
-                    </TableCell>
-                  )}
-                  <TableCell style={{ border: "1px solid black" }}>
-                    {product.netRate}
-                  </TableCell>
-                  <TableCell style={{ border: "1px solid black" }}>
-                    {product.amount}
+                    Total Value
                   </TableCell>
                 </TableRow>
-              ))}
-              <TableRow>
-                <TableCell colSpan={2} style={{ border: "none" }}></TableCell>
-                <TableCell style={{ border: "1px solid black" }}>
-                  <Typography>SUBTOTAL:</Typography>
-                </TableCell>
-                <TableCell style={{ border: "1px solid black" }}>
-              
-                </TableCell>
-                <TableCell style={{ border: "1px solid black" }}>
-              
-                </TableCell>
-                <TableCell style={{ border: "1px solid black" }}>
-                
-                </TableCell>
-                <TableCell style={{ border: "1px solid black" }}>
-                  {totalAmount}
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell colSpan={2} style={{ border: "none" }}></TableCell>
-                <TableCell style={{ border: "1px solid black" }}>
-                  <Typography>Balance:</Typography>
-                </TableCell>
-                <TableCell style={{ border: "1px solid black" }}>
-              
-                </TableCell>
-                <TableCell style={{ border: "1px solid black" }}>
-              
-                </TableCell>
-                <TableCell style={{ border: "1px solid black" }}>
-                
-                </TableCell>
-                <TableCell style={{ border: "1px solid black" }}>
-                  {balance}
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell colSpan={2} style={{ border: "none" }}></TableCell>
-                <TableCell style={{ border: "1px solid black" }}>
-                  <Typography>Discount:</Typography>
-                </TableCell>
-                <TableCell style={{ border: "1px solid black" }}>
-              
-                </TableCell>
-                <TableCell style={{ border: "1px solid black" }}>
-              
-                </TableCell>
-                <TableCell style={{ border: "1px solid black" }}>
-                  {discount}
-                </TableCell>
-                <TableCell style={{ border: "1px solid black" }}>
-                  {discountAmount}
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell colSpan={2} style={{ border: "none" }}></TableCell>
-                <TableCell style={{ border: "1px solid black" }}>
-                  <Typography>TOTAL:</Typography>
-                </TableCell>
-                <TableCell style={{ border: "1px solid black" }}>
-                </TableCell>
-                <TableCell style={{ border: "1px solid black" }}>
-                </TableCell>
-                <TableCell style={{ border: "1px solid black" }}>
-                </TableCell>
-                <TableCell style={{ border: "1px solid black" }}>
-                  {netAmount}
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
+              </TableHead>
+              <TableBody>
+                {products.map((product, index) => (
+                  <TableRow key={index}>
+                    <TableCell style={{ border: "1px solid black" }}>
+                      {index + 1}
+                    </TableCell>
+                    <TableCell style={{ border: "1px solid black" }}>
+                      {product.description}
+                    </TableCell>
+                    <TableCell style={{ border: "1px solid black" }}>
+                      {product.revisedQuantity}
+                    </TableCell>
+                    <TableCell style={{ border: "1px solid black" }}>
+                      {product.tradeRate}
+                    </TableCell>
+                    <TableCell style={{ border: "1px solid black" }}>
+                      {product.discount == 0 ? "0" : product.discount}
+                    </TableCell>
 
+                    <TableCell style={{ border: "1px solid black" }}>
+                      {product.netRate}
+                    </TableCell>
+                    <TableCell style={{ border: "1px solid black" }}>
+                      {product.amount}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                <TableRow>
+                  <TableCell colSpan={2} style={{ border: "none" }}></TableCell>
+                  <TableCell style={{ border: "1px solid black" }}>
+                    <Typography>SUBTOTAL:</Typography>
+                  </TableCell>
+                  <TableCell style={{ border: "1px solid black" }}></TableCell>
+                  <TableCell style={{ border: "1px solid black" }}></TableCell>
+                  <TableCell style={{ border: "1px solid black" }}></TableCell>
+                  <TableCell style={{ border: "1px solid black" }}>
+                    {totalAmount}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell colSpan={2} style={{ border: "none" }}></TableCell>
+                  <TableCell style={{ border: "1px solid black" }}>
+                    <Typography>Balance:</Typography>
+                  </TableCell>
+                  <TableCell style={{ border: "1px solid black" }}></TableCell>
+                  <TableCell style={{ border: "1px solid black" }}></TableCell>
+                  <TableCell style={{ border: "1px solid black" }}></TableCell>
+                  <TableCell style={{ border: "1px solid black" }}>
+                    {balance}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell colSpan={2} style={{ border: "none" }}></TableCell>
+                  <TableCell style={{ border: "1px solid black" }}>
+                    <Typography>Discount:</Typography>
+                  </TableCell>
+                  <TableCell style={{ border: "1px solid black" }}></TableCell>
+                  <TableCell style={{ border: "1px solid black" }}></TableCell>
+                  <TableCell style={{ border: "1px solid black" }}>
+                    {discount}
+                  </TableCell>
+                  <TableCell style={{ border: "1px solid black" }}>
+                    {discountAmount}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell colSpan={2} style={{ border: "none" }}></TableCell>
+                  <TableCell style={{ border: "1px solid black" }}>
+                    <Typography>TOTAL:</Typography>
+                  </TableCell>
+                  <TableCell style={{ border: "1px solid black" }}></TableCell>
+                  <TableCell style={{ border: "1px solid black" }}></TableCell>
+                  <TableCell style={{ border: "1px solid black" }}></TableCell>
+                  <TableCell style={{ border: "1px solid black" }}>
+                    {netAmount}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </Box>
           <Box
             sx={{
               marginY: 6,

@@ -11,7 +11,7 @@ type DataType = {
   [key: string]: unknown;
 };
 
-const storeName = 'settings';
+const storeName = 'purchaseBill';
 const apiEndPoint = '/api/purchaseBill';
 
 export const getRecords = createAppAsyncThunk(
@@ -33,7 +33,7 @@ export const getRecords = createAppAsyncThunk(
       }&text=${search ? search : ''}`,
     );
     console.log('re', response);
-    const data = (await response.data.records) as DataType;
+    const data = (await response.data.data) as DataType;
 
     return data;
   },
@@ -99,7 +99,7 @@ export const dataSlice = createSlice({
   },
 });
 
-export const selectRecords = (state: AppRootStateType) => state.purchaseBill[storeName];
+export const selectRecords = (state: AppRootStateType) => state.purchasebill[storeName];
 
 export type dataSliceType = typeof dataSlice;
 
